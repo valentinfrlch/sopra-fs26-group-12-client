@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Group 12",
+  title: "cookREAL",
   description: "sopra-fs26-template-client",
 };
 

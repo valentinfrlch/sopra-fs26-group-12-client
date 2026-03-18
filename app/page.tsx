@@ -10,6 +10,11 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
+
+        <h1 className={styles.title}>
+        Group 12 cookREAL webapp
+        </h1>
+
         <Image
           className={styles.logo}
           src="/next.svg"
