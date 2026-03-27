@@ -19,6 +19,7 @@ export const metadata: Metadata = {
   description: "sopra-fs26-template-client",
 };
 
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,6 +27,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* ✅ loads Google Material Icons */}
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ConfigProvider
           theme={{
