@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { App as AntdApp, ConfigProvider, theme } from "antd";
+import MuiProvider from "./providers/MuiProvider";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import "@/styles/globals.css";
 
@@ -28,8 +29,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+
         {/* ✅ loads Google Material Icons */}
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+        <link
+          href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+          rel="stylesheet"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded"
+          rel="stylesheet"
+        />
+
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ConfigProvider
@@ -65,10 +77,13 @@ export default function RootLayout({
             },
           }}
         >
-          <AntdRegistry>
-            <AntdApp>{children}</AntdApp>
-          </AntdRegistry>
+          <MuiProvider>
+            <AntdRegistry>
+              <AntdApp>{children}</AntdApp>
+            </AntdRegistry>
+          </MuiProvider>
         </ConfigProvider>
+
       </body>
     </html>
   );

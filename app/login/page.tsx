@@ -4,7 +4,9 @@ import { useRouter } from "next/navigation"; // use NextJS router for navigation
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { User } from "@/types/user";
-import { Button, Form, Input } from "antd";
+import { Form } from "antd";
+import { Button, TextField } from "@mui/material";
+import React, { useState } from "react";
 // Optionally, you can import a CSS module or file for additional styling:
 // import styles from "@/styles/page.module.css";
 
@@ -17,6 +19,7 @@ const Login: React.FC = () => {
   const router = useRouter();
   const apiService = useApi();
   const [form] = Form.useForm();
+  const [currentError, setCurrentError] = useState<string>("");
   // useLocalStorage hook example use
   // The hook returns an object with the value and two functions
   // Simply choose what you need from the hook:
@@ -29,19 +32,27 @@ const Login: React.FC = () => {
 
   const handleLogin = async (values: FormFieldProps) => {
     try {
-      // Call the API service and let it handle JSON serialization and error handling
-      const response = await apiService.post<User>("/users", values);
+      const response = await apiService.post<User>("/users/login", values);
 
-      // Use the useLocalStorage hook that returned a setter function (setToken in line 41) to store the token if available
       if (response.token) {
         setToken(response.token);
       }
-
-      // Navigate to the user overview
+      
       router.push("/cookbook");
     } catch (error) {
       if (error instanceof Error) {
-        alert(`Something went wrong during the login:\n${error.message}`);
+        // try to parse the string as json
+        const jsonStart = error.message.indexOf("{");
+        const jsonEnd = error.message.lastIndexOf("}") + 1;
+        const parsed = JSON.parse(error.message.slice(jsonStart, jsonEnd));
+
+        console.log(parsed.detail); // Log the entire error for debugging
+        // Update currentError
+        if (parsed.detail === "The username and the name provided are not unique. Therefore, the user could not be created!") {
+          setCurrentError("Username is already taken. Please choose a different one.");
+        } else {
+          setCurrentError(parsed.detail);
+        }
       } else {
         console.error("An unknown error occurred during login.");
       }
@@ -58,26 +69,40 @@ const Login: React.FC = () => {
         onFinish={handleLogin}
         layout="vertical"
       >
+        <Form.Item>
+          <h1 style={{ color: "black", textAlign: "center", marginBottom: "20px" }}>Login</h1>
+        </Form.Item>
         <Form.Item
           name="username"
-          label="Username"
           rules={[{ required: true, message: "Please input your username!" }]}
         >
-          <Input placeholder="Enter username" />
+          <TextField label="Username" fullWidth />
         </Form.Item>
         <Form.Item
-          name="name"
-          label="Name"
-          rules={[{ required: true, message: "Please input your name!" }]}
+          name="password"
+          rules={[{ required: true, message: "Please input your password!" }]}
         >
-          <Input placeholder="Enter name" />
+          <TextField label="Password" type="password" fullWidth />
         </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit" className="login-button">
+          <Button
+            variant="contained"
+            className="login-button"
+            disableElevation
+            sx={{ boxShadow: "none" }}
+            type="submit"
+          >
             Login
           </Button>
+          <Form.Item >
+            <p className="error-message">{currentError}</p>
+          </Form.Item>
         </Form.Item>
+        <div className="signup-link" style={{ color: "black" }}>
+          Don&apos;t have an account? <a style={{ color: "#485F23" }}  href="/signup">Sign up</a>
+        </div>
       </Form>
+
     </div>
   );
 };
