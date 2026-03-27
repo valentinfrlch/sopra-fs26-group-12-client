@@ -37,6 +37,7 @@ const Login: React.FC = () => {
       if (response.token) {
         setToken(response.token);
       }
+      
       router.push("/cookbook");
     } catch (error) {
       if (error instanceof Error) {
