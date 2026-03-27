@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Avatar, Button, Card, Tag, Dropdown, MenuProps } from "antd";
+import { Avatar, Button, Card, Tag, Dropdown, MenuProps, ConfigProvider } from "antd";
 import { PlusOutlined, MenuOutlined, EllipsisOutlined, HomeOutlined, ReadOutlined } from "@ant-design/icons";
-import { ConfigProvider } from "antd";
+
 
 interface Recipe {
   id: number;
@@ -158,23 +158,46 @@ const CookbookPage: React.FC = () => {
   }, []);
   const [activeLabels, setActiveLabels] = useState<string[]>([]);
   const filteredRecipes = activeLabels.length > 0 ? MOCK_RECIPES.filter((r) => activeLabels.every((active) => r.labels.includes(active))) : MOCK_RECIPES;
+  const handleLabelToggle= (label: string) => {
+                setActiveLabels((prev) =>
+                    prev.includes(label)
+                    ? prev.filter((l) => l !== label)  // already selected → remove it
+                    : [...prev, label]                  // not selected → add it
+                );
+                };
+
 
   return (
     // This is the root container — it wraps the ENTIRE page.
     <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
+
+
       {/* Sidebar #38 */}
       <div style={{ width: 64, background: "#fff", display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 24, gap: 24, borderRight: "1px solid #2a2d3a", flexShrink: 0 }}>
-        <div onClick={() => router.push("/events/overview")} style={{ display: "flex", flexDirection: "column", alignItems: "center", cursor: "pointer", gap: 4 }}>
+        <div 
+          onClick={() => router.push("/events/overview")} 
+          onKeyDown={(e) => e.key === "Enter" && router.push("/events/overview")}
+          role="button"
+          tabIndex={0}
+          style={{ display: "flex", flexDirection: "column", alignItems: "center", cursor: "pointer", gap: 4 }}>
           <HomeOutlined style={{ fontSize: 22, color: "#000000" }} />
           <span style={{ fontSize: 10, color: "#797979" }}>Events</span>
         </div>
-        <div onClick={() => router.push("/cookbook")} style={{ display: "flex", flexDirection: "column", alignItems: "center", cursor: "pointer", gap: 4 }}>
+        <div 
+        onClick={() => router.push("/cookbook")} 
+        onKeyDown={(e) => e.key === "Enter" && router.push("/cookbook")}
+        role="button"
+        tabIndex={0}
+        style={{ display: "flex", flexDirection: "column", alignItems: "center", cursor: "pointer", gap: 4 }}>
           <ReadOutlined style={{ fontSize: 22, color: "#000000" }} />
           <span style={{ fontSize: 10, color: "#797979" }}>Library</span>
         </div>
       </div>
+
+
       {/* Main content */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+
 
         {/* Top bar #39 
         A small flex row containing the ☰ hamburger icon 
@@ -188,12 +211,15 @@ const CookbookPage: React.FC = () => {
           </div>
           <Avatar size={40} style={{ background: "#f0f0f0", color: "#1a1a1a", cursor: "pointer", fontWeight: 600 }} onClick={() => router.push("/user/me")}>{getInitials(username)}</Avatar>
         </div>
+
+
         {/* Body 
         display: "grid" — CSS Grid layout. More powerful than flex for 2D layouts.
         gridTemplateColumns: "1fr 1fr" — two equal columns. 1fr = 1 fraction of available space. Two equal fractions = 50/50 split.
         */}
         <div style={{ padding: "24px", flex: 1 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 32 }}>
+
 
             {/* Registered Event Card */}
             <Card 
@@ -215,11 +241,9 @@ const CookbookPage: React.FC = () => {
             <span className="material-icons" style={{ fontSize: 48, color: "#4a6741" }}>
             event_available
             </span>
-            {/* <span style={{ fontSize: 13, color: "#888" }}>
-            Your registered events appear here
-            </span> */}
             </div>
             </Card>
+
 
             {/* Participated Events */}
             <Card 
@@ -241,22 +265,13 @@ const CookbookPage: React.FC = () => {
                 <span className="material-icons" style={{ fontSize: 48, color: "#4a6741" }}>
                 emoji_events
                 </span>
-                {/* <span style={{ fontSize: 13, color: "#888" }}>
-                Events you joined appear here
-                </span> */}
             </div>
             </Card>
           </div>
           <h2 style={{ color: "#1a1a1a", fontSize: 18, fontWeight: 600, marginBottom: 12 }}>Your Recipes</h2>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
             {ALL_LABELS.map((label) => (
-              <Tag key={label} onClick={() => {
-                setActiveLabels((prev) =>
-                    prev.includes(label)
-                    ? prev.filter((l) => l !== label)  // already selected → remove it
-                    : [...prev, label]                  // not selected → add it
-                );
-                }}
+              <Tag key={label} onClick={() => handleLabelToggle(label)}
                 style={{ cursor: "pointer", borderRadius: 20, padding: "2px 12px", fontSize: 13, 
                 background: activeLabels.includes(label) ? "#4a6741" : "#e4e1e1", color: activeLabels.includes(label) ? "#1a1a1a" : "#555", border: "none" }}>
                 {label}
@@ -268,6 +283,8 @@ const CookbookPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+
       {/* Floating + button
       position: "fixed" — the most important property here. Removes the button from the normal page flow and pins it to the screen. It stays visible even when you scroll down — it never moves.
       */}
