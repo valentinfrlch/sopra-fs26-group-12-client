@@ -5,7 +5,6 @@ import { Button } from "@mui/material";
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 
 export default function Home() {
-    const router = useRouter();
     return (
         <div className={styles.page}>
             <main className={styles.main}>
