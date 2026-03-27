@@ -125,7 +125,6 @@ const RecipeCard: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
         </ConfigProvider>
       </div>
       <div style={{ height: 240, background: "#f0f0f0", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#555", fontSize: 12 }}>
-        // Image placeholder for now
         No image yet
         {/* <Image src={recipe.imageUrl} alt={recipe.title}
         width={220} height={120} style={{ borderRadius: 8 }} /> */}
