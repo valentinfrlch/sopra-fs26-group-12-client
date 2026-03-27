@@ -60,8 +60,10 @@ export class ApiService {
    * @param endpoint - The API endpoint (e.g. "/users").
    * @returns JSON data of type T.
    */
-  public async get<T>(endpoint: string): Promise<T> {
+  public async get<T>(endpoint: string, headers: HeadersInit): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
+    // merge the default headers with 'headers' paramter
+    this.defaultHeaders = { ...this.defaultHeaders, ...headers };
     const res = await fetch(url, {
       method: "GET",
       headers: this.defaultHeaders,
@@ -102,6 +104,26 @@ export class ApiService {
     const res = await fetch(url, {
       method: "PUT",
       headers: this.defaultHeaders,
+      body: JSON.stringify(data),
+    });
+    return this.processResponse<T>(
+      res,
+      "An error occurred while updating the data.\n",
+    );
+  }
+
+  /**
+   * PATCH request.
+   * @param endpoint - The API endpoint (e.g. "/users/123").
+   * @param data - The payload to update.
+   * @returns JSON data of type T.
+   */
+  public async patch<T>(endpoint: string, data: unknown, headers: HeadersInit): Promise<T> {
+    console.log("PATCH request to:", endpoint, "with data:", data, "and headers:", headers);
+    const url = `${this.baseURL}${endpoint}`;
+    const res = await fetch(url, {
+      method: "PATCH",
+      headers: { ...this.defaultHeaders, ...headers },
       body: JSON.stringify(data),
     });
     return this.processResponse<T>(
