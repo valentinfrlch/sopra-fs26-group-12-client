@@ -80,11 +80,17 @@ export class ApiService {
    * @param data - The payload to post.
    * @returns JSON data of type T.
    */
-  public async post<T>(endpoint: string, data: unknown): Promise<T> {
+  public async post<T>(endpoint: string, data: unknown, headers?: HeadersInit): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
+
+    const mergedHeaders: HeadersInit = {
+      ...this.defaultHeaders,
+      ...headers,
+    };
+
     const res = await fetch(url, {
       method: "POST",
-      headers: this.defaultHeaders,
+      headers: mergedHeaders,
       body: JSON.stringify(data),
     });
     return this.processResponse<T>(
