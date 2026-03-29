@@ -43,7 +43,12 @@ reason).
 |                    | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/pull/99/commits] | [Test for if user doesnt exist trying to login, it throws exception (unathorized)] | [throwing exception as important information to know what is/ could be going on] |
 
 
-| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@FinnPrivateGit]** | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/b7962936bfb537cac25f5a5238b83b1b5cad6aaa] | [Implemented the UI for creating a recipe as described in the dev tasks #15 and #16.] | [This is a critical feature for our WebApp and is used such that users can create and save recipes in their own cookbook.] |
+
+| **[@FinnPrivateGit]** | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/394a5abeef7d48d260184e0609a5de623c476fd0] | [Fixed some isues with the API request when creating a recipe] | [Without this change, the created recipe wouldn't get sent to the backend and it can't be added to the users list of recipes.] |
+
+| **[@FinnPrivateGit]** | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/pull/100/changes/e282741953669a1518ce021f84969ac4d9375070] | [Implemented the whole backend structure such that a recipe that a user creates in the frontend gets saved as a recipe entity to the users list of recipes for dev task #37.] | [This is a critical feature for our WebApp, because else the user wouldn't have a possibility to see past saved recipes.] |
+
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 
 
