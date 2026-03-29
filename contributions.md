@@ -36,10 +36,17 @@ reason).
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
 | **[@sushmstr]**    | [29.03.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/94aaab3] | [Implemented cookbook page with sidebar, avatar, filter tags, recipe grid (#38 #39 #40)] | [Allows logged-in users to access their cookbook and recipes immediately after login] |
 |                    | [27.03.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/d6c3ea7] | [Fixed post-login redirect to /cookbook and resolved conflicts (#80)] | [Ensures users land on their cookbook after login as per user story requirement] |
-| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+
+
+| **[@jp-schl]** | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/pull/97/commits] | [Cleaned some tests regarding the user status, which isn't used anymore. The same does apply for get all users.] | [The tests need to test the current, relevant code and needed to be updated] |
+|                    | [29.03.2026]   | [(https://github.com/valentinfrlch/sopra-fs26-group-12-server/pull/98/commits)] | [Testing if when logging in, a token is generated and returned] | [toke is relevant for authorization] |
+|                    | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/pull/99/commits] | [Test for if user doesnt exist trying to login, it throws exception (unathorized)] | [throwing exception as important information to know what is/ could be going on] |
+
+
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+
+
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 
