@@ -114,3 +114,42 @@ a {
     color: black !important;
   }
 }
+
+/* create recipe page */
+
+.recipe-button-secondary {
+  border-radius: 10px !important;
+  height: 40px !important;
+  background: #fff !important;
+  border: 1px solid #d9d9d9 !important;
+  color: #000 !important;
+}
+
+.recipe-button-secondary:hover,
+.recipe-button-secondary:focus {
+  background: #fff !important;
+  border: 1px solid #485f23 !important;
+  color: #485f23 !important;
+}
+
+.recipe-button-primary {
+  border-radius: 10px !important;
+  height: 40px !important;
+  background: #485f23 !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+}
+
+.recipe-button-primary:hover,
+.recipe-button-primary:focus {
+  background: #5c7630 !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+.ant-message-notice-content {
+  color: #000 !important;
+  border-radius: 10px;
+  font-weight: 500;
+}
