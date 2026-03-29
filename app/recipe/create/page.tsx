@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { useApi } from "@/hooks/useApi";
+import useLocalStorage from "@/hooks/useLocalStorage";
 import { Input, Button, Tag, Card, Upload, Row, Col, Space, App } from "antd";
 import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
@@ -27,6 +29,7 @@ const CreateRecipePage: React.FC = () => {
   ]);
 
   const router = useRouter();
+  const apiService = useApi();
   const { message } = App.useApp();
 
   const toggle = (value: string, list: string[], setList: Function) => {
@@ -115,30 +118,26 @@ const CreateRecipePage: React.FC = () => {
 
     // send to backend
     try {
-        const response = await fetch("http://localhost:3000/recipes", { // TODO: change later
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(recipeData),
-        });
+        // console.log("Sending:", recipeData);
 
-        if (!response.ok) {
-            throw new Error("Failed to create recipe");
-        }
+        const rawToken = localStorage.getItem("token");
+        const token = rawToken?.replace(/"/g, ""); // remove quotes
+        // console.log("TOKEN:", token);
+
+        await apiService.post("/recipes", recipeData, {
+          Authorization: `Bearer ${token}`,
+        });
 
         message.success("Recipe created successfully!");
 
         setTimeout(() => {
             router.push("/cookbook");
         }, 800);
-    } catch (error) {
+
+        } catch (error) {
         console.error(error);
         message.error("Failed to create recipe");
     }
-
-    
-    router.push("/cookbook");
   };
 
   return (
