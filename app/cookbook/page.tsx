@@ -4,7 +4,9 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Avatar, Button, Card, Tag, Dropdown, MenuProps, ConfigProvider } from "antd";
-import { PlusOutlined, MenuOutlined, EllipsisOutlined, HomeOutlined, ReadOutlined } from "@ant-design/icons";
+import { PlusOutlined, MenuOutlined, EllipsisOutlined } from "@ant-design/icons";
+import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Sidebar from "@/components/appLayout";
 
 interface Recipe {
@@ -166,9 +168,7 @@ const CookbookPage: React.FC = () => {
                 justifyContent: "center",
                 gap: 8,
             }}>
-            <span className="material-icons" style={{ fontSize: 48, color: "#4a6741" }}>
-            event_available
-            </span>
+            <EventAvailableIcon sx={{ fontSize: 48, color: "#4a6741" }} />
             </div>
             </Card>
 
@@ -190,9 +190,7 @@ const CookbookPage: React.FC = () => {
                 justifyContent: "center",
                 gap: 8,
             }}>
-                <span className="material-icons" style={{ fontSize: 48, color: "#4a6741" }}>
-                emoji_events
-                </span>
+                <EmojiEventsIcon sx={{ fontSize: 48, color: "#4a6741" }} />
             </div>
             </Card>
           </div>

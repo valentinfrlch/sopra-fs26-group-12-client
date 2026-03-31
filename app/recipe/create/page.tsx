@@ -2,13 +2,13 @@
 
 import React, { useState } from "react";
 import { useApi } from "@/hooks/useApi";
-import useLocalStorage from "@/hooks/useLocalStorage";
 import { Input, Button, Tag, Card, Upload, Row, Col, Space, App } from "antd";
 import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 
 const RECIPE_TYPES = ["Breakfast", "Lunch", "Dinner"];
 const DIET_TYPES = ["Vegetarian", "Vegan", "High Protein", "Low Carb"];
+type SetStringList = React.Dispatch<React.SetStateAction<string[]>>;
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <div style={{ marginBottom: 20 }}>
@@ -32,7 +32,7 @@ const CreateRecipePage: React.FC = () => {
   const apiService = useApi();
   const { message } = App.useApp();
 
-  const toggle = (value: string, list: string[], setList: Function) => {
+  const toggle = (value: string, list: string[], setList: SetStringList) => {
     setList(
       list.includes(value)
         ? list.filter((v) => v !== value)

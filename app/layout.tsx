@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Roboto } from "next/font/google";
 import { App as AntdApp, ConfigProvider, theme } from "antd";
 // import MuiProvider from "./providers/MuiProvider";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
@@ -15,6 +15,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const roboto = Roboto({
+  variable: "--font-roboto",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
+});
+
 export const metadata: Metadata = {
   title: "cookREAL",
   description: "sopra-fs26-template-client",
@@ -28,22 +34,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-
-        {/* ✅ loads Google Material Icons */}
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-
-        <link
-          href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
-          rel="stylesheet"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded"
-          rel="stylesheet"
-        />
-
-      </head>
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${roboto.variable}`}>
         <AntdRegistry>
           <ConfigProvider
             theme={{
