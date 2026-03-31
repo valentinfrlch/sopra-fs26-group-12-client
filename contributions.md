@@ -43,6 +43,7 @@ reason).
 | **[@FinnPrivateGit]** | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/394a5abeef7d48d260184e0609a5de623c476fd0] | [Fixed some isues with the API request when creating a recipe] | [Without this change, the created recipe wouldn't get sent to the backend and it can't be added to the users list of recipes.] |
 | **[@FinnPrivateGit]** | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/pull/100/changes/e282741953669a1518ce021f84969ac4d9375070] | [Implemented the whole backend structure such that a recipe that a user creates in the frontend gets saved as a recipe entity to the users list of recipes for dev task #37.] | [This is a critical feature for our WebApp, because else the user wouldn't have a possibility to see past saved recipes.] |
 | **[@valentinfrlch]** | [27.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/c0973792b6a895f77bc7284b45b8fbf30338ea10] | [Implement login and signup pages] | [Handles user registration and authentication (#22, #23).] |
+|     | [26.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/a6900fbdae287b090f57dd7fb150f4e62e52d61b] | [Implement User class and `UserController`] | [Implement REST API endpoints to create, edit, login and logout according to REST spec (#58, #59).] |
 ---
 
 ## Contributions Week 2 - [Begin Date] to [End Date]
