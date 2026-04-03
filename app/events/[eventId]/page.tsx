@@ -161,27 +161,23 @@ const EventDetailPage: React.FC = () => {
   // ---------------------------------------------------------------------------
   // HANDLERS
   // ---------------------------------------------------------------------------
+
+
+
+
   const handleRegister = useCallback(async () => {
-    if (USE_MOCK) {
-      setIsRegistered(true);
-      setEvent((prev) =>
-        prev ? { ...prev, participants: [...prev.participants, { id: "mock-you", username: "you" }] } : prev
-      );
-      messageApi.success("You're registered! (mock mode)");
-      return;
-    }
-    if (!token) { messageApi.warning("Please log in first."); router.push("/login"); return; }
+    if (!token) { message.warning("Please log in first."); router.push("/login"); return; }
     try {
       setRegistering(true);
       await apiService.post(`/events/${eventId}/participants`, {});
       setIsRegistered(true);
       const updated = await apiService.get<CookingEvent>(`/events/${eventId}`, { Authorization: `Bearer ${token}` });
       setEvent(updated);
-      messageApi.success(`You're registered! ${updated.participants.length} participants so far.`);
+      message.success(`🎉 Registered! ${updated.participants.length} participants so far.`);
     } catch (error) {
       if (error instanceof Error) {
-        if (error.message.includes("409")) { messageApi.info("Already registered."); setIsRegistered(true); }
-        else messageApi.error(`Registration failed: ${error.message}`);
+        if (error.message.includes("409")) { message.info("Already registered."); setIsRegistered(true); }
+        else message.error(`Registration failed: ${error.message}`);
       }
     } finally { setRegistering(false); }
   }, [eventId, token, apiService, router]);
@@ -192,13 +188,14 @@ const EventDetailPage: React.FC = () => {
       setIsRegistered(false);
       const updated = await apiService.get<CookingEvent>(`/events/${eventId}`, { Authorization: `Bearer ${token}` });
       setEvent(updated);
-      messageApi.success("Registration cancelled.");
+      message.success("Registration cancelled.");
     } catch (error) {
-      if (error instanceof Error) messageApi.error(`Could not cancel: ${error.message}`);
+      if (error instanceof Error) message.error(`Could not cancel: ${error.message}`);
     }
   }, [eventId, apiService, token]);
 
-  // const handleParticipate = useCallback(() => {
+
+    // const handleParticipate = useCallback(() => {
   //   router.push(`/events/${eventId}/cook`);
   // }, [eventId, router]);
 
