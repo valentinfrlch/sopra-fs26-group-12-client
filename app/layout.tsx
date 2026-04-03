@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Roboto } from "next/font/google";
 import { App as AntdApp, ConfigProvider, theme } from "antd";
 // import MuiProvider from "./providers/MuiProvider";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
@@ -13,6 +13,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const roboto = Roboto({
+  variable: "--font-roboto",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
 });
 
 export const metadata: Metadata = {
@@ -43,7 +49,8 @@ export default function RootLayout({
         />
 
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      
+      <body className={`${geistSans.variable} ${geistMono.variable} ${roboto.variable}`}>
         <AntdRegistry>
           <ConfigProvider
             theme={{

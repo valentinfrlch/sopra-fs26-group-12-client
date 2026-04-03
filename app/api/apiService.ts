@@ -80,12 +80,23 @@ export class ApiService {
    * @param data - The payload to post.
    * @returns JSON data of type T.
    */
-  public async post<T>(endpoint: string, data: unknown): Promise<T> {
+  public async post<T>(endpoint: string, data: unknown, headers?: HeadersInit): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
+
+    const isFormData = data instanceof FormData;
+
+    const mergedHeaders: HeadersInit = {
+      ...headers,
+    };
+
+    if (!isFormData) {
+      (mergedHeaders as any)["Content-Type"] = "application/json";
+    }
+
     const res = await fetch(url, {
       method: "POST",
-      headers: this.defaultHeaders,
-      body: JSON.stringify(data),
+      headers: mergedHeaders,
+      body: isFormData ? (data as FormData) : JSON.stringify(data),
     });
     return this.processResponse<T>(
       res,
