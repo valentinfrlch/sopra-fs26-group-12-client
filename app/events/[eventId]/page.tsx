@@ -151,6 +151,98 @@ async function cancelParticipation(
   message.success("Registration cancelled.");
 }
 
+function renderBanner(bannerEmojis?: string[]): React.ReactNode[] {
+  const emojis = bannerEmojis ?? ["🍋", "🥒", "🍝"];
+  const COLS = 29;
+  const ROWS = 3;
+  const items: React.ReactNode[] = [];
+  for (let col = 0; col < COLS; col++) {
+    for (let row = 0; row < ROWS; row++) {
+      const top = col % 2 === 1
+        ? (row / ROWS) * 100 + (100 / ROWS / 2)
+        : (row / ROWS) * 100;
+      items.push(
+        <span
+          key={`${col}-${row}`}
+          style={{ position: "absolute", fontSize: 36, top: `${top}%`, left: `${(col / COLS) * 100}%`, userSelect: "none", opacity: 0.9 }}
+        >
+          {emojis[(col + row) % emojis.length]}
+        </span>
+      );
+    }
+  }
+  return items;
+}
+
+async function registerForEvent(
+  apiService: ReturnType<typeof useApi>,
+  eventId: string,
+  token: string,
+  router: ReturnType<typeof useRouter>,
+  setRegistering: (v: boolean) => void,
+  setIsRegistered: (v: boolean) => void,
+  setEvent: (e: CookingEvent) => void,
+): Promise<void> {
+  if (USE_MOCK) {
+    setIsRegistered(true);
+    message.success("🎉 Registered! (mock mode)");
+    return;
+  }
+  if (!token) {
+    message.warning("Please log in first.");
+    router.push("/login");
+    return;
+  }
+  setRegistering(true);
+  try {
+    await apiService.post(`/events/${eventId}/participants`, {});
+    setIsRegistered(true);
+    const updated = await apiService.get<CookingEvent>(
+      `/events/${eventId}`,
+      { Authorization: `Bearer ${token}` }
+    );
+    setEvent(updated);
+    message.success(`🎉 Registered! ${updated.participants.length} participants so far.`);
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message.includes("409")) {
+        message.info("Already registered.");
+        setIsRegistered(true);
+      } else {
+        message.error(`Registration failed: ${error.message}`);
+      }
+    }
+  } finally {
+    setRegistering(false);
+  }
+}
+
+async function cancelRegistration(
+  apiService: ReturnType<typeof useApi>,
+  eventId: string,
+  token: string,
+  setIsRegistered: (v: boolean) => void,
+  setEvent: (e: CookingEvent) => void,
+): Promise<void> {
+  if (USE_MOCK) {
+    setIsRegistered(false);
+    message.success("Registration cancelled.");
+    return;
+  }
+  try {
+    await apiService.delete<void>(`/events/${eventId}/participants`);
+    setIsRegistered(false);
+    const updated = await apiService.get<CookingEvent>(
+      `/events/${eventId}`,
+      { Authorization: `Bearer ${token}` }
+    );
+    setEvent(updated);
+    message.success("Registration cancelled.");
+  } catch (error) {
+    if (error instanceof Error) message.error(`Could not cancel: ${error.message}`);
+  }
+}
+
 // COMPONENT 
 
 const EventDetailPage: React.FC = () => {
@@ -179,22 +271,11 @@ const EventDetailPage: React.FC = () => {
   }, [eventId, apiService, userId, token]);
 
   const handleRegister = useCallback(async () => {
-    if (USE_MOCK) {
-      setIsRegistered(true);
-      setEvent((prev) => prev ? { ...prev, participants: [...prev.participants, { id: "mock-you", username: "you" }] } : prev);
-      message.success(" Registered! (mock mode)");
-      return;
-    }
-    if (!token) { message.warning("Please log in first."); router.push("/login"); return; }
-    await registerParticipant(apiService, eventId, token, setRegistering, setIsRegistered, setEvent as (e: CookingEvent) => void);
+    await registerForEvent(apiService, eventId, token, router, setRegistering, setIsRegistered, setEvent as (e: CookingEvent) => void);
   }, [eventId, token, apiService, router]);
 
   const handleCancel = useCallback(async () => {
-    try {
-      await cancelParticipation(apiService, eventId, token, setIsRegistered, setEvent as (e: CookingEvent) => void);
-    } catch (error) {
-      if (error instanceof Error) message.error(`Could not cancel: ${error.message}`);
-    }
+    await cancelRegistration(apiService, eventId, token, setIsRegistered, setEvent as (e: CookingEvent) => void);
   }, [eventId, apiService, token]);
 
   const handleParticipate = useCallback(() => {
@@ -245,25 +326,7 @@ const EventDetailPage: React.FC = () => {
 
         {/* BANNER */}
         <div style={{ position: "relative", height: 280, backgroundColor: "#f0f5f1", overflow: "hidden" }}>
-          {(() => {
-            const emojis = event.bannerEmojis ?? ["🍋", "🥒", "🍝"];
-            const COLS = 29;
-            const ROWS = 3;
-            const items = [];
-            for (let col = 0; col < COLS; col++) {
-              for (let row = 0; row < ROWS; row++) {
-                const top = col % 2 === 1
-                  ? (row / ROWS) * 100 + (100 / ROWS / 2)
-                  : (row / ROWS) * 100;
-                items.push(
-                  <span key={`${col}-${row}`} style={{ position: "absolute", fontSize: 36, top: `${top}%`, left: `${(col / COLS) * 100}%`, userSelect: "none", opacity: 0.9 }}>
-                    {emojis[(col + row) % emojis.length]}
-                  </span>
-                );
-              }
-            }
-            return items;
-          })()}
+          {renderBanner(event.bannerEmojis)}
         </div>
 
         {/* CONTENT */}
