@@ -243,6 +243,151 @@ async function cancelRegistration(
   }
 }
 
+
+const ParticipantList = ({ participants }: { participants: Participant[] }) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+    <Avatar.Group max={{ count: 3 }} size={32}>
+      {participants.map((p) => (
+        <Tooltip key={p.id} title={p.username}>
+          <Avatar src={p.avatarUrl} style={{ backgroundColor: "#4a7c59" }}>
+            {getInitials(p.username)}
+          </Avatar>
+        </Tooltip>
+      ))}
+    </Avatar.Group>
+    {participants.length === 0 && (
+      <span style={{ color: "#999", fontSize: 13 }}>No participants yet</span>
+    )}
+  </div>
+);
+
+
+const RegistrationConfirmation = ({ count, onCancel }: { count: number; onCancel: () => void }) => (
+  <div style={{ backgroundColor: "#f0faf3", border: "1px solid #b2dfdb", borderRadius: 8, padding: "10px 16px", fontSize: 14, color: "#2e7d32", marginBottom: 20, display: "flex", alignItems: "center" }}>
+    <Icon name="check_circle" />
+    <span style={{ marginLeft: 8 }}>You&apos;re registered! Total participants: {count}</span>
+    <Button type="link" danger size="small" onClick={onCancel} style={{ marginLeft: 12 }}>
+      Cancel registration
+    </Button>
+  </div>
+);
+
+const LoadingScreen = () => (
+  <div style={{ display: "flex", minHeight: "100vh" }}>
+    <Sidebar />
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
+      <Spin size="large" />
+      <p style={{ color: "#666" }}>Loading event details…</p>
+    </div>
+  </div>
+);
+
+const NotFoundScreen = ({ onBack }: { onBack: () => void }) => (
+  <div style={{ display: "flex", minHeight: "100vh" }}>
+    <Sidebar />
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
+      <p>Event not found.</p>
+      <Button onClick={onBack}>← Go Back</Button>
+    </div>
+  </div>
+);
+
+
+const StatusBadge = ({ status }: { status: CookingEvent["status"] }) => (
+  <div style={{ display: "inline-block", backgroundColor: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 20, padding: "4px 14px", fontSize: 13, fontWeight: 600, color: "#2d4a38" }}>
+    {status === "ACTIVE" ? "🟢 Live now" : "⚫ Ended"}
+  </div>
+);
+
+const ParticipateButton = ({
+  disabled,
+  onClick,
+}: {
+  disabled: boolean;
+  onClick: () => void;
+}) => (
+  <Tooltip title={disabled ? "Register first and wait for event to start" : ""}>
+    <Button
+      type="primary"
+      icon={<Icon name="play_circle" />}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        backgroundColor: disabled ? "#ccc" : "#4a7c59",
+        borderColor: disabled ? "#ccc" : "#4a7c59",
+        color: disabled ? "#888" : "#fff",
+        fontWeight: 600,
+        height: 44,
+        paddingInline: 20,
+        borderRadius: 22,
+        fontSize: 14,
+      }}
+    >
+      Participate
+    </Button>
+  </Tooltip>
+);
+
+const RegisterButton = ({
+  disabled,
+  loading,
+  isStarted,
+  isRegistered,
+  isEnded,
+  onRegister,
+  onCancel,
+}: {
+  disabled: boolean;
+  loading: boolean;
+  isStarted: boolean;
+  isRegistered: boolean;
+  isEnded: boolean;
+  onRegister: () => void;
+  onCancel: () => void;
+}) => (
+  <div style={{ display: "flex" }}>
+    <Tooltip title={isEnded ? "Event has ended" : isStarted ? "Registration closed" : isRegistered ? "Already registered" : ""}>
+      <Button
+        type="primary"
+        icon={<span className="material-symbols-rounded" style={{ fontSize: 18, display: "flex", alignItems: "center" }}>person_add</span>}
+        onClick={onRegister}
+        loading={loading}
+        disabled={disabled}
+        style={{
+          backgroundColor: disabled ? "#ccc" : "#4a7c59",
+          borderColor: disabled ? "#ccc" : "#4a7c59",
+          color: disabled ? "#888" : "#fff",
+          fontWeight: 600,
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          height: 44,
+          padding: "0 20px",
+          borderRadius: "22px 0 0 22px",
+          fontSize: 14,
+        }}
+      >
+        Register
+      </Button>
+    </Tooltip>
+    <Tooltip title={isRegistered ? "Cancel registration" : ""}>
+      <Button
+        icon={<span className="material-symbols-rounded" style={{ fontSize: 18 }}>expand_more</span>}
+        onClick={isRegistered ? onCancel : undefined}
+        disabled={isStarted}
+        style={{
+          backgroundColor: isStarted ? "#ccc" : "#4a7c59",
+          borderColor: isStarted ? "#ccc" : "#4a7c59",
+          color: isStarted ? "#888" : "#fff",
+          height: 44,
+          borderRadius: "0 22px 22px 0",
+          marginLeft: 1,
+        }}
+      />
+    </Tooltip>
+  </div>
+);
+
 // COMPONENT 
 
 const EventDetailPage: React.FC = () => {
@@ -282,29 +427,8 @@ const EventDetailPage: React.FC = () => {
     router.push(`/events/${eventId}/cook`);
   }, [eventId, router]);
 
-  if (loading) {
-    return (
-      <div style={{ display: "flex", minHeight: "100vh" }}>
-        <Sidebar />
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
-          <Spin size="large" />
-          <p style={{ color: "#666" }}>Loading event details…</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!event) {
-    return (
-      <div style={{ display: "flex", minHeight: "100vh" }}>
-        <Sidebar />
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
-          <p>Event not found.</p>
-          <Button onClick={() => router.back()}>← Go Back</Button>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <LoadingScreen />;
+  if (!event) return <NotFoundScreen onBack={() => router.back()} />;
 
   const isStarted = new Date() >= new Date(event.startTime);
   const isEnded = new Date() >= new Date(event.endTime);
@@ -369,78 +493,31 @@ const EventDetailPage: React.FC = () => {
                 <Icon name="groups" />
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#1a1a1a" }}>Participants</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
-                    <Avatar.Group max={{ count: 3 }} size={32}>
-                      {event.participants.map((p) => (
-                        <Tooltip key={p.id} title={p.username}>
-                          <Avatar src={p.avatarUrl} style={{ backgroundColor: "#4a7c59" }}>
-                            {getInitials(p.username)}
-                          </Avatar>
-                        </Tooltip>
-                      ))}
-                    </Avatar.Group>
-                    {event.participants.length === 0 && (
-                      <span style={{ color: "#999", fontSize: 13 }}>No participants yet</span>
-                    )}
-                  </div>
+                  <ParticipantList participants={event.participants} />
                 </div>
               </div>
 
-              {isStarted && (
-                <div style={{ display: "inline-block", backgroundColor: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 20, padding: "4px 14px", fontSize: 13, fontWeight: 600, color: "#2d4a38" }}>
-                  {event.status === "ACTIVE" ? "🟢 Live now" : "⚫ Ended"}
-                </div>
-              )}
+              {isStarted && <StatusBadge status={event.status} />}
             </div>
           </div>
 
           {/* Registration confirmation */}
           {isRegistered && !isStarted && (
-            <div style={{ backgroundColor: "#f0faf3", border: "1px solid #b2dfdb", borderRadius: 8, padding: "10px 16px", fontSize: 14, color: "#2e7d32", marginBottom: 20, display: "flex", alignItems: "center" }}>
-              <Icon name="check_circle" />
-              <span style={{ marginLeft: 8 }}>You&apos;re registered! Total participants: {event.participants.length}</span>
-              <Button type="link" danger size="small" onClick={handleCancel} style={{ marginLeft: 12 }}>
-                Cancel registration
-              </Button>
-            </div>
+            <RegistrationConfirmation count={event.participants.length} onCancel={handleCancel} />
           )}
 
           {/* BUTTONS */}
           <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 40, paddingRight: 100 }}>
-            <div style={{ display: "flex" }}>
-              <Tooltip title={isEnded ? "Event has ended" : isStarted ? "Registration closed" : isRegistered ? "Already registered" : ""}>
-                <Button
-                  type="primary"
-                  icon={<span className="material-symbols-rounded" style={{ fontSize: 18, display: "flex", alignItems: "center" }}>person_add</span>}
-                  onClick={handleRegister}
-                  loading={registering}
-                  disabled={registerDisabled}
-                  style={{ backgroundColor: registerDisabled ? "#ccc" : "#4a7c59", borderColor: registerDisabled ? "#ccc" : "#4a7c59", color: registerDisabled ? "#888" : "#fff", fontWeight: 600, display: "flex", alignItems: "center", gap: 6, height: 44, padding: "0 20px", borderRadius: "22px 0 0 22px", fontSize: 14 }}
-                >
-                  Register
-                </Button>
-              </Tooltip>
-              <Tooltip title={isRegistered ? "Cancel registration" : ""}>
-                <Button
-                  icon={<span className="material-symbols-rounded" style={{ fontSize: 18 }}>expand_more</span>}
-                  onClick={isRegistered ? handleCancel : undefined}
-                  disabled={isStarted}
-                  style={{ backgroundColor: isStarted ? "#ccc" : "#4a7c59", borderColor: isStarted ? "#ccc" : "#4a7c59", color: isStarted ? "#888" : "#fff", height: 44, borderRadius: "0 22px 22px 0", marginLeft: 1 }}
-                />
-              </Tooltip>
-            </div>
-
-            <Tooltip title={participateDisabled ? "Register first and wait for event to start" : ""}>
-              <Button
-                type="primary"
-                icon={<Icon name="play_circle" />}
-                onClick={handleParticipate}
-                disabled={participateDisabled}
-                style={{ backgroundColor: participateDisabled ? "#ccc" : "#4a7c59", borderColor: participateDisabled ? "#ccc" : "#4a7c59", color: participateDisabled ? "#888" : "#fff", fontWeight: 600, height: 44, paddingInline: 20, borderRadius: 22, fontSize: 14 }}
-              >
-                Participate
-              </Button>
-            </Tooltip>
+            <RegisterButton
+              disabled={registerDisabled}
+              loading={registering}
+              isStarted={isStarted}
+              isRegistered={isRegistered}
+              isEnded={isEnded}
+              onRegister={handleRegister}
+              onCancel={handleCancel}
+            />
+            <ParticipateButton disabled={participateDisabled} onClick={handleParticipate} />
           </div>
         </div>
       </main>
