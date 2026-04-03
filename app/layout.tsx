@@ -30,7 +30,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
 
-        {/* ✅ loads Google Material Icons */}
+        {/* loads Google Material Icons */}
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
         <link
