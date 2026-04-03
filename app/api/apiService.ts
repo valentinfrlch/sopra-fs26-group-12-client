@@ -83,15 +83,20 @@ export class ApiService {
   public async post<T>(endpoint: string, data: unknown, headers?: HeadersInit): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
 
+    const isFormData = data instanceof FormData;
+
     const mergedHeaders: HeadersInit = {
-      ...this.defaultHeaders,
       ...headers,
     };
+
+    if (!isFormData) {
+      (mergedHeaders as any)["Content-Type"] = "application/json";
+    }
 
     const res = await fetch(url, {
       method: "POST",
       headers: mergedHeaders,
-      body: JSON.stringify(data),
+      body: isFormData ? (data as FormData) : JSON.stringify(data),
     });
     return this.processResponse<T>(
       res,
