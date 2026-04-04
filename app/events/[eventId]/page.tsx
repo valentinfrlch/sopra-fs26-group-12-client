@@ -62,7 +62,7 @@ const MOCK_EVENT: CookingEvent = {
 };
 
 
-// HELPERS — outside component to reduce cognitive complexity
+
 
 const getInitials = (name: string): string =>
   name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
@@ -102,54 +102,7 @@ async function fetchEventData(
   setIsRegistered(data.participants.some((p) => p.id === userId));
 }
 
-async function registerParticipant(
-  apiService: ReturnType<typeof useApi>,
-  eventId: string,
-  token: string,
-  setRegistering: (v: boolean) => void,
-  setIsRegistered: (v: boolean) => void,
-  setEvent: (e: CookingEvent) => void,
-): Promise<void> {
-  setRegistering(true);
-  try {
-    await apiService.post(`/events/${eventId}/participants`, {});
-    setIsRegistered(true);
-    const updated = await apiService.get<CookingEvent>(
-      `/events/${eventId}`,
-      { Authorization: `Bearer ${token}` }
-    );
-    setEvent(updated);
-    message.success(` Registered! ${updated.participants.length} participants so far.`);
-  } catch (error) {
-    if (error instanceof Error) {
-      if (error.message.includes("409")) {
-        message.info("Already registered.");
-        setIsRegistered(true);
-      } else {
-        message.error(`Registration failed: ${error.message}`);
-      }
-    }
-  } finally {
-    setRegistering(false);
-  }
-}
 
-async function cancelParticipation(
-  apiService: ReturnType<typeof useApi>,
-  eventId: string,
-  token: string,
-  setIsRegistered: (v: boolean) => void,
-  setEvent: (e: CookingEvent) => void,
-): Promise<void> {
-  await apiService.delete<void>(`/events/${eventId}/participants`);
-  setIsRegistered(false);
-  const updated = await apiService.get<CookingEvent>(
-    `/events/${eventId}`,
-    { Authorization: `Bearer ${token}` }
-  );
-  setEvent(updated);
-  message.success("Registration cancelled.");
-}
 
 function renderBanner(bannerEmojis?: string[]): React.ReactNode[] {
   const emojis = bannerEmojis ?? ["🍋", "🥒", "🍝"];
@@ -185,7 +138,7 @@ async function registerForEvent(
 ): Promise<void> {
   if (USE_MOCK) {
     setIsRegistered(true);
-    message.success("🎉 Registered! (mock mode)");
+    message.success("Registered! (mock mode)");
     return;
   }
   if (!token) {
@@ -272,24 +225,27 @@ const RegistrationConfirmation = ({ count, onCancel }: { count: number; onCancel
   </div>
 );
 
-const LoadingScreen = () => (
+const CenteredScreen = ({ children }: { children: React.ReactNode }) => (
   <div style={{ display: "flex", minHeight: "100vh" }}>
     <Sidebar />
     <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
-      <Spin size="large" />
-      <p style={{ color: "#666" }}>Loading event details…</p>
+      {children}
     </div>
   </div>
 );
 
+const LoadingScreen = () => (
+  <CenteredScreen>
+    <Spin size="large" />
+    <p style={{ color: "#666" }}>Loading event details…</p>
+  </CenteredScreen>
+);
+
 const NotFoundScreen = ({ onBack }: { onBack: () => void }) => (
-  <div style={{ display: "flex", minHeight: "100vh" }}>
-    <Sidebar />
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
-      <p>Event not found.</p>
-      <Button onClick={onBack}>← Go Back</Button>
-    </div>
-  </div>
+  <CenteredScreen>
+    <p>Event not found.</p>
+    <Button onClick={onBack}>← Go Back</Button>
+  </CenteredScreen>
 );
 
 
