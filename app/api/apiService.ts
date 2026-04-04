@@ -1,3 +1,4 @@
+
 import { getApiDomain } from "@/utils/domain";
 import { ApplicationError } from "@/types/error";
 
@@ -85,17 +86,20 @@ export class ApiService {
 
     const isFormData = data instanceof FormData;
 
-    const mergedHeaders: HeadersInit = {
-      ...headers,
-    };
+    let finalHeaders: HeadersInit;
 
-    if (!isFormData) {
-      (mergedHeaders as any)["Content-Type"] = "application/json";
+    if (isFormData) {
+      finalHeaders = { ...(headers || {} ), };
+    } else {
+      finalHeaders = {
+        ...this.defaultHeaders,
+        ...(headers || {}),
+      };
     }
 
     const res = await fetch(url, {
       method: "POST",
-      headers: mergedHeaders,
+      headers: finalHeaders,
       body: isFormData ? (data as FormData) : JSON.stringify(data),
     });
     return this.processResponse<T>(
