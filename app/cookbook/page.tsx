@@ -4,7 +4,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Card, Tag, Dropdown, MenuProps, ConfigProvider } from "antd";
-import { PlusOutlined, EllipsisOutlined } from "@ant-design/icons";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Sidebar, { UserAvatar } from "@/components/appLayout";
@@ -87,19 +86,24 @@ const RecipeCard: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
             trigger={["click"]}
             
              >
-          <span
+          <button
+            type="button"
             className="material-symbols-rounded"
+            onClick={(e) => e.stopPropagation()}
             style={{
               fontSize: 20,
               color: "#888",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
+              background: "none",
+              border: "none",
+              padding: 0,
             }}
-            onClick={(e) => e.stopPropagation()}
+            
           >
             more_vert
-          </span>
+          </button>
         </Dropdown>
         </ConfigProvider>
       </div>

@@ -202,7 +202,7 @@ async function registerForEvent(
       { Authorization: `Bearer ${token}` }
     );
     setEvent(updated);
-    message.success(`🎉 Registered! ${updated.participants.length} participants so far.`);
+    message.success(`Registered! ${updated.participants.length} participants so far.`);
   } catch (error) {
     if (error instanceof Error) {
       if (error.message.includes("409")) {
@@ -328,6 +328,13 @@ const ParticipateButton = ({
   </Tooltip>
 );
 
+function getRegisterTooltip(isEnded: boolean, isStarted: boolean, isRegistered: boolean): string {
+  if (isEnded) return "Event has ended";
+  if (isStarted) return "Registration closed";
+  if (isRegistered) return "Already registered";
+  return "";
+}
+
 const RegisterButton = ({
   disabled,
   loading,
@@ -346,7 +353,7 @@ const RegisterButton = ({
   onCancel: () => void;
 }) => (
   <div style={{ display: "flex" }}>
-    <Tooltip title={isEnded ? "Event has ended" : isStarted ? "Registration closed" : isRegistered ? "Already registered" : ""}>
+    <Tooltip title={getRegisterTooltip(isEnded, isStarted, isRegistered)}>
       <Button
         type="primary"
         icon={<span className="material-symbols-rounded" style={{ fontSize: 18, display: "flex", alignItems: "center" }}>person_add</span>}

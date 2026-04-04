@@ -51,7 +51,7 @@ const Sidebar: React.FC = () => {
   );
 };
 
-{/*---Avatar---*/}
+
 
 interface UserAvatarProps {
   username?: string;
