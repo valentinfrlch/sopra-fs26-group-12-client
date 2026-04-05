@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@mui/material";
 import { Card } from "antd";
-import Sidebar from "@/components/appLayout";
+import Sidebar, { UserAvatar } from "@/components/appLayout";
 
 // This is just temporary/placeholder (will be later replaced with actual data from events (API call))
 const PLACEHOLDER_EVENTS = [
@@ -41,9 +41,9 @@ const EventsPage: React.FC = () => {
                 {/* Header */}
                 <div style={{ background: "#fff", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: "1px solid #2a2d3a" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        {/* <MenuOutlined style={{ fontSize: 18, color: "#aaa" }} /> */}
                         <span style={{ fontWeight: 600, fontSize: 16, color: "#1a1a1a" }}>Events</span>
                     </div>
+                    <UserAvatar username={username} size={40} />
                 </div>
 
                 {/* Content */}
@@ -164,6 +164,7 @@ const EventsPage: React.FC = () => {
                     fontWeight: 600,
                     background: "#4a6741",
                     border: "none",
+                    textTransform: "none",
                     display: "flex",
                     alignItems: "center",
                     gap: 6,
