@@ -41,7 +41,7 @@ reason).
 |                    | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/pull/99/commits] | [Test for if user doesnt exist trying to login, it throws exception (unathorized)] | [throwing exception as important information to know what is/ could be going on] |
 | **[@FinnPrivateGit]** | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/b7962936bfb537cac25f5a5238b83b1b5cad6aaa] | [Implemented the UI for creating a recipe as described in the dev tasks #15 and #16.] | [This is a critical feature for our WebApp and is used such that users can create and save recipes in their own cookbook.] |
 | **[@FinnPrivateGit]** | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/394a5abeef7d48d260184e0609a5de623c476fd0] | [Fixed some isues with the API request when creating a recipe] | [Without this change, the created recipe wouldn't get sent to the backend and it can't be added to the users list of recipes.] |
-| **[@FinnPrivateGit]** | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/pull/100/changes/e282741953669a1518ce021f84969ac4d9375070] | [Implemented the whole backend structure such that a recipe that a user creates in the frontend gets saved as a recipe entity to the users list of recipes for dev task #37.] | [This is a critical feature for our WebApp, because else the user wouldn't have a possibility to see past saved recipes.] |
+| **[@FinnPrivateGit]** | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/e282741953669a1518ce021f84969ac4d9375070] | [Implemented the whole backend structure such that a recipe that a user creates in the frontend gets saved as a recipe entity to the users list of recipes for dev task #37.] | [This is a critical feature for our WebApp, because else the user wouldn't have a possibility to see past saved recipes.] |
 | **[@valentinfrlch]** | [27.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/c0973792b6a895f77bc7284b45b8fbf30338ea10] | [Implement login and signup pages] | [Handles user registration and authentication (#22, #23).] |
 |     | [26.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/a6900fbdae287b090f57dd7fb150f4e62e52d61b] | [Implement User class and `UserController`] | [Implement REST API endpoints to create, edit, login and logout according to REST spec (#58, #59).] |
 | **[@BestAchilles]** | [29.03.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/09065a132b800f8d3446e098ce29d088e365765f] | [Wrote a test for the UserController to check if a valid login returns a HTTP 200 OK status.] | [Ensures the /users/login API endpoint works and accepts valid user inputs.] |
@@ -55,24 +55,24 @@ reason).
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
 
-| **[@githubUser1]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@FinnPrivateGit]** | [05.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/3ed4adc169b1f126c910c5730b8d77f162bd1fc0] | [Created tests for the user Story #15 - creating events] | [Tests are critical for a working code basis and can be used to check if old code still works with new changes added.] |
 
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-
-
-| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@FinnPrivateGit]** | [05.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/786a29c4efbc147f48e2fca58907ce7d0303a2d4] | [Did some bug fixes for user story #15 - creating events] | [Without these changes, the code wouldn't work according to our user storys and not as intended.] |
 
 
-| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@githubUser2]** | [date] | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date] | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 
 
-| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@githubUser3]** | [date] | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date] | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+
+
+| **[@githubUser4]** | [date] | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+
+|                    | [date] | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 
 ---
 
