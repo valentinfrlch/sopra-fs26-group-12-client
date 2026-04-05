@@ -9,13 +9,14 @@ import Sidebar from "@/components/appLayout";
 
 // This is just temporary/placeholder (will be later replaced with actual data from events (API call))
 const PLACEHOLDER_EVENTS = [
-    { id: 1, title: "Pizza", emojis: "🍕🧄🍅"},
-    { id: 2, title: "Sushi", emojis: "🍣🥢🐟"},
-    { id: 3, title: "Taco", emojis: "🌮🫑🧀"},
-    { id: 4, title: "Pasta", emojis: "🍝🧈🌿"},
-    { id: 5, title: "Curry", emojis: "🍛🌶️🥥"},
-    { id: 6, title: "Burger", emojis: "🍔🥬🧅"},
+    { id: 1, title: "Pizza", emojis: "🍕🧄🍅", startDatetime: "2026-04-10T18:00:00Z", endDatetime: "2026-04-10T19:00:00Z" },
+    { id: 2, title: "Sushi", emojis: "🍣🥢🐟", startDatetime: "2026-04-12T17:00:00Z", endDatetime: "2026-04-12T18:30:00Z" },
+    { id: 3, title: "Taco", emojis: "🌮🫑🧀", startDatetime: "2026-04-15T19:00:00Z", endDatetime: "2026-04-15T20:00:00Z" },
+    { id: 4, title: "Pasta", emojis: "🍝🧈🌿", startDatetime: "2026-04-18T18:30:00Z", endDatetime: "2026-04-18T19:30:00Z" },
+    { id: 5, title: "Curry", emojis: "🍛🌶️🥥", startDatetime: "2026-04-20T18:00:00Z", endDatetime: "2026-04-20T19:15:00Z" },
+    { id: 6, title: "Burger", emojis: "🍔🥬🧅", startDatetime: "2026-04-22T19:00:00Z", endDatetime: "2026-04-22T20:00:00Z" },
 ];
+
 
 const EventsPage: React.FC = () => {
     const router = useRouter();
@@ -68,9 +69,13 @@ const EventsPage: React.FC = () => {
                                 }}>
                                     {event.emojis}
                                 </div>
+
                                 <div style={{ padding: 16}}>
                                     <div style={{ fontWeight: 600, fontSize: 15, color: "#1a1a1a"}}>
                                         {event.title}
+                                    </div>
+                                    <div style={{ color: "#666", fontSize: 13, marginTop: 4}}>
+                                        {new Date(event.startDatetime).toLocaleDateString()} · {new Date(event.startDatetime).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})}
                                     </div>
                                 </div>
                             </Card>
@@ -98,9 +103,13 @@ const EventsPage: React.FC = () => {
                                 }}>
                                     {event.emojis}
                                 </div>
+
                                 <div style={{ padding: 16}}>
                                     <div style={{ fontWeight: 600, fontSize: 15, color: "#1a1a1a"}}>
                                         {event.title}
+                                    </div>
+                                    <div style={{ color: "#666", fontSize: 13, marginTop: 4}}>
+                                        {new Date(event.startDatetime).toLocaleDateString()} · {new Date(event.startDatetime).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})}
                                     </div>
                                 </div>
                             </Card>
