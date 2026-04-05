@@ -60,9 +60,9 @@ reason).
 | **[@FinnPrivateGit]** | [05.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/786a29c4efbc147f48e2fca58907ce7d0303a2d4] | [Did some bug fixes for user story #15 - creating events] | [Without these changes, the code wouldn't work according to our user storys and not as intended.] |
 
 
-| **[@githubUser2]** | [date] | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@sushmstr]** | [03.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/f614de8] | [Add event detail page with ingredients list and register/participate buttons (#19 #20)] | [Created the event details page with event information and allowing user to register & join an event] |
 
-|                    | [date] | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [04.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/97f5ad8] | [Reduced code duplication, redundancy & complexity(nesting)] | [Helps the code meet quality benchmarks] |
 
 
 | **[@githubUser3]** | [date] | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
