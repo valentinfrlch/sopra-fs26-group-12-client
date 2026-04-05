@@ -4,23 +4,39 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@mui/material";
+import { Card } from "antd";
 import Sidebar from "@/components/appLayout";
 
+// This is just temporary/placeholder (will be later replaced with actual data from events (API call))
+const PLACEHOLDER_EVENTS = [
+    { id: 1, title: "Pizza", emojis: "🍕🧄🍅"},
+    { id: 2, title: "Sushi", emojis: "🍣🥢🐟"},
+    { id: 3, title: "Taco", emojis: "🌮🫑🧀"},
+    { id: 4, title: "Pasta", emojis: "🍝🧈🌿"},
+    { id: 5, title: "Curry", emojis: "🍛🌶️🥥"},
+    { id: 6, title: "Burger", emojis: "🍔🥬🧅"},
+];
 
 const EventsPage: React.FC = () => {
     const router = useRouter();
+    const [username, setUsername] = useState("U");
+
+
+    useEffect(() => {
+        const stored = localStorage.getItem("username") ?? "U";
+        setUsername(stored);
+    }, []);
+
+    const happeningSoon = PLACEHOLDER_EVENTS.slice(0, 3);
+    const seasonalEvents = PLACEHOLDER_EVENTS.slice(3);
 
     return (
-
         <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
-
             <Sidebar />
 
-            {/* Main content */}
             <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
 
-
-
+                {/* Header */}
                 <div style={{ background: "#fff", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: "1px solid #2a2d3a" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                         {/* <MenuOutlined style={{ fontSize: 18, color: "#aaa" }} /> */}
@@ -28,20 +44,78 @@ const EventsPage: React.FC = () => {
                     </div>
                 </div>
 
+                {/* Content */}
+                <div style={{ padding: 24, flex: 1}}>
+
+                    <h2 style={{ color: "#1a1a1a", fontSize: 18, fontWeight: 600, marginBottom: 16}}>Happening soon</h2>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 32}}>
+                        {happeningSoon.map((event) => (
+                            <Card
+                                key={event.id}
+                                hoverable
+                                onClick={() => router.push(`/events/${event.id}`)}
+                                style={{ borderRadius: 16, background: "#fff", border: "none", cursor: "pointer"}}
+                                styles={{ body: { padding: 0}}}
+                            >
+                                <div style={{
+                                    height: 120,
+                                    background: "#f0eef6",
+                                    borderRadius: "16px 16px 0 0",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontSize: 40,
+                                }}>
+                                    {event.emojis}
+                                </div>
+                                <div style={{ padding: 16}}>
+                                    <div style={{ fontWeight: 600, fontSize: 15, color: "#1a1a1a"}}>
+                                        {event.title}
+                                    </div>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+
+                    <h2 style={{ color: "#1a1a1a", fontSize: 18, fontWeight: 600, marginBottom: 16}}>Seasonal Events</h2>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16}}>
+                        {seasonalEvents.map((event) => (
+                            <Card
+                                key={event.id}
+                                hoverable
+                                onClick={() => router.push(`/events/${event.id}`)}
+                                style={{ borderRadius: 16, background: "#fff", border: "none", cursor: "pointer"}}
+                                styles={{ body: { padding: 0}}}
+                            >
+                                <div style={{
+                                    height: 120,
+                                    background: "#f0eef6",
+                                    borderRadius: "16px 16px 0 0",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontSize: 40,
+                                }}>
+                                    {event.emojis}
+                                </div>
+                                <div style={{ padding: 16}}>
+                                    <div style={{ fontWeight: 600, fontSize: 15, color: "#1a1a1a"}}>
+                                        {event.title}
+                                    </div>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                </div>
             </div>
+
 
             <Button
                 type="button"
                 variant="contained"
                 startIcon={
                     <span className="material-symbols-rounded"
-                        style={{
-                            fontSize: 20,
-                            display: "flex",
-                            alignItems: "center",
-                            lineHeight: 1,
-                        }}
-                    >
+                        style={{ fontSize: 20, display: "flex", alignItems: "center", lineHeight: 1 }}>
                         add
                     </span>}
                 onClick={() => router.push("/events/create")}
