@@ -97,11 +97,14 @@ export class ApiService {
       };
     }
 
+    console.log("POST request to:", endpoint, "with data:", data, "and headers:", finalHeaders);
+
     const res = await fetch(url, {
       method: "POST",
       headers: finalHeaders,
       body: isFormData ? (data as FormData) : JSON.stringify(data),
     });
+    console.log("Response status:", res.status, "Response headers:", res.headers);
     return this.processResponse<T>(
       res,
       "An error occurred while posting the data.\n",

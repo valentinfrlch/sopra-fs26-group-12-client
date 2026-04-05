@@ -28,7 +28,7 @@ const Sidebar: React.FC = () => {
     }}>
       <div
         onClick={() => router.push("/events/overview")}
-        onKeyDown={(e) => e.key === "Enter" && router.push("/events/overview")}
+        onKeyDown={(e) => e.key === "Enter" && router.push("/events")}
         role="button"
         tabIndex={0}
         style={{ display: "flex", flexDirection: "column", alignItems: "center", cursor: "pointer", gap: 4 }}
