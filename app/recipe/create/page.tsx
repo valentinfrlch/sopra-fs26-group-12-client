@@ -67,7 +67,6 @@ const CreateRecipePage: React.FC = () => {
 
       await apiService.post("/recipes", formData, {
         Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
       });
 
       message.success("Recipe created successfully!");
@@ -297,11 +296,21 @@ const CreateRecipePage: React.FC = () => {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/png, image/jpeg" // only accept .png or .jpeg
                     style={{ display: "none" }}
                     onChange={(e) => {
                       if (e.target.files && e.target.files[0]) {
-                        setImageFile(e.target.files[0]);
+                        const file = e.target.files[0];
+
+                        const isValidType =
+                          file.type === "image/png" || file.type === "image/jpeg";
+
+                        if (!isValidType) {
+                          message.error("Only .PNG and .JPEG files are allowed");
+                          return;
+                        }
+
+                        setImageFile(file);
                       }
                     }}
                   />
