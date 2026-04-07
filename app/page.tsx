@@ -1,121 +1,150 @@
-"use client"; // For components that need React hooks and browser APIs, SSR (server side rendering) has to be disabled. Read more here: https://nextjs.org/docs/pages/building-your-application/rendering/server-side-rendering
+"use client";
+
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { Button } from "antd";
-import { BookOutlined, CodeOutlined, GlobalOutlined } from "@ant-design/icons";
+import { Button } from "@mui/material";
+import NorthEastIcon from "@mui/icons-material/NorthEast";
 import styles from "@/styles/page.module.css";
 
 export default function Home() {
   const router = useRouter();
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-
-        <h1 className={styles.title}>
-        Group 12 cookREAL webapp
-        </h1>
-
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            <code>app/page.tsx</code>{" "}
-            is the landing page for your application from group 12, currently being displayed.
-          </li>
-          <li>
-            <code>app/login/page.tsx</code> is the login page for users.
-          </li>
-          <li>
-            <code>app/users/page.tsx</code>{" "}
-            is the dashboard that shows an overview of all users, fetched from
-            the server.
-          </li>
-          <li>
-            <code>app/users/[id]/page.tsx</code>{" "}
-            is a slug page that shows info of a particular user. Since each user
-            has its own id, each user has its own infopage, dynamically with the
-            use of slugs.
-          </li>
-          <li>
-            To test, modify the current page <code>app/page.tsx</code>{" "}
-            and save to see your changes instantly.
-          </li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <Button
-            type="primary" // as defined in the ConfigProvider in [layout.tsx](./layout.tsx), all primary antd elements are colored #22426b, with buttons #75bd9d as override
-            color="red" // if a single/specific antd component needs yet a different color, it can be explicitly overridden in the component as shown here
-            variant="solid" // read more about the antd button and its options here: https://ant.design/components/button
-            onClick={() =>
-              globalThis.open(
-                "https://vercel.com/new",
-                "_blank",
-                "noopener,noreferrer",
-              )}
-            target="_blank"
-            rel="noopener noreferrer"
+    <div
+      className={styles.page}
+      style={{
+        backgroundColor: "#4b6624",
+        height: "100vh",
+        width: "100vw",
+        overflow: "hidden",
+        display: "flex",
+      }}
+    >
+      <main
+        style={{
+          width: "100%",
+          height: "100%",
+          color: "white",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <div style={{ position: "relative", flexShrink: 0 }}>
+          <h1
+            style={{
+              fontSize: "7vw",
+              margin: 0,
+              paddingLeft: "3vw",
+              paddingTop: "0.5vh",
+              lineHeight: 1.1,
+              fontWeight: "bold",
+            }}
           >
-            Deploy now
-          </Button>
-          <Button
-            type="default"
-            variant="solid"
-            onClick={() =>
-              globalThis.open(
-                "https://nextjs.org/docs",
-                "_blank",
-                "noopener,noreferrer",
-              )}
-            target="_blank"
-            rel="noopener noreferrer"
+            M2
+          </h1>
+
+          <div style={{ width: "100%", height: "1px", background: "#fff" }} />
+
+          <h1
+            style={{
+              fontSize: "7vw",
+              margin: 0,
+              paddingLeft: "3vw",
+              lineHeight: 1.1,
+              fontWeight: "bold",
+            }}
           >
-            Read our docs
-          </Button>
-          <Button
-            type="primary"
-            variant="solid"
-            onClick={() => router.push("/login")}
+            cookREAL
+          </h1>
+
+          <div style={{ width: "100%", height: "1px", background: "#fff" }} />
+
+          <NorthEastIcon // arrow
+            style={{
+              position: "absolute",
+              top: "-7.5vh",
+              right: "-10vw",
+              fontSize: "40vw",
+              color: "#fff",
+            }}
+          />
+        </div>
+
+        <div
+          style={{
+            flex: 1,
+            paddingLeft: "3vw",
+            paddingTop: "2vh",
+            fontSize: "1.4vw",
+            lineHeight: "2.8vw",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-start",
+          }}
+        >
+          <p style={{ margin: 0 }}>Finn Döbele,</p>
+          <p style={{ margin: 0 }}>Valentin Fröhlich,</p>
+          <p style={{ margin: 0 }}>Ehad Evgin,</p>
+          <p style={{ margin: 0 }}>Jean-Pierre Schlumpf,</p>
+          <p style={{ margin: 0 }}>Sushant Gupta</p>
+        </div>
+
+        <div style={{ flexShrink: 0 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between", // group 12 left and button to the right
+              alignItems: "center",
+              gap: "1vw",
+              paddingRight: "3vw",
+              paddingLeft: "3vw",
+              paddingBottom: "1vh",
+            }}
           >
-            Go to login
-          </Button>
+            <p style={{ margin: 0, fontWeight: "bold", fontSize: "1.4vw" }}>Group 12</p>
+
+            <div style={{ display: "flex", gap: "1vw" }}>
+              <Button
+                variant="contained"
+                onClick={() => router.push("/login")}
+                sx={{
+                  backgroundColor: "#fff",
+                  fontSize: "0.9vw",
+                  padding: "0.8vw 1.5vw",
+                  color: "#4b6624",
+                  boxShadow: "none",
+                  "&:hover": {
+                    backgroundColor: "#a7a7a7",
+                    color: "#4b6624",
+                    boxShadow: "none",
+                  },
+                }}
+              >
+                LOGIN
+              </Button>
+
+              <Button
+                variant="outlined"
+                onClick={() => router.push("/signup")}
+                sx={{
+                  borderColor: "#fff",
+                  color: "#fff",
+                  fontSize: "0.9vw",
+                  padding: "0.8vw 1.5vw",
+                  "&:hover": {
+                    color: "#a7a7a7",
+                    borderColor: "#a7a7a7",
+                  },
+                }}
+              >
+                SIGN UP
+              </Button>
+            </div>
+            
+          </div>
+
+          <div style={{ width: "100%", height: "1px", background: "#fff" }} />
         </div>
       </main>
-      <footer className={styles.footer}>
-        <Button
-          type="link"
-          icon={<BookOutlined />}
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn
-        </Button>
-        <Button
-          type="link"
-          icon={<CodeOutlined />}
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Examples
-        </Button>
-        <Button
-          type="link"
-          icon={<GlobalOutlined />}
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Go to nextjs.org →
-        </Button>
-      </footer>
     </div>
   );
 }
