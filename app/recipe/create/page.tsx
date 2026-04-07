@@ -37,10 +37,44 @@ const CreateRecipePage: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
+  const [recipeName, setRecipeName] = useState("");
+  const [debouncedRecipeName, setDebouncedRecipeName] = useState("");
+
   useEffect(() => {
     const stored = localStorage.getItem("username") ?? "U";
     setUsername(stored);
   }, []);
+
+  // debouncing for less API calls
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedRecipeName(recipeName);
+    }, 1000);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [recipeName]);
+
+  // API call
+  useEffect(() => {
+    if (!debouncedRecipeName || debouncedRecipeName.length < 2) return;
+
+    const fetchRecipes = async () => {
+      try {
+        const res = await fetch(
+          `https://www.themealdb.com/api/json/v1/1/search.php?s=${debouncedRecipeName}`
+        );
+        const data = await res.json();
+
+        console.log("API result:", data);
+      } catch (error) {
+        console.error("API error:", error);
+      }
+    };
+
+    fetchRecipes();
+  }, [debouncedRecipeName]);
 
   const handleCreateRecipe = async (values: any) => {
     try {
@@ -140,6 +174,11 @@ const CreateRecipePage: React.FC = () => {
                   <TextField
                     label="Recipe Name"
                     fullWidth
+                    value={recipeName}
+                    onChange={(e) => {
+                      setRecipeName(e.target.value);
+                      form.setFieldsValue({ title: e.target.value});
+                    }}
                     InputLabelProps={{ style: { color: "grey" } }}
                   />
                 </Form.Item>
