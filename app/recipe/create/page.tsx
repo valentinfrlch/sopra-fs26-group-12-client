@@ -37,8 +37,12 @@ const CreateRecipePage: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
+  // store input for API suggestions
   const [recipeName, setRecipeName] = useState("");
   const [debouncedRecipeName, setDebouncedRecipeName] = useState("");
+
+  // store suggestions from API
+  const [suggestions, setSuggestions] = useState<any[]>([]);
 
   useEffect(() => {
     const stored = localStorage.getItem("username") ?? "U";
@@ -58,7 +62,10 @@ const CreateRecipePage: React.FC = () => {
 
   // API call
   useEffect(() => {
-    if (!debouncedRecipeName || debouncedRecipeName.length < 2) return;
+    if (!debouncedRecipeName || debouncedRecipeName.length < 2) {
+      setSuggestions([]); // clear dropdown when input to short
+      return;
+    }
 
     const fetchRecipes = async () => {
       try {
@@ -67,9 +74,11 @@ const CreateRecipePage: React.FC = () => {
         );
         const data = await res.json();
 
+        setSuggestions(data.meals ||[]); // store API results
         console.log("API result:", data);
       } catch (error) {
         console.error("API error:", error);
+        setSuggestions([]); // clear dropdown
       }
     };
 
@@ -171,16 +180,51 @@ const CreateRecipePage: React.FC = () => {
                   name="title"
                   rules={[{ required: true, message: "Please enter a recipe name!" }]}
                 >
-                  <TextField
-                    label="Recipe Name"
-                    fullWidth
-                    value={recipeName}
-                    onChange={(e) => {
-                      setRecipeName(e.target.value);
-                      form.setFieldsValue({ title: e.target.value});
-                    }}
-                    InputLabelProps={{ style: { color: "grey" } }}
-                  />
+                  <div style={{ position: "relative"}}>
+                    <TextField
+                      label="Recipe Name"
+                      fullWidth
+                      value={recipeName}
+                      onChange={(e) => {
+                        setRecipeName(e.target.value);
+                        form.setFieldsValue({ title: e.target.value});
+                      }}
+                      InputLabelProps={{ style: { color: "grey" } }}
+                    />
+
+                    {/* Dropdown for suggestions*/}
+                    {suggestions.length > 0 && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "100%",
+                          left: 0,
+                          right: 0,
+                          background: "white",
+                          border: "1px solid #ffffff",
+                          borderTop: "none",
+                          zIndex: 10,
+                          maxHeight: "200px",
+                          overflowY: "auto",
+                        }}
+                      >
+                        {suggestions.map((meal) => (
+                          <div
+                            key={meal.idMeal}
+                            style={{
+                              padding: "8px 12px",
+                              cursor: "pointer",
+                              borderBottom: "1px solid grey",
+                              color: "#000",
+                              backgroundColor: "white",
+                            }}
+                          >
+                            {meal.strMeal} {/* only recipe name */}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </Form.Item>
 
                 <Form.Item
