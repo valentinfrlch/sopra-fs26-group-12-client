@@ -69,9 +69,9 @@ reason).
 
 ## Contributions Week 3 - [Begin Date] to [End Date]
 
-| **[@githubUser1]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@FinnPrivateGit]** | [07.04.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/2faf143ac3ce357f76b24599ff3aaab270a18be2] | [While typing the recipe title, API requests get sent to TheMealDB to get similar recipe titles with a one second debounce.] | [Mainly this is used such that users can copy existing recipes from TheMealDB and don't have to type everything themselfs. The 1sec debounce is important, because else we would have to many API request and would have to pay.] |
 
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@FinnPrivateGit]** | [07.04.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/2fd2a343d8dfd7d73229a25b5a25b449e29b41ab] | [While typing the recipe title, the suggestions that we got from TheMealDB should get shown in a dropdown menu.] | [This is important, because the user should decide himself if he wants to use the existing recipe or not (and if a similar recipe even exists)] |
 
 
 | **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
