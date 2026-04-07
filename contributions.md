@@ -54,26 +54,17 @@ reason).
 
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
-
 | **[@FinnPrivateGit]** | [05.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/3ed4adc169b1f126c910c5730b8d77f162bd1fc0] | [Created tests for the user Story #15 - creating events] | [Tests are critical for a working code basis and can be used to check if old code still works with new changes added.] |
-
 | **[@FinnPrivateGit]** | [05.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/786a29c4efbc147f48e2fca58907ce7d0303a2d4] | [Did some bug fixes for user story #15 - creating events] | [Without these changes, the code wouldn't work according to our user storys and not as intended.] |
-
-
 | **[@sushmstr]** | [03.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/f614de8] | [Add event detail page with ingredients list and register/participate buttons (#19 #20)] | [Created the event details page with event information and allowing user to register & join an event] |
-
 |                    | [04.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/97f5ad8] | [Reduced code duplication, redundancy & complexity(nesting)] | [Helps the code meet quality benchmarks] |
-
-
 | **[jp-schl]** | [05.04.26] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/ca176fd8e82cb83a5acd7ca32d246fc4d5cd9c96] | [Implemented the option to join and leave an event (Also edited the user entity and the dto mapper)] | [As an user i want to join and leave an event so i can handle my decision if i want to play in the event or not (anymore).] |
-
 |                    | [05.04.26] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/fbad46572def5838f3e6100fd5a85f6330380fa5] | [Created the EventControllerTest file to have a file for testing event-specific methods.] | [It is needed to test the implemented methods of the Eventcontroller to check if everything works as expected (same as for UserController).] |
-
-
+| **[@BestAchilles]** | [03.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/95c6b0e1445410fad675bd7fed8435e03d7c9556] | [Created the Event entity class defining the data model for events with fields like title, start time, cooking duration and participants] | [Provides the core data structure that all event-related backend and frontend features build on] |
+|                    | [05.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/85e75ccf634fffb902411b93f8a83e98c2ba0f63] | [Created separate events overview page with routing and layout (#13)] | [Provides the dedicated entry point for the event feature as required by user story #10] |
+|                    | [05.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/7da98ee0d067fc394238026b08c3babf60961977] | [Implemented event card component showing three emojis, title, start time, cooking duration and participant count, displayed in a feed ordered by earliest start time (right now, only mock) (#14, #18, #72)] | [Lets users compare upcoming events at a glance and decide which one to join, fulfilling the core event discovery user story] |
 | **[@githubUser4]** | [date] | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-
 |                    | [date] | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-
 ---
 
 ## Contributions Week 3 - [Begin Date] to [End Date]
