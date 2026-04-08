@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { Row, Col, Avatar, Button } from "antd";
 import { TextField } from "@mui/material";
 import { useRouter, useParams } from "next/navigation";
 import Sidebar from "@/components/appLayout";
-import { MenuOutlined } from "@ant-design/icons";
+import { MenuOutlined } from "@ant-design/icons"; // Image will be used for recipe display
 
 type Recipe = {
   id: number;
@@ -260,11 +261,14 @@ const RecipeDetailPage: React.FC = () => {
               <div>
 
                 {imageSrc ? (
-                  <img
+                  <Image
                     src={imageSrc}
                     alt="recipe"
+                    width={500}
+                    height={500}
                     style={{
                       width: "100%",
+                      height: "auto",
                       borderRadius: 8,
                       marginTop: 10,
                     }}

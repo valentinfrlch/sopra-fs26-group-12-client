@@ -21,6 +21,7 @@ const MOCK_RECIPES: Recipe[] = [
 
 const ALL_LABELS = ["Breakfast", "Lunch", "Dinner", "Vegetarian", "Vegan", "High Protein", "Low Carbs"];
 
+/* Unused
 const getInitials = (title: string): string => {
   return title
     .split(" ")           
@@ -30,7 +31,7 @@ const getInitials = (title: string): string => {
     .slice(0, 2);          
 };
 
-
+*/
 
 const RecipeCard: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
   const router = useRouter();
