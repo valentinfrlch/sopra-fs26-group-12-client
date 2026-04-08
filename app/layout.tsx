@@ -37,14 +37,10 @@ export default function RootLayout({
       <head>
 
         {/* loads Google Material Icons */}
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=optional" rel="stylesheet" />
 
         <link
-          href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
-          rel="stylesheet"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded&display=optional"
           rel="stylesheet"
         />
 

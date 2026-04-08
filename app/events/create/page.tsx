@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Form, Row, Col, App, Avatar } from "antd";
 import { Button, TextField, IconButton } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -13,6 +13,34 @@ import Sidebar from "@/components/appLayout";
 import { MenuOutlined } from "@ant-design/icons";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
+interface Ingredient {
+    name: string;
+}
+
+interface CreateEventFormValues {
+    title: string;
+    ingredients: Ingredient[];
+    emojis: string[];
+    progressPhotoTimes: (string | unknown)[];
+    startDatetime: unknown;
+    endDatetime: unknown;
+}
+
+interface ApiError {
+    response?: {
+        data?: {
+            message: string;
+        };
+    };
+    message: string;
+}
+
+interface EmojiClickData {
+    emoji?: string;
+    unified?: string;
+}
+
+/* Unused
 const getInitials = (name: string): string => {
     return name
         .split(" ")
@@ -21,6 +49,7 @@ const getInitials = (name: string): string => {
         .toUpperCase()
         .slice(0, 2);
 };
+*/
 
 const CreateEventPage: React.FC = () => {
     const [form] = Form.useForm();
@@ -28,20 +57,21 @@ const CreateEventPage: React.FC = () => {
     const apiService = useApi();
     const { message } = App.useApp();
 
+    /* Unused
     useEffect(() => {
         const stored = localStorage.getItem("username") ?? "U";
         // no state needed for initials here
-    }, []);
-
-    const handleCreateEvent = async (values: any) => {
+        }, []);
+    */
+    const handleCreateEvent = async (values: CreateEventFormValues) => {
         try {
             const token = localStorage.getItem("token")?.replace(/"/g, "");
 
             const formattedIngredients = (values.ingredients || [])
-                .map((ing: any) => (ing?.name ?? "").trim())
+                .map((ing: Ingredient) => (ing?.name ?? "").trim())
                 .filter((n: string) => n.length > 0);
 
-            const emojisArray = (values.emojis || []).slice(0, 3).map((e: any) => e || "😀");
+            const emojisArray = (values.emojis || []).slice(0, 3).map((e: string) => e || "😀");
             while (emojisArray.length < 3) {
                 emojisArray.push("😀");
             }
@@ -53,9 +83,9 @@ const CreateEventPage: React.FC = () => {
                 ingredients: formattedIngredients,
                 progressPhotoTimes: (values.progressPhotoTimes || [])
                     .filter(Boolean)
-                    .map((t: string) => new Date(t).toISOString()),
-                startDatetime: values.startDatetime ? new Date(values.startDatetime).toISOString() : null,
-                endDatetime: values.endDatetime ? new Date(values.endDatetime).toISOString() : null,
+                    .map((t: string | unknown) => new Date(String(t)).toISOString()),
+                startDatetime: values.startDatetime ? new Date(values.startDatetime as string | Date).toISOString() : null,
+                endDatetime: values.endDatetime ? new Date(values.endDatetime as string | Date).toISOString() : null,
             };
 
             await apiService.post("/events", payload, {
@@ -64,8 +94,9 @@ const CreateEventPage: React.FC = () => {
 
             message.success("Event created successfully!");
             router.push("/events/overview");
-        } catch (error: any) {
-            message.error(error.response?.data?.message || "Failed to create event");
+        } catch (error: unknown) {
+            const apiError = error as ApiError;
+            message.error(apiError.response?.data?.message || "Failed to create event");
         }
     };
 
@@ -319,7 +350,7 @@ const CreateEventPage: React.FC = () => {
                 >
                     <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", padding: 8, borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.2)" }}>
                         <EmojiPicker
-                            onEmojiClick={(data: any) => {
+                            onEmojiClick={(data: EmojiClickData) => {
                                 const emoji = data?.emoji || data?.unified || "";
                                 const arr = [...(watchedEmojis || [])];
                                 arr[openPicker as number] = emoji;

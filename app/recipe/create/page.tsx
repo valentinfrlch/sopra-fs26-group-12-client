@@ -10,6 +10,33 @@ import { MenuOutlined } from "@ant-design/icons";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import UploadIcon from "@mui/icons-material/Upload";
 
+interface RecipeIngredient {
+  name: string;
+  amount: string;
+}
+
+interface MealSuggestion {
+  idMeal: string;
+  strMeal: string;
+}
+
+interface CreateRecipeFormValues {
+  title: string;
+  types: string[];
+  diet: string[];
+  ingredients: RecipeIngredient[];
+  preparation: string;
+}
+
+interface ApiError {
+  response?: {
+    data?: {
+      message: string;
+    };
+  };
+  message: string;
+}
+
 const RECIPE_TYPES = ["Breakfast", "Lunch", "Dinner"];
 const DIET_TYPES = ["Vegetarian", "Vegan", "High Protein", "Low Carb"];
 
@@ -32,7 +59,7 @@ const CreateRecipePage: React.FC = () => {
   const { message } = App.useApp();
 
   const [username, setUsername] = useState<string>("U");
-  const userId = localStorage.getItem("userId");
+  const userId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -42,7 +69,7 @@ const CreateRecipePage: React.FC = () => {
   const [debouncedRecipeName, setDebouncedRecipeName] = useState("");
 
   // store suggestions from API
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<MealSuggestion[]>([]);
 
   useEffect(() => {
     const stored = localStorage.getItem("username") ?? "U";
@@ -85,9 +112,9 @@ const CreateRecipePage: React.FC = () => {
     fetchRecipes();
   }, [debouncedRecipeName]);
 
-  const handleCreateRecipe = async (values: any) => {
+  const handleCreateRecipe = async (values: CreateRecipeFormValues) => {
     try {
-      const formattedIngredients = values.ingredients.map((ing: any) => [
+      const formattedIngredients = values.ingredients.map((ing: RecipeIngredient) => [
         ing.name,
         ing.amount,
       ]);
@@ -115,9 +142,10 @@ const CreateRecipePage: React.FC = () => {
       message.success("Recipe created successfully!");
       router.push("/cookbook");
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
       message.error(
-        error.response?.data?.message || "Failed to create recipe"
+        apiError.response?.data?.message || "Failed to create recipe"
       );
     }
   };
