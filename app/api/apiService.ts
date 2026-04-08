@@ -1,3 +1,4 @@
+
 import { getApiDomain } from "@/utils/domain";
 import { ApplicationError } from "@/types/error";
 
@@ -83,16 +84,27 @@ export class ApiService {
   public async post<T>(endpoint: string, data: unknown, headers?: HeadersInit): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
 
-    const mergedHeaders: HeadersInit = {
-      ...this.defaultHeaders,
-      ...headers,
-    };
+    const isFormData = data instanceof FormData;
+
+    let finalHeaders: HeadersInit;
+
+    if (isFormData) {
+      finalHeaders = { ...(headers || {} ), };
+    } else {
+      finalHeaders = {
+        ...this.defaultHeaders,
+        ...(headers || {}),
+      };
+    }
+
+    console.log("POST request to:", endpoint, "with data:", data, "and headers:", finalHeaders);
 
     const res = await fetch(url, {
       method: "POST",
-      headers: mergedHeaders,
-      body: JSON.stringify(data),
+      headers: finalHeaders,
+      body: isFormData ? (data as FormData) : JSON.stringify(data),
     });
+    console.log("Response status:", res.status, "Response headers:", res.headers);
     return this.processResponse<T>(
       res,
       "An error occurred while posting the data.\n",

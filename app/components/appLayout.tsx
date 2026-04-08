@@ -3,6 +3,9 @@
 import React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { HomeOutlined, ReadOutlined } from "@ant-design/icons";
+import { Avatar } from "antd";
+
+
 
 const Sidebar: React.FC = () => {
   const router = useRouter();
@@ -25,7 +28,7 @@ const Sidebar: React.FC = () => {
     }}>
       <div
         onClick={() => router.push("/events/overview")}
-        onKeyDown={(e) => e.key === "Enter" && router.push("/events/overview")}
+        onKeyDown={(e) => e.key === "Enter" && router.push("/events")}
         role="button"
         tabIndex={0}
         style={{ display: "flex", flexDirection: "column", alignItems: "center", cursor: "pointer", gap: 4 }}
@@ -48,4 +51,44 @@ const Sidebar: React.FC = () => {
   );
 };
 
+
+
+interface UserAvatarProps {
+  username?: string;
+  size?: number;
+}
+
+const getInitials = (name: string): string => {
+  return name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+};
+
+export const UserAvatar: React.FC<UserAvatarProps> = ({
+  username = "U",
+  size = 40,
+}) => {
+  const router = useRouter();
+
+  return (
+    <Avatar
+      size={size}
+      style={{
+        background: "#f0f0f0",
+        color: "#1a1a1a",
+        cursor: "pointer",
+        fontWeight: 600,
+      }}
+      onClick={() => router.push("/user/me")}
+    >
+      {getInitials(username)}
+    </Avatar>
+  );
+};
+
 export default Sidebar;
+
+

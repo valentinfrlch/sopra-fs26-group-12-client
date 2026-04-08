@@ -3,11 +3,10 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Avatar, Button, Card, Tag, Dropdown, MenuProps, ConfigProvider } from "antd";
-import { PlusOutlined, MenuOutlined, EllipsisOutlined } from "@ant-design/icons";
+import { Button, Card, Tag, Dropdown, MenuProps, ConfigProvider } from "antd";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import Sidebar from "@/components/appLayout";
+import Sidebar, { UserAvatar } from "@/components/appLayout";
 
 interface Recipe {
   id: number;
@@ -63,7 +62,7 @@ const RecipeCard: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
       <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
 
         
-        <Avatar size={32} style={{ background: "#e8f5e9", color: "#4a6741", marginRight: 8 }}>{getInitials(recipe.title)}</Avatar>
+        {/* <UserAvatar username={recipe.title} size= {40} /> */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontWeight: 600, fontSize: 14, color: "#1a1a1a" }}>{recipe.title}</div>
           <div style={{ fontSize: 12, color: "#888" }}>{recipe.labels.join(", ")}</div>
@@ -87,10 +86,24 @@ const RecipeCard: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
             trigger={["click"]}
             
              >
-          <EllipsisOutlined 
-          style={{ fontSize: 18, color: "#888", cursor: "pointer" }} 
-          onClick={(e) => e.stopPropagation()}
-          />
+          <button
+            type="button"
+            className="material-symbols-rounded"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              fontSize: 20,
+              color: "#888",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              background: "none",
+              border: "none",
+              padding: 0,
+            }}
+            
+          >
+            more_vert
+          </button>
         </Dropdown>
         </ConfigProvider>
       </div>
@@ -139,10 +152,10 @@ const CookbookPage: React.FC = () => {
         
         <div style={{background: "#fff", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: "1px solid #2a2d3a" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <MenuOutlined style={{ fontSize: 18, color: "#aaa" }} />
+            {/* <MenuOutlined style={{ fontSize: 18, color: "#aaa" }} /> */}
             <span style={{ fontWeight: 600, fontSize: 16, color: "#1a1a1a" }}>Your Library</span>
           </div>
-          <Avatar size={40} style={{ background: "#f0f0f0", color: "#1a1a1a", cursor: "pointer", fontWeight: 600 }} onClick={() => router.push("/user/me")}>{getInitials(username)}</Avatar>
+          <UserAvatar username={username} size={40} />
         </div>
 
 
@@ -155,7 +168,7 @@ const CookbookPage: React.FC = () => {
             <Card 
                 hoverable 
                 onClick={() => router.push("/events/overview")} 
-                style={{ background: "#fff", border: "1px solid #2a2d3a", borderRadius: 12 }} 
+                style={{ background: "#fff", border: "none", borderRadius: 12 }} 
                 styles={{body: {padding: 16} }}>
               <div style={{ color: "#504e4e", fontSize: 13, marginBottom: 12 }}>Registered Events ›</div>
               <div style={{
@@ -177,7 +190,7 @@ const CookbookPage: React.FC = () => {
             <Card 
                 hoverable 
                 onClick={() => router.push("/events/overview")} 
-                style={{ background: "#fff", border: "1px solid #2a2d3a", borderRadius: 12 }} 
+                style={{ background: "#fff", border: "none", borderRadius: 12 }} 
                 styles={{body: {padding: 16} }}>
               <div style={{ color: "#504e4e", fontSize: 13, marginBottom: 12 }}>Participated Events ›</div>
               <div style={{
@@ -214,8 +227,34 @@ const CookbookPage: React.FC = () => {
       {/* Floating + button
       position: "fixed" — the most important property here. Removes the button from the normal page flow and pins it to the screen. It stays visible even when you scroll down — it never moves.
       */}
-      <Button type="primary" icon={<PlusOutlined />} onClick={() => router.push("/recipe/create")}
-        style={{ position: "fixed", bottom: 32, right: 32, borderRadius: 24, height: 44, paddingLeft: 20, paddingRight: 20, fontWeight: 600, background: "#4a6741", border: "none" }}>
+      <Button 
+        type="primary" 
+        icon={
+        <span className="material-symbols-rounded" 
+          style={{
+            fontSize: 20,
+            display: "flex",          
+            alignItems: "center",
+            lineHeight: 1,
+          }}
+        >
+          add
+          </span>} 
+        onClick={() => router.push("/recipe/create")}
+        style={{
+           position: "fixed",
+           bottom: 32, 
+           right: 32, 
+           borderRadius: 24, 
+           height: 44, 
+           paddingLeft: 20, 
+           paddingRight: 20, 
+           fontWeight: 600, 
+           background: "#4a6741", 
+           border: "none",
+           display: "flex",             
+           alignItems: "center",        
+           gap: 6, }}>
         Recipe
       </Button>
     </div>

@@ -36,12 +36,12 @@ reason).
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
 | **[@sushmstr]**    | [29.03.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/94aaab3] | [Implemented cookbook page with sidebar, avatar, filter tags, recipe grid (#38 #39 #40)] | [Allows logged-in users to access their cookbook and recipes immediately after login] |
 |                    | [27.03.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/d6c3ea7] | [Fixed post-login redirect to /cookbook and resolved conflicts (#80)] | [Ensures users land on their cookbook after login as per user story requirement] |
-| **[@jp-schl]** | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/pull/97/commits] | [Cleaned some tests regarding the user status, which isn't used anymore. The same does apply for get all users.] | [The tests need to test the current, relevant code and needed to be updated] |
-|                    | [29.03.2026]   | [(https://github.com/valentinfrlch/sopra-fs26-group-12-server/pull/98/commits)] | [Testing if when logging in, a token is generated and returned] | [toke is relevant for authorization] |
-|                    | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/pull/99/commits] | [Test for if user doesnt exist trying to login, it throws exception (unathorized)] | [throwing exception as important information to know what is/ could be going on] |
+| **[@jp-schl]** | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/4fa484892b6a36defcaa91aee0dad376917b5da0] | [Cleaned some tests regarding the user status, which isn't used anymore. The same does apply for get all users.] | [The tests need to test the current, relevant code and needed to be updated] |
+|                    | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/1bb4a335b87b57a996f9a5e39fd2e08410915e5d] | [Testing if when logging in, a token is generated and returned] | [toke is relevant for authorization] |
+|                    | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/f20a9cb332e3bdfd0bd541a1e8f5acfba4526cb7] | [Test for if user doesnt exist trying to login, it throws exception (unathorized)] | [throwing exception as important information to know what is/ could be going on] |
 | **[@FinnPrivateGit]** | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/b7962936bfb537cac25f5a5238b83b1b5cad6aaa] | [Implemented the UI for creating a recipe as described in the dev tasks #15 and #16.] | [This is a critical feature for our WebApp and is used such that users can create and save recipes in their own cookbook.] |
 | **[@FinnPrivateGit]** | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/394a5abeef7d48d260184e0609a5de623c476fd0] | [Fixed some isues with the API request when creating a recipe] | [Without this change, the created recipe wouldn't get sent to the backend and it can't be added to the users list of recipes.] |
-| **[@FinnPrivateGit]** | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/pull/100/changes/e282741953669a1518ce021f84969ac4d9375070] | [Implemented the whole backend structure such that a recipe that a user creates in the frontend gets saved as a recipe entity to the users list of recipes for dev task #37.] | [This is a critical feature for our WebApp, because else the user wouldn't have a possibility to see past saved recipes.] |
+| **[@FinnPrivateGit]** | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/e282741953669a1518ce021f84969ac4d9375070] | [Implemented the whole backend structure such that a recipe that a user creates in the frontend gets saved as a recipe entity to the users list of recipes for dev task #37.] | [This is a critical feature for our WebApp, because else the user wouldn't have a possibility to see past saved recipes.] |
 | **[@valentinfrlch]** | [27.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/c0973792b6a895f77bc7284b45b8fbf30338ea10] | [Implement login and signup pages] | [Handles user registration and authentication (#22, #23).] |
 |     | [26.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/a6900fbdae287b090f57dd7fb150f4e62e52d61b] | [Implement User class and `UserController`] | [Implement REST API endpoints to create, edit, login and logout according to REST spec (#58, #59).] |
 | **[@BestAchilles]** | [29.03.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/09065a132b800f8d3446e098ce29d088e365765f] | [Wrote a test for the UserController to check if a valid login returns a HTTP 200 OK status.] | [Ensures the /users/login API endpoint works and accepts valid user inputs.] |
@@ -54,35 +54,105 @@ reason).
 
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
-| **[@githubUser1]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-
+| **[@FinnPrivateGit]** | [05.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/3ed4adc169b1f126c910c5730b8d77f162bd1fc0] | [Created tests for the user Story #15 - creating events] | [Tests are critical for a working code basis and can be used to check if old code still works with new changes added.] |
+| **[@FinnPrivateGit]** | [05.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/786a29c4efbc147f48e2fca58907ce7d0303a2d4] | [Did some bug fixes for user story #15 - creating events] | [Without these changes, the code wouldn't work according to our user storys and not as intended.] |
+| **[@sushmstr]** | [03.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/f614de8] | [Add event detail page with ingredients list and register/participate buttons (#19 #20)] | [Created the event details page with event information and allowing user to register & join an event] |
+|                    | [04.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/97f5ad8] | [Reduced code duplication, redundancy & complexity(nesting)] | [Helps the code meet quality benchmarks] |
+| **[jp-schl]** | [05.04.26] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/ca176fd8e82cb83a5acd7ca32d246fc4d5cd9c96] | [Implemented the option to join and leave an event (Also edited the user entity and the dto mapper)] | [As an user i want to join and leave an event so i can handle my decision if i want to play in the event or not (anymore).] |
+|                    | [05.04.26] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/fbad46572def5838f3e6100fd5a85f6330380fa5] | [Created the EventControllerTest file to have a file for testing event-specific methods.] | [It is needed to test the implemented methods of the Eventcontroller to check if everything works as expected (same as for UserController).] |
+| **[@BestAchilles]** | [03.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/95c6b0e1445410fad675bd7fed8435e03d7c9556] | [Created the Event entity class defining the data model for events with fields like title, start time, cooking duration and participants] | [Provides the core data structure that all event-related backend and frontend features build on] |
+|                    | [05.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/85e75ccf634fffb902411b93f8a83e98c2ba0f63] | [Created separate events overview page with routing and layout (#13)] | [Provides the dedicated entry point for the event feature as required by user story #10] |
+|                    | [05.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/7da98ee0d067fc394238026b08c3babf60961977] | [Implemented event card component showing three emojis, title, start time, cooking duration and participant count, displayed in a feed ordered by earliest start time (right now, only mock) (#14, #18, #72)] | [Lets users compare upcoming events at a glance and decide which one to join, fulfilling the core event discovery user story] |
+| **@valentinfrlch** | 05.04.2026 | https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/64/commits/f1d468c1cb00daf7305ff777250befd901c87b7c | Implements "Create Events" page | Create events page is needed to allow users to create new events (#67) |
+|                    | 05.04.2026 | https://github.com/valentinfrlch/sopra-fs26-group-12-server/pull/107/commits/21eb2ceaa51cba3f8d35cb5f1a030fd02685aea4 | Implements REST endpoints to create and delete an event | REST endpoints are needed to allow users to create and delete events (#71, #73, #74) |
 ---
 
 ## Contributions Week 3 - [Begin Date] to [End Date]
 
-_Continue with the same table format as above._
+| **[@FinnPrivateGit]** | [07.04.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/2faf143ac3ce357f76b24599ff3aaab270a18be2] | [While typing the recipe title, API requests get sent to TheMealDB to get similar recipe titles with a one second debounce.] | [Mainly this is used such that users can copy existing recipes from TheMealDB and don't have to type everything themselfs. The 1sec debounce is important, because else we would have to many API request and would have to pay.] |
+
+| **[@FinnPrivateGit]** | [07.04.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/2fd2a343d8dfd7d73229a25b5a25b449e29b41ab] | [While typing the recipe title, the suggestions that we got from TheMealDB should get shown in a dropdown menu.] | [This is important, because the user should decide himself if he wants to use the existing recipe or not (and if a similar recipe even exists)] |
+
+
+| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+
+
+| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+
+
+| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 
 ---
 
 ## Contributions Week 4 - [Begin Date] to [End Date]
 
-_Continue with the same table format as above._
+| **[@FinnPrivateGit]** | [07.04.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/2b5585b7a8a560d65d11c0dd8a0b057e2e2fb00f] | [Adding a detail page for recipes.] | [This is important such that users can see their recipes and such that we can later implement the edit recipe user story.] |
+
+| **[@FinnPrivateGit]** | [07.04.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/18fc21aa0635724166dd67c1e6f3c3e34c436435] | [Adding a homepage for our cookREAL webapp for unregistered and not logged in users.] | [This contribution is relevant, because we want that not logged in users also see a welcoming homepage of our webapp (every other page the user has to be logged in).] |
+
+
+| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+
+
+| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+
+
+| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 
 ---
 
 ## Contributions Week 5 - [Begin Date] to [End Date]
 
-_Continue with the same table format as above._
+| **[@githubUser1]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+
+
+| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+
+
+| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+
+
+| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 
 ---
 
 ## Contributions Week 6 - [Begin Date] to [End Date]
 
-_Continue with the same table format as above._
+| **[@githubUser1]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+
+
+| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+
+
+| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+
+
+| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
