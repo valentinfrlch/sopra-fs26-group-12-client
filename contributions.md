@@ -63,8 +63,8 @@ reason).
 | **[@BestAchilles]** | [03.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/95c6b0e1445410fad675bd7fed8435e03d7c9556] | [Created the Event entity class defining the data model for events with fields like title, start time, cooking duration and participants] | [Provides the core data structure that all event-related backend and frontend features build on] |
 |                    | [05.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/85e75ccf634fffb902411b93f8a83e98c2ba0f63] | [Created separate events overview page with routing and layout (#13)] | [Provides the dedicated entry point for the event feature as required by user story #10] |
 |                    | [05.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/7da98ee0d067fc394238026b08c3babf60961977] | [Implemented event card component showing three emojis, title, start time, cooking duration and participant count, displayed in a feed ordered by earliest start time (right now, only mock) (#14, #18, #72)] | [Lets users compare upcoming events at a glance and decide which one to join, fulfilling the core event discovery user story] |
-| **[@githubUser4]** | [date] | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date] | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **@valentinfrlch** | 05.04.2026 | https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/64/commits/f1d468c1cb00daf7305ff777250befd901c87b7c | Implements "Create Events" page | Create events page is needed to allow users to create new events (#67) |
+|                    | 05.04.2026 | https://github.com/valentinfrlch/sopra-fs26-group-12-server/pull/107/commits/21eb2ceaa51cba3f8d35cb5f1a030fd02685aea4 | Implements REST endpoints to create and delete an event | REST endpoints are needed to allow users to create and delete events (#71, #73, #74) |
 ---
 
 ## Contributions Week 3 - [Begin Date] to [End Date]
