@@ -123,12 +123,17 @@ const RecipeCard: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
 
 const CookbookPage: React.FC = () => {
   const router = useRouter();
-
+  
   const [username, setUsername] = useState<string>("U");
   useEffect(() => {
     const stored = localStorage.getItem("username") ?? "U";
     setUsername(stored);
   }, []);
+
+  const now = new Date();
+
+  
+
   const [activeLabels, setActiveLabels] = useState<string[]>([]);
   const filteredRecipes = activeLabels.length > 0 ? MOCK_RECIPES.filter((r) => activeLabels.every((active) => r.labels.includes(active))) : MOCK_RECIPES;
   const handleLabelToggle= (label: string) => {
@@ -168,7 +173,7 @@ const CookbookPage: React.FC = () => {
             {/* Registered Event Card */}
             <Card 
                 hoverable 
-                onClick={() => router.push("/events/overview")} 
+                onClick={() => router.push("/events/registered")} 
                 style={{ background: "#fff", border: "none", borderRadius: 12 }} 
                 styles={{body: {padding: 16} }}>
               <div style={{ color: "#504e4e", fontSize: 13, marginBottom: 12 }}>Registered Events ›</div>
@@ -190,7 +195,7 @@ const CookbookPage: React.FC = () => {
             {/* Participated Events */}
             <Card 
                 hoverable 
-                onClick={() => router.push("/events/overview")} 
+                onClick={() => router.push("/events/participated")} 
                 style={{ background: "#fff", border: "none", borderRadius: 12 }} 
                 styles={{body: {padding: 16} }}>
               <div style={{ color: "#504e4e", fontSize: 13, marginBottom: 12 }}>Participated Events ›</div>
@@ -203,9 +208,9 @@ const CookbookPage: React.FC = () => {
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 8,
-            }}>
-                <EmojiEventsIcon sx={{ fontSize: 48, color: "#4a6741" }} />
-            </div>
+              }}>
+              <EmojiEventsIcon sx={{ fontSize: 48, color: "#4a6741" }} />
+              </div>
             </Card>
           </div>
           <h2 style={{ color: "#1a1a1a", fontSize: 18, fontWeight: 600, marginBottom: 12 }}>Your Recipes</h2>
