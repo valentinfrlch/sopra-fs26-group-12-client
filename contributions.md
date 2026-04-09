@@ -74,6 +74,10 @@ reason).
 | **[@FinnPrivateGit]** | [07.04.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/2fd2a343d8dfd7d73229a25b5a25b449e29b41ab] | [While typing the recipe title, the suggestions that we got from TheMealDB should get shown in a dropdown menu.] | [This is important, because the user should decide himself if he wants to use the existing recipe or not (and if a similar recipe even exists)] |
 
 
+| **[@sushmstr]** | [09.04.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/82/commits/935b90af4234bd1c2125f77070192080e5ee291a] | [Implemented participated events page showing past participated events using time-based filtering] | [Enables users to view events they have already participated in] |
+
+| **[@sushmstr]**  | [09.04.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/82/commits/dee910025a8c694af5f870dea9774b3254a07eed] | [Implemented registered events page showing upcoming events using time-based filtering] | [Allows users to view events they have registered for in the future] |
+
 | **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
