@@ -81,8 +81,8 @@ reason).
 |                    | [10.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/b013480a5edb792f4dd8183f6ded92aa09088b86] | [#121 Implementation for uploading photos: also new strucuture for photo submissions] | [In the event, every user needs to upload photos. for that i needed to come up with a new structure in db and a method to upload photos.] |
 |                    | [12.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/39c8f99f08ea1cdc1db2dedcdfde03826cc2cb65] | [#124 Updated eventcontroller and tests for new structure of photo upload] | [so the db gets updated correctly some fixed are needed. also a lot of tests needed to be updated because of new structure.] |
 |                    | [12.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/02ee06fcf5d6f157c11af2b83eb5c569b5c907ef] | [#83 For consistency with naming in backend, updated progressPhotoTimes to eventPrompt] | [Regarding future work with code, a consistent naming is important so not only me understands the code] |
-| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **@valentinfrlch** |  12.04.26  | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/beb9de0a6778b241cf7c97629ea8a47d51192e71 | Pull recipe details on selection and populate fields | Makes it easier to create recipes by using existing ones |
+|                    | 12.04.26  | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/beb9de0a6778b241cf7c97629ea8a47d51192e71 | Limit suggestions to 3 | We don't want the UI to be too overwhelming |
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 
