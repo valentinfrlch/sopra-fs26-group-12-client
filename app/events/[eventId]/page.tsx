@@ -28,42 +28,18 @@ interface Participant {
 interface CookingEvent {
   id: string;
   title: string;
-  description: string;
-  bannerEmojis?: string[];
+  emojis: string;
   ingredients: string[];
-  startTime: string;
-  endTime: string;
-  durationMinutes: number;
+  startDatetime: string;
+  endDatetime: string;
   participants: Participant[];
-  status: "UPCOMING" | "ACTIVE" | "ENDED";
+  state: "UPCOMING" | "ONGOING" | "FINISHED";
 }
 
+
 // ---------------------------------------------------------------------------
-// MOCK DATA
+// HELPERS
 // ---------------------------------------------------------------------------
-const USE_MOCK = true;
-
-const MOCK_EVENT: CookingEvent = {
-  id: "mock-event-1",
-  title: "Spring Cooking Event",
-  description: "Get ready for spring with this challenging cooking event!",
-  bannerEmojis: ["🍋", "🥒", "🍝"],
-  ingredients: ["Spaghetti", "Cucumbers", "Lemon"],
-  startTime: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
-  endTime: new Date(Date.now() + 1000 * 60 * 120).toISOString(),
-  durationMinutes: 60,
-  participants: [
-    { id: "user-1", username: "alice aber" },
-    { id: "user-2", username: "bob trump" },
-    { id: "user-3", username: "charlie clinton" },
-    { id: "user-4", username: "diana stone" },
-  ],
-  status: "UPCOMING",
-};
-
-
-
-
 const getInitials = (name: string): string =>
   name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
 
@@ -78,8 +54,9 @@ function formatEventTime(startIso: string, endIso: string): string {
   return `${dayName} ${day} ${month}, ${s} - ${e}`;
 }
 
-
-
+// ---------------------------------------------------------------------------
+// DATA FETCHING
+// ---------------------------------------------------------------------------
 async function fetchEventData(
   apiService: ReturnType<typeof useApi>,
   eventId: string,
@@ -88,12 +65,6 @@ async function fetchEventData(
   setEvent: (e: CookingEvent) => void,
   setIsRegistered: (v: boolean) => void,
 ): Promise<void> {
-  if (USE_MOCK) {
-    await new Promise((r) => setTimeout(r, 500));
-    setEvent(MOCK_EVENT);
-    setIsRegistered(MOCK_EVENT.participants.some((p) => p.id === userId));
-    return;
-  }
   const data = await apiService.get<CookingEvent>(
     `/events/${eventId}`,
     { Authorization: `Bearer ${token}` }
@@ -102,10 +73,11 @@ async function fetchEventData(
   setIsRegistered(data.participants.some((p) => p.id === userId));
 }
 
-
-
-function renderBanner(bannerEmojis?: string[]): React.ReactNode[] {
-  const emojis = bannerEmojis ?? ["🍋", "🥒", "🍝"];
+// ---------------------------------------------------------------------------
+// BANNER
+// ---------------------------------------------------------------------------
+function renderBanner(emojiString?: string): React.ReactNode[] {
+  const emojis = emojiString ? [...emojiString].filter(c => c.trim()) : ["🍳", "🥘", "🍽️"];
   const COLS = 29;
   const ROWS = 3;
   const items: React.ReactNode[] = [];
@@ -127,6 +99,9 @@ function renderBanner(bannerEmojis?: string[]): React.ReactNode[] {
   return items;
 }
 
+// ---------------------------------------------------------------------------
+// REGISTER / CANCEL
+// ---------------------------------------------------------------------------
 async function registerForEvent(
   apiService: ReturnType<typeof useApi>,
   eventId: string,
@@ -136,11 +111,6 @@ async function registerForEvent(
   setIsRegistered: (v: boolean) => void,
   setEvent: (e: CookingEvent) => void,
 ): Promise<void> {
-  if (USE_MOCK) {
-    setIsRegistered(true);
-    message.success("Registered! (mock mode)");
-    return;
-  }
   if (!token) {
     message.warning("Please log in first.");
     router.push("/login");
@@ -177,11 +147,6 @@ async function cancelRegistration(
   setIsRegistered: (v: boolean) => void,
   setEvent: (e: CookingEvent) => void,
 ): Promise<void> {
-  if (USE_MOCK) {
-    setIsRegistered(false);
-    message.success("Registration cancelled.");
-    return;
-  }
   try {
     await apiService.delete<void>(`/events/${eventId}/participants`);
     setIsRegistered(false);
@@ -196,7 +161,9 @@ async function cancelRegistration(
   }
 }
 
-
+// ---------------------------------------------------------------------------
+// SUB-COMPONENTS
+// ---------------------------------------------------------------------------
 const ParticipantList = ({ participants }: { participants: Participant[] }) => (
   <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
     <Avatar.Group max={{ count: 3 }} size={32}>
@@ -249,20 +216,22 @@ const NotFoundScreen = ({ onBack }: { onBack: () => void }) => (
 );
 
 
-const StatusBadge = ({ status }: { status: CookingEvent["status"] }) => (
+const StatusBadge = ({ state }: { state: CookingEvent["state"] }) => (
   <div style={{ display: "inline-block", backgroundColor: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 20, padding: "4px 14px", fontSize: 13, fontWeight: 600, color: "#2d4a38" }}>
-    {status === "ACTIVE" ? "🟢 Live now" : "⚫ Ended"}
+    {state === "ONGOING" ? "🟢 Live now" : state === "FINISHED" ? "⚫ Ended" : "🔵 Upcoming"}
   </div>
 );
 
 const ParticipateButton = ({
   disabled,
+  tooltip,
   onClick,
 }: {
   disabled: boolean;
+  tooltip: string;
   onClick: () => void;
 }) => (
-  <Tooltip title={disabled ? "Register first and wait for event to start" : ""}>
+  <Tooltip title={disabled ? tooltip : ""}>
     <Button
       type="primary"
       icon={<Icon name="play_circle" />}
@@ -351,8 +320,9 @@ const RegisterButton = ({
   </div>
 );
 
-// COMPONENT 
-
+// ---------------------------------------------------------------------------
+// MAIN COMPONENT
+// ---------------------------------------------------------------------------
 const EventDetailPage: React.FC = () => {
   const params = useParams();
   const eventId = params?.eventId as string;
@@ -393,10 +363,14 @@ const EventDetailPage: React.FC = () => {
   if (loading) return <LoadingScreen />;
   if (!event) return <NotFoundScreen onBack={() => router.back()} />;
 
-  const isStarted = new Date() >= new Date(event.startTime);
-  const isEnded = new Date() >= new Date(event.endTime);
-  const registerDisabled = isStarted || isRegistered || isEnded;
-  const participateDisabled = !isStarted || !isRegistered;
+  // obtained states
+  const isUpcoming = event.state === "UPCOMING";
+  const isOngoing = event.state === "ONGOING";
+  const isFinished = event.state === "FINISHED";
+  const durationMinutes = Math.round((new Date(event.endDatetime).getTime() - new Date(event.startDatetime).getTime()) / 60000);
+  
+  const registerDisabled = !isUpcoming || isRegistered;
+  // const participateDisabled = !isOngoing || !isRegistered;
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "#fff" }}>
@@ -413,13 +387,12 @@ const EventDetailPage: React.FC = () => {
 
         {/* BANNER */}
         <div style={{ position: "relative", height: 280, backgroundColor: "#f0f5f1", overflow: "hidden" }}>
-          {renderBanner(event.bannerEmojis)}
+          {renderBanner(event.emojis)}
         </div>
 
         {/* CONTENT */}
         <div style={{ padding: "24px 48px 40px" }}>
           <h1 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 6px", color: "#1a1a1a" }}>{event.title}</h1>
-          <p style={{ fontSize: 14, color: "#666", margin: "0 0 28px" }}>{event.description}</p>
 
           {/* TWO COLUMNS */}
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24, alignItems: "flex-start" }}>
@@ -440,7 +413,7 @@ const EventDetailPage: React.FC = () => {
                 <Icon name="event" />
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#1a1a1a" }}>Time</div>
-                  <div style={{ fontSize: 13, color: "#444" }}>{formatEventTime(event.startTime, event.endTime)}</div>
+                  <div style={{ fontSize: 13, color: "#444" }}>{formatEventTime(event.startDatetime, event.endDatetime)}</div>
                 </div>
               </div>
 
@@ -448,7 +421,7 @@ const EventDetailPage: React.FC = () => {
                 <Icon name="schedule" />
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#1a1a1a" }}>Duration</div>
-                  <div style={{ fontSize: 13, color: "#444" }}>{event.durationMinutes}min</div>
+                  <div style={{ fontSize: 13, color: "#444" }}>{durationMinutes}min</div>
                 </div>
               </div>
 
@@ -460,28 +433,88 @@ const EventDetailPage: React.FC = () => {
                 </div>
               </div>
 
-              {isStarted && <StatusBadge status={event.status} />}
+              <StatusBadge state={event.state} />
             </div>
           </div>
+          
 
-          {/* Registration confirmation */}
-          {isRegistered && !isStarted && (
-            <RegistrationConfirmation count={event.participants.length} onCancel={handleCancel} />
+          {/* STATE: UPCOMING */}
+          {isUpcoming && (
+            <>
+              {/* Registration confirmation */}
+              {isRegistered && (
+                <RegistrationConfirmation count={event.participants.length} onCancel={handleCancel} />
+              )}
+              {/* BUTTONS */}
+              <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 40, paddingRight: 100 }}>
+                <RegisterButton
+                  disabled={registerDisabled}
+                  loading={registering}
+                  isStarted={false}
+                  isRegistered={isRegistered}
+                  isEnded={false}
+                  onRegister={handleRegister}
+                  onCancel={handleCancel}
+                />
+                <ParticipateButton disabled={true} tooltip="Event has not started yet" onClick={handleParticipate} />
+              </div>
+            </>
           )}
 
-          {/* BUTTONS */}
-          <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 40, paddingRight: 100 }}>
-            <RegisterButton
-              disabled={registerDisabled}
-              loading={registering}
-              isStarted={isStarted}
-              isRegistered={isRegistered}
-              isEnded={isEnded}
-              onRegister={handleRegister}
-              onCancel={handleCancel}
-            />
-            <ParticipateButton disabled={participateDisabled} onClick={handleParticipate} />
-          </div>
+          {/* STATE: ONGOING */}
+          {isOngoing && (
+            <>
+              {isRegistered ? (
+                <div style={{ marginTop: 24 }}>
+                  <div style={{ backgroundColor: "#f0faf3", border: "1px solid #b2dfdb", borderRadius: 8, padding: "16px 20px", marginBottom: 20}}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8}}>
+                      <Icon name="restaurant" size={20} />
+                      <span style={{ fontWeight: 600, fontSize: 15, color: "#2e7d32"}}>The event is live!</span>
+                    </div>
+                    <p style={{ fontSize: 14, color: "#444", margin: 0}}>
+                      Click &quot;Participate&quot; to enter the cooking interface.
+                    </p>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: 100}}>
+                    <ParticipateButton disabled={false} tooltip="" onClick={handleParticipate} />
+                  </div>
+                </div>
+              ) : (
+                <div style={{ backgroundColor: "#fff8e1", border: "1px solid #ffe082", borderRadius: 8, padding: "16px 20px", marginTop: 24}}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8}}>
+                    <Icon name="lock" size={20} />
+                    <span style={{ fontWeight: 600, fontSize: 15, color: "#f57f17"}}>Registration closed</span>
+                  </div>
+                  <p style={{ fontSize: 14, color: "#666", margin: "8px 0 0"}}>
+                    This event has already started. Only registered participants can access the cooking interface.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* STATE: FINISHED */}
+          {isFinished && (
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 40, paddingRight: 100}}>
+              <Button 
+                type="primary"
+                icon={<Icon name="emoji_events" />}
+                onClick={() => router.push(`/events/${eventId}/cook`)}
+                style={{
+                  backgroundColor: "#4a7c59",
+                  borderColor: "#4a7c59",
+                  fontWeight: 600,
+                  height: 44,
+                  paddingInline: 20,
+                  borderRadius: 22,
+                  fontSize: 14,
+                }}
+              >
+                View Results
+              </Button>
+            </div>
+          )}
+
         </div>
       </main>
     </div>
