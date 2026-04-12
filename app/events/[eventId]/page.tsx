@@ -5,7 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import Sidebar, { UserAvatar } from "@/components/appLayout";
-import { Button, Spin, Avatar, message, Tooltip } from "antd";
+import { Spin } from "antd";
+import { Button, ButtonGroup, Avatar, AvatarGroup, Chip, Tooltip } from "@mui/material";
 
 // ---------------------------------------------------------------------------
 // ICON COMPONENT
@@ -22,7 +23,6 @@ const Icon = ({ name, size = 18 }: { name: string; size?: number }) => (
 interface Participant {
   id: string;
   username: string;
-  avatarUrl?: string;
 }
 
 interface CookingEvent {
@@ -70,14 +70,14 @@ async function fetchEventData(
     { Authorization: `Bearer ${token}` }
   );
   setEvent(data);
-  setIsRegistered(data.participants.some((p) => p.id === userId));
+  setIsRegistered(data.participants.some((p) => String(p.id) === userId));
 }
 
 // ---------------------------------------------------------------------------
 // BANNER
 // ---------------------------------------------------------------------------
 function renderBanner(emojiString?: string): React.ReactNode[] {
-  const emojis = emojiString ? [...emojiString].filter(c => c.trim()) : ["🍳", "🥘", "🍽️"];
+  const emojis = emojiString ? (emojiString.match(/\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu) || ["🍳", "🥘", "🍽️"]): ["🍳", "🥘", "🍽️"];
   const COLS = 29;
   const ROWS = 3;
   const items: React.ReactNode[] = [];
@@ -112,27 +112,22 @@ async function registerForEvent(
   setEvent: (e: CookingEvent) => void,
 ): Promise<void> {
   if (!token) {
-    message.warning("Please log in first.");
     router.push("/login");
     return;
   }
   setRegistering(true);
   try {
-    await apiService.post(`/events/${eventId}/participants`, {});
+    await apiService.post(`/events/${eventId}/participants`, {}, {Authorization: `Bearer ${token}` });
     setIsRegistered(true);
     const updated = await apiService.get<CookingEvent>(
       `/events/${eventId}`,
       { Authorization: `Bearer ${token}` }
     );
     setEvent(updated);
-    message.success(`Registered! ${updated.participants.length} participants so far.`);
   } catch (error) {
     if (error instanceof Error) {
       if (error.message.includes("409")) {
-        message.info("Already registered.");
         setIsRegistered(true);
-      } else {
-        message.error(`Registration failed: ${error.message}`);
       }
     }
   } finally {
@@ -155,9 +150,8 @@ async function cancelRegistration(
       { Authorization: `Bearer ${token}` }
     );
     setEvent(updated);
-    message.success("Registration cancelled.");
   } catch (error) {
-    if (error instanceof Error) message.error(`Could not cancel: ${error.message}`);
+    // Error handling
   }
 }
 
@@ -166,29 +160,19 @@ async function cancelRegistration(
 // ---------------------------------------------------------------------------
 const ParticipantList = ({ participants }: { participants: Participant[] }) => (
   <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
-    <Avatar.Group max={{ count: 3 }} size={32}>
-      {participants.map((p) => (
-        <Tooltip key={p.id} title={p.username}>
-          <Avatar src={p.avatarUrl} style={{ backgroundColor: "#4a7c59" }}>
-            {getInitials(p.username)}
-          </Avatar>
-        </Tooltip>
-      ))}
-    </Avatar.Group>
-    {participants.length === 0 && (
+    {participants.length > 0 ? (
+      <AvatarGroup max={3} sx={{ "& .MuiAvatar-root": { width: 32, height: 32, fontSize: 13, backgroundColor: "#4a7c59"} }}>
+        {participants.map((p) => (
+          <Tooltip key={p.id} title={p.username} arrow>
+            <Avatar sx={{ bgcolor: "#4a7c59" }}>
+              {getInitials(p.username)}
+            </Avatar>
+          </Tooltip>
+        ))}
+      </AvatarGroup>
+    ) : (
       <span style={{ color: "#999", fontSize: 13 }}>No participants yet</span>
     )}
-  </div>
-);
-
-
-const RegistrationConfirmation = ({ count, onCancel }: { count: number; onCancel: () => void }) => (
-  <div style={{ backgroundColor: "#f0faf3", border: "1px solid #b2dfdb", borderRadius: 8, padding: "10px 16px", fontSize: 14, color: "#2e7d32", marginBottom: 20, display: "flex", alignItems: "center" }}>
-    <Icon name="check_circle" />
-    <span style={{ marginLeft: 8 }}>You&apos;re registered! Total participants: {count}</span>
-    <Button type="link" danger size="small" onClick={onCancel} style={{ marginLeft: 12 }}>
-      Cancel registration
-    </Button>
   </div>
 );
 
@@ -216,109 +200,30 @@ const NotFoundScreen = ({ onBack }: { onBack: () => void }) => (
 );
 
 
-const StatusBadge = ({ state }: { state: CookingEvent["state"] }) => (
-  <div style={{ display: "inline-block", backgroundColor: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 20, padding: "4px 14px", fontSize: 13, fontWeight: 600, color: "#2d4a38" }}>
-    {state === "ONGOING" ? "🟢 Live now" : state === "FINISHED" ? "⚫ Ended" : "🔵 Upcoming"}
-  </div>
-);
+const StatusBadge = ({ state }: { state: CookingEvent["state"] }) => {
+  const config = state === "ONGOING"
+    ? { label: "Live now", color: "#2e7d32", bg: "#e8f5e9", border: "#a5d6aa7", icon: "radio_button_checked"}
+    : state === "FINISHED"
+    ? { label: "Ended", color: "#555", bg: "#f5f5f5", border: "#ccc", icon: "check_circle" }
+    : { label: "Upcoming", color: "#1565c0", bg: "#e3f2fd", border: "#90caf9", icon: "schedule" };
 
-const ParticipateButton = ({
-  disabled,
-  tooltip,
-  onClick,
-}: {
-  disabled: boolean;
-  tooltip: string;
-  onClick: () => void;
-}) => (
-  <Tooltip title={disabled ? tooltip : ""}>
-    <Button
-      type="primary"
-      icon={<Icon name="play_circle" />}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        backgroundColor: disabled ? "#ccc" : "#4a7c59",
-        borderColor: disabled ? "#ccc" : "#4a7c59",
-        color: disabled ? "#888" : "#fff",
+  return (
+    <Chip
+      icon={<span className="material-symbols-rounded" style={{ fontSize: 16, color: config.color }}>{config.icon}</span>}
+      label={config.label}
+      variant="outlined"
+      sx={{
+        backgroundColor: config.bg,
+        borderColor: config.border,
+        color: config.color,
         fontWeight: 600,
-        height: 44,
-        paddingInline: 20,
-        borderRadius: 22,
-        fontSize: 14,
+        fontSize: 13,
+        height: 32,
+        alignSelf: "flex-start",
       }}
-    >
-      Participate
-    </Button>
-  </Tooltip>
-);
-
-function getRegisterTooltip(isEnded: boolean, isStarted: boolean, isRegistered: boolean): string {
-  if (isEnded) return "Event has ended";
-  if (isStarted) return "Registration closed";
-  if (isRegistered) return "Already registered";
-  return "";
-}
-
-const RegisterButton = ({
-  disabled,
-  loading,
-  isStarted,
-  isRegistered,
-  isEnded,
-  onRegister,
-  onCancel,
-}: {
-  disabled: boolean;
-  loading: boolean;
-  isStarted: boolean;
-  isRegistered: boolean;
-  isEnded: boolean;
-  onRegister: () => void;
-  onCancel: () => void;
-}) => (
-  <div style={{ display: "flex" }}>
-    <Tooltip title={getRegisterTooltip(isEnded, isStarted, isRegistered)}>
-      <Button
-        type="primary"
-        icon={<span className="material-symbols-rounded" style={{ fontSize: 18, display: "flex", alignItems: "center" }}>person_add</span>}
-        onClick={onRegister}
-        loading={loading}
-        disabled={disabled}
-        style={{
-          backgroundColor: disabled ? "#ccc" : "#4a7c59",
-          borderColor: disabled ? "#ccc" : "#4a7c59",
-          color: disabled ? "#888" : "#fff",
-          fontWeight: 600,
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-          height: 44,
-          padding: "0 20px",
-          borderRadius: "22px 0 0 22px",
-          fontSize: 14,
-        }}
-      >
-        Register
-      </Button>
-    </Tooltip>
-    <Tooltip title={isRegistered ? "Cancel registration" : ""}>
-      <Button
-        icon={<span className="material-symbols-rounded" style={{ fontSize: 18 }}>expand_more</span>}
-        onClick={isRegistered ? onCancel : undefined}
-        disabled={isStarted}
-        style={{
-          backgroundColor: isStarted ? "#ccc" : "#4a7c59",
-          borderColor: isStarted ? "#ccc" : "#4a7c59",
-          color: isStarted ? "#888" : "#fff",
-          height: 44,
-          borderRadius: "0 22px 22px 0",
-          marginLeft: 1,
-        }}
-      />
-    </Tooltip>
-  </div>
-);
+    />
+  );
+};
 
 // ---------------------------------------------------------------------------
 // MAIN COMPONENT
@@ -344,7 +249,6 @@ const EventDetailPage: React.FC = () => {
     if (!eventId) return;
     setLoading(true);
     fetchEventData(apiService, eventId, token, userId, setEvent, setIsRegistered)
-      .catch((err) => message.error(`Could not load event: ${err.message}`))
       .finally(() => setLoading(false));
   }, [eventId, apiService, userId, token]);
 
@@ -369,9 +273,6 @@ const EventDetailPage: React.FC = () => {
   const isFinished = event.state === "FINISHED";
   const durationMinutes = Math.round((new Date(event.endDatetime).getTime() - new Date(event.startDatetime).getTime()) / 60000);
   
-  const registerDisabled = !isUpcoming || isRegistered;
-  // const participateDisabled = !isOngoing || !isRegistered;
-
   return (
     <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "#fff" }}>
       <Sidebar />
@@ -379,8 +280,8 @@ const EventDetailPage: React.FC = () => {
 
         {/* PAGE HEADING */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 32px", height: 72 }}>
-          <h1 style={{ fontSize: 36, fontWeight: 600, margin: 0, color: "#1a1a1a" }}>
-            Event Details
+          <h1 style={{ fontSize: 16, fontWeight: 600, margin: 0, color: "#1a1a1a" }}>
+            {event.title}
           </h1>
           <UserAvatar size={40} />
         </div>
@@ -392,7 +293,6 @@ const EventDetailPage: React.FC = () => {
 
         {/* CONTENT */}
         <div style={{ padding: "24px 48px 40px" }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 6px", color: "#1a1a1a" }}>{event.title}</h1>
 
           {/* TWO COLUMNS */}
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24, alignItems: "flex-start" }}>
@@ -440,25 +340,60 @@ const EventDetailPage: React.FC = () => {
 
           {/* STATE: UPCOMING */}
           {isUpcoming && (
-            <>
-              {/* Registration confirmation */}
-              {isRegistered && (
-                <RegistrationConfirmation count={event.participants.length} onCancel={handleCancel} />
-              )}
-              {/* BUTTONS */}
-              <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 40, paddingRight: 100 }}>
-                <RegisterButton
-                  disabled={registerDisabled}
-                  loading={registering}
-                  isStarted={false}
-                  isRegistered={isRegistered}
-                  isEnded={false}
-                  onRegister={handleRegister}
-                  onCancel={handleCancel}
-                />
-                <ParticipateButton disabled={true} tooltip="Event has not started yet" onClick={handleParticipate} />
-              </div>
-            </>
+            <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 40, paddingRight: 100 }}>
+              {/* Split Button: Register + Cancel */}
+              <ButtonGroup variant="contained" disableElevation style={{ borderRadius: 22, overflow: "hidden" }}>
+                <Button
+                  startIcon={<span className="material-symbols-rounded" style={{ fontSize: 18 }}>person_add</span>}
+                  onClick={handleRegister}
+                  disabled={isRegistered || registering}
+                  style={{
+                    backgroundColor: isRegistered ? "#888" : "#4a7c59",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    height: 44,
+                    paddingLeft: 20,
+                    paddingRight: 20,
+                    borderRadius: "22px 0 0 22px",
+                  }}
+                >
+                  {isRegistered ? "Registered" : "Register"}
+                </Button>
+                <Button
+                  onClick={handleCancel}
+                  disabled={!isRegistered}
+                  style={{
+                    backgroundColor: isRegistered ? "#4a7c59" : "#ccc",
+                    minWidth: 40,
+                    height: 44,
+                    borderRadius: "0 22px 22px 0",
+                    borderLeft: "1px solid rgba(255,255,255,0.3)",
+                  }}
+                >
+                  <span className="material-symbols-rounded" style={{ fontSize: 18 }}>
+                    {isRegistered ? "close" : "expand_more"}
+                  </span>
+                </Button>
+              </ButtonGroup>
+
+              {/* Participate (disabled when UPCOMING) */}
+              <Button
+                variant="contained"
+                startIcon={<span className="material-symbols-rounded" style={{ fontSize: 18 }}>play_circle</span>}
+                disabled={true}
+                style={{
+                  backgroundColor: "#ccc",
+                  textTransform: "none",
+                  fontWeight: 600,
+                  height: 44,
+                  borderRadius: 22,
+                  paddingLeft: 20,
+                  paddingRight: 20,
+                }}
+              >
+                Participate
+              </Button>
+            </div>
           )}
 
           {/* STATE: ONGOING */}
@@ -476,7 +411,22 @@ const EventDetailPage: React.FC = () => {
                     </p>
                   </div>
                   <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: 100}}>
-                    <ParticipateButton disabled={false} tooltip="" onClick={handleParticipate} />
+                    <Button
+                      variant="contained"
+                      startIcon={<span className="material-symbols-rounded" style={{ fontSize: 18 }}>play_circle</span>}
+                      onClick={handleParticipate}
+                      style={{
+                        backgroundColor: "#4a7c59",
+                        textTransform: "none",
+                        fontWeight: 600,
+                        height: 44,
+                        borderRadius: 22,
+                        paddingLeft: 20,
+                        paddingRight: 20,
+                      }}
+                    >
+                      Participate
+                    </Button>
                   </div>
                 </div>
               ) : (
@@ -496,18 +446,18 @@ const EventDetailPage: React.FC = () => {
           {/* STATE: FINISHED */}
           {isFinished && (
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 40, paddingRight: 100}}>
-              <Button 
-                type="primary"
-                icon={<Icon name="emoji_events" />}
+              <Button
+                variant="contained"
+                startIcon={<span className="material-symbols-rounded" style={{ fontSize: 18 }}>emoji_events</span>}
                 onClick={() => router.push(`/events/${eventId}/cook`)}
                 style={{
                   backgroundColor: "#4a7c59",
-                  borderColor: "#4a7c59",
+                  textTransform: "none",
                   fontWeight: 600,
                   height: 44,
-                  paddingInline: 20,
                   borderRadius: 22,
-                  fontSize: 14,
+                  paddingLeft: 20,
+                  paddingRight: 20,
                 }}
               >
                 View Results
