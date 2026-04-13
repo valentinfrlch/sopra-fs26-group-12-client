@@ -24,6 +24,7 @@ interface MealDetail {
   idMeal: string;
   strMeal: string;
   strInstructions?: string;
+  strMealThumb?: string;
   [key: string]: string | undefined;
 }
 
@@ -47,6 +48,21 @@ interface ApiError {
 const RECIPE_TYPES = ["Breakfast", "Lunch", "Dinner"];
 const DIET_TYPES = ["Vegetarian", "Vegan", "High Protein", "Low Carb"];
 
+const fetchMealImageFile = async (imageUrl: string, mealName: string): Promise<File> => {
+  /* Handles downloading the image file from mealDB API */
+  const response = await fetch(imageUrl);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch image");
+  }
+
+  const blob = await response.blob();
+  const contentType = blob.type || "image/jpeg";
+  const extension = contentType.includes("png") ? "png" : "jpg";
+
+  return new File([blob], `${mealName}.${extension}`, { type: contentType });
+};
+
 const getInitials = (name: string): string => {
   return name
     .split(" ")
@@ -69,6 +85,8 @@ const CreateRecipePage: React.FC = () => {
   const userId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
 
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [isBannerHovered, setIsBannerHovered] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   // store input for API suggestions
@@ -107,6 +125,22 @@ const CreateRecipePage: React.FC = () => {
 
       const populatedIngredients = ingredients.length > 0 ? ingredients : [{ name: "", amount: "" }];
 
+      console.log("Meal Thumb: ", meal.strMealThumb);
+
+      if (meal.strMealThumb) {
+        try {
+          const mealImageFile = await fetchMealImageFile(meal.strMealThumb, meal.strMeal);
+          setImageFile(mealImageFile);
+          console.log("Fetched image file from API:", mealImageFile);
+        } catch {
+          setImageFile(null);
+          console.warn("Failed to fetch image for the selected recipe, proceeding without it.");
+        }
+      } else {
+        setImageFile(null);
+        console.warn("No image available for the selected recipe.");
+      }
+
       setShouldFetchSuggestions(false);
       setRecipeName(meal.strMeal);
       setDebouncedRecipeName("");
@@ -126,6 +160,20 @@ const CreateRecipePage: React.FC = () => {
     const stored = localStorage.getItem("username") ?? "U";
     setUsername(stored);
   }, []);
+
+  useEffect(() => {
+    if (!imageFile) {
+      setImagePreviewUrl(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(imageFile);
+    setImagePreviewUrl(objectUrl);
+
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [imageFile]);
 
   // debouncing for less API calls
   useEffect(() => {
@@ -218,7 +266,7 @@ const CreateRecipePage: React.FC = () => {
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#fff" }}>
 
       {/* sidebar from cookbook page */}
       <Sidebar />
@@ -259,6 +307,70 @@ const CreateRecipePage: React.FC = () => {
 
         {/* create recipe page content */}
         <div style={{ padding: "24px", flex: 1 }}>
+          <div
+            onMouseEnter={() => setIsBannerHovered(true)}
+            onMouseLeave={() => setIsBannerHovered(false)}
+            style={{
+              position: "relative",
+              marginBottom: 24,
+              marginLeft: -24,
+              marginRight: -24,
+              marginTop: -24,
+              height: 250,
+              backgroundColor: "#fff",
+              backgroundImage: imagePreviewUrl ? `url(${imagePreviewUrl})` : "none",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png, image/jpeg"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  const file = e.target.files[0];
+
+                  const isValidType =
+                    file.type === "image/png" || file.type === "image/jpeg";
+
+                  if (!isValidType) {
+                    message.error("Only .PNG and .JPEG files are allowed");
+                    return;
+                  }
+
+                  setImageFile(file);
+                }
+              }}
+            />
+
+            <MuiButton
+              onClick={() => fileInputRef.current?.click()}
+              startIcon={<UploadIcon />}
+              variant="contained"
+              size="small"
+              sx={{
+                position: "absolute",
+                top: 16,
+                right: 16,
+                backgroundColor: "rgba(26, 26, 26, 0.82)",
+                color: "#fff",
+                opacity: isBannerHovered ? 1 : 0,
+                pointerEvents: isBannerHovered ? "auto" : "none",
+                transition: "opacity 160ms ease",
+                boxShadow: "0 8px 20px rgba(0, 0, 0, 0.18)",
+                textTransform: "none",
+                "&:hover": {
+                  backgroundColor: "rgba(26, 26, 26, 0.92)",
+                },
+              }}
+            >
+              {imageFile ? "Change image" : "Add image"}
+            </MuiButton>
+          </div>
+
           <Form
             form={form}
             layout="vertical"
@@ -285,6 +397,16 @@ const CreateRecipePage: React.FC = () => {
                         setRecipeName(e.target.value);
                         form.setFieldsValue({ title: e.target.value });
                         setShowSuggestions(true);
+                      }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "#4b6624",
+                          },
+                          "&:hover .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "#4b6624",
+                          },
+                        },
                       }}
                       InputLabelProps={{ style: { color: "grey" } }}
                     />
@@ -365,9 +487,9 @@ const CreateRecipePage: React.FC = () => {
                             form.setFieldsValue({ types: updated });
                           }}
                           sx={{
-                            backgroundColor: isSelected ? "#4b6624" : "#f5f5f5",
-                            borderColor: isSelected ? "#4b6624" : "#d9d9d9",
-                            color: isSelected ? "#fff" : "#555",
+                            backgroundColor: isSelected ? "rgba(75, 102, 36, 1)" : "rgba(75, 102, 36, 0.07)",
+                            borderColor: "transparent",
+                            color: isSelected ? "#fff" : "#4b6624",
                             "&:hover": {
                               backgroundColor: isSelected ? "#3d541d" : "#ebebeb",
                             },
@@ -398,9 +520,9 @@ const CreateRecipePage: React.FC = () => {
                             form.setFieldsValue({ diet: updated });
                           }}
                           sx={{
-                            backgroundColor: isSelected ? "#4b6624" : "#f5f5f5",
-                            borderColor: isSelected ? "#4b6624" : "#d9d9d9",
-                            color: isSelected ? "#fff" : "#555",
+                            backgroundColor: isSelected ? "rgba(75, 102, 36, 1)" : "rgba(75, 102, 36, 0.07)",
+                            borderColor: "transparent",
+                            color: isSelected ? "#fff" : "#4b6624",
                             "&:hover": {
                               backgroundColor: isSelected ? "#3d541d" : "#ebebeb",
                             },
@@ -428,6 +550,16 @@ const CreateRecipePage: React.FC = () => {
                                   label="Ingredient"
                                   fullWidth
                                   InputLabelProps={{ style: { color: "grey" } }}
+                                  sx={{
+                                    "& .MuiOutlinedInput-root": {
+                                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                                        borderColor: "#4b6624",
+                                      },
+                                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                                        borderColor: "#4b6624",
+                                      },
+                                    },
+                                  }}
                                 />
                               </Form.Item>
                             </Col>
@@ -442,6 +574,16 @@ const CreateRecipePage: React.FC = () => {
                                   label="Amount"
                                   fullWidth
                                   InputLabelProps={{ style: { color: "grey" } }}
+                                  sx={{
+                                    "& .MuiOutlinedInput-root": {
+                                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                                        borderColor: "#4b6624",
+                                      },
+                                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                                        borderColor: "#4b6624",
+                                      },
+                                    },
+                                  }}
                                 />
                               </Form.Item>
                             </Col>
@@ -501,63 +643,17 @@ const CreateRecipePage: React.FC = () => {
                     value={preparationValue}
                     onChange={(e) => form.setFieldsValue({ preparation: e.target.value })}
                     InputLabelProps={{ style: { color: "grey" }, shrink: true }}
-                    InputProps={{
-                      style: {
-                        backgroundColor: "#f5f5f5",
-                      },
-                    }}
-                  />
-                </Form.Item>
-                <Form.Item label={<span style={{ color: "black", fontWeight: 500 }}>Upload Picture:</span>}>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/png, image/jpeg" // only accept .png or .jpeg
-                    style={{ display: "none" }}
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        const file = e.target.files[0];
-
-                        const isValidType =
-                          file.type === "image/png" || file.type === "image/jpeg";
-
-                        if (!isValidType) {
-                          message.error("Only .PNG and .JPEG files are allowed");
-                          return;
-                        }
-
-                        setImageFile(file);
-                      }
-                    }}
-                  />
-
-                  <MuiButton
-                    startIcon={<UploadIcon />}
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={!!imageFile}
-                    variant="outlined"
                     sx={{
-                      color: "#4b6624",
-                      borderColor: "#4b6624",
-                      "&:hover": {
-                        borderColor: "#3d541d",
-                        backgroundColor: "rgba(75, 102, 36, 0.08)",
-                      },
-                      "&.Mui-disabled": {
-                        color: "#aaa",
-                        borderColor: "#d9d9d9",
-                        backgroundColor: "#e0e0e0",
+                      "& .MuiOutlinedInput-root": {
+                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#4b6624",
+                        },
+                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#4b6624",
+                        },
                       },
                     }}
-                  >
-                    Upload Image
-                  </MuiButton>
-
-                  {imageFile && (
-                    <div style={{ marginTop: 8, color: "#888" }}>
-                      Selected: {imageFile.name}
-                    </div>
-                  )}
+                  />
                 </Form.Item>
               </Col>
             </Row>
