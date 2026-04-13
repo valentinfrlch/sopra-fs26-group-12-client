@@ -8,30 +8,21 @@ import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Sidebar, { UserAvatar } from "@/components/appLayout";
 
+
+
 interface Recipe {
   id: number;
   title: string;
   labels: string[];
+  imageURL?: string;
+  userId?: number;
 }
 
-const MOCK_RECIPES: Recipe[] = [
-  { id: 1, title: "Bulk Pizza", labels: ["Lunch", "Dinner", "High Protein"]  },
-  { id: 2, title: "Cut Pizza", labels: ["Lunch", "Dinner", "Low Carbs"] },
-];
+
 
 const ALL_LABELS = ["Breakfast", "Lunch", "Dinner", "Vegetarian", "Vegan", "High Protein", "Low Carbs"];
 
-/* Unused
-const getInitials = (title: string): string => {
-  return title
-    .split(" ")           
-    .map((word) => word[0]) 
-    .join("")               
-    .toUpperCase()          
-    .slice(0, 2);          
-};
 
-*/
 
 const RecipeCard: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
   const router = useRouter();
@@ -109,9 +100,16 @@ const RecipeCard: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
         </ConfigProvider>
       </div>
       <div style={{ height: 240, background: "#f0f0f0", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#555", fontSize: 12 }}>
-        No image yet
-        {/* <Image src={recipe.imageUrl} alt={recipe.title}
-        width={220} height={120} style={{ borderRadius: 8 }} /> */}
+
+        {recipe.imageURL ? (
+          <img
+            src={`http://localhost:8080${recipe.imageURL}`}
+            alt={recipe.title}
+            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
+          />
+        ) : (
+          "No image yet"
+        )}
       </div>
     </Card>
   );
@@ -125,17 +123,59 @@ const CookbookPage: React.FC = () => {
   const router = useRouter();
   
   const [username, setUsername] = useState<string>("U");
+
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+
   useEffect(() => {
     const stored = localStorage.getItem("username") ?? "U";
     setUsername(stored);
   }, []);
+
+
+
+  useEffect(() => {
+  const fetchRecipes = async () => {
+    try {
+      const rawToken = localStorage.getItem("token");
+
+      if (!rawToken) return;
+
+      const token = rawToken.replace(/"/g, "");
+      const res = await fetch("http://localhost:8080/recipes", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch recipes");
+
+      const data = await res.json();
+
+      console.log("RECIPES:", data);
+
+      setRecipes(data);
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  fetchRecipes();
+}, []);
+  
 
   const now = new Date();
 
   
 
   const [activeLabels, setActiveLabels] = useState<string[]>([]);
-  const filteredRecipes = activeLabels.length > 0 ? MOCK_RECIPES.filter((r) => activeLabels.every((active) => r.labels.includes(active))) : MOCK_RECIPES;
+  // const filteredRecipes = activeLabels.length > 0 ? MOCK_RECIPES.filter((r) => activeLabels.every((active) => r.labels.includes(active))) : MOCK_RECIPES;
+  const filteredRecipes =
+    activeLabels.length > 0
+      ? recipes.filter((r) =>
+          activeLabels.every((label) => r.labels.includes(label))
+        )
+      : recipes;
   const handleLabelToggle= (label: string) => {
                 setActiveLabels((prev) =>
                     prev.includes(label)
