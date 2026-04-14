@@ -166,11 +166,15 @@ export default function CookPage() {
   if (!schedule) return <div>No schedule (check backend / auth)</div>;
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div style={{ display: "flex", minHeight: "100vh", color: "#000000" }}>
       <Sidebar />
 
       <main style={{ margin: "auto", textAlign: "center", width: 420 }}>
         <h2>Cook Event {eventId}</h2>
+        <p style={{ marginBottom: 20, color: "#666" }}>
+          You will receive multiple prompts. For each prompt, upload exactly one image.
+          If you upload again, your previous submission for that prompt is replaced.
+        </p>
 
         <input
           ref={fileRef}
@@ -205,15 +209,18 @@ export default function CookPage() {
             padding: 10,
             width: "100%",
             background: uploadActive ? "#4a7c59" : "#ccc",
-            color: "#fff",
+            color: "#000000",
             borderRadius: 8,
           }}
         >
           {uploading ? "Uploading..." : "Upload Photo"}
         </button>
 
-        <p style={{ marginTop: 10 }}>
-          {uploadActive ? "🟢 Upload open" : "⚫ Upload closed"}
+        <p style={{ 
+          marginTop: 10 ,
+          color: "#000000"
+          }}
+          >{uploadActive ? "🟢 Upload open" : "⚫ Upload closed"}
         </p>
       </main>
     </div>
