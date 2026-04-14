@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Form, Button, Row, Col, App, Avatar } from "antd";
-import { TextField } from "@mui/material";
+import { Form, Row, Col, App, Avatar } from "antd";
+import { TextField, Button as MuiButton, Chip, List, ListItemButton, ListItemText, Paper, LinearProgress } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import Sidebar from "@/components/appLayout";
@@ -18,6 +18,14 @@ interface RecipeIngredient {
 interface MealSuggestion {
   idMeal: string;
   strMeal: string;
+}
+
+interface MealDetail {
+  idMeal: string;
+  strMeal: string;
+  strInstructions?: string;
+  strMealThumb?: string;
+  [key: string]: string | undefined;
 }
 
 interface CreateRecipeFormValues {
@@ -39,6 +47,21 @@ interface ApiError {
 
 const RECIPE_TYPES = ["Breakfast", "Lunch", "Dinner"];
 const DIET_TYPES = ["Vegetarian", "Vegan", "High Protein", "Low Carb"];
+
+const fetchMealImageFile = async (imageUrl: string, mealName: string): Promise<File> => {
+  /* Handles downloading the image file from mealDB API */
+  const response = await fetch(imageUrl);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch image");
+  }
+
+  const blob = await response.blob();
+  const contentType = blob.type || "image/jpeg";
+  const extension = contentType.includes("png") ? "png" : "jpg";
+
+  return new File([blob], `${mealName}.${extension}`, { type: contentType });
+};
 
 const getInitials = (name: string): string => {
   return name
@@ -62,25 +85,101 @@ const CreateRecipePage: React.FC = () => {
   const userId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
 
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [isBannerHovered, setIsBannerHovered] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   // store input for API suggestions
   const [recipeName, setRecipeName] = useState("");
   const [debouncedRecipeName, setDebouncedRecipeName] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [shouldFetchSuggestions, setShouldFetchSuggestions] = useState(true);
+  const [isFetchingSuggestions, setIsFetchingSuggestions] = useState(false);
+
+  const preparationValue = Form.useWatch("preparation", form) || "";
 
   // store suggestions from API
   const [suggestions, setSuggestions] = useState<MealSuggestion[]>([]);
+
+  const handleSuggestionSelect = async (mealId: string) => {
+    try {
+      const res = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${mealId}`);
+      const data = await res.json();
+      const meal: MealDetail | undefined = data?.meals?.[0];
+
+      if (!meal) {
+        message.error("Could not load recipe details");
+        return;
+      }
+
+      const ingredients: RecipeIngredient[] = [];
+
+      for (let i = 1; i <= 20; i++) {
+        const ingredient = meal[`strIngredient${i}`]?.trim();
+        const amount = meal[`strMeasure${i}`]?.trim() || "";
+
+        if (ingredient) {
+          ingredients.push({ name: ingredient, amount });
+        }
+      }
+
+      const populatedIngredients = ingredients.length > 0 ? ingredients : [{ name: "", amount: "" }];
+
+      console.log("Meal Thumb: ", meal.strMealThumb);
+
+      if (meal.strMealThumb) {
+        try {
+          const mealImageFile = await fetchMealImageFile(meal.strMealThumb, meal.strMeal);
+          setImageFile(mealImageFile);
+          console.log("Fetched image file from API:", mealImageFile);
+        } catch {
+          setImageFile(null);
+          console.warn("Failed to fetch image for the selected recipe, proceeding without it.");
+        }
+      } else {
+        setImageFile(null);
+        console.warn("No image available for the selected recipe.");
+      }
+
+      setShouldFetchSuggestions(false);
+      setRecipeName(meal.strMeal);
+      setDebouncedRecipeName("");
+      form.setFieldsValue({
+        title: meal.strMeal,
+        preparation: meal.strInstructions || "",
+        ingredients: populatedIngredients,
+      });
+      setSuggestions([]);
+      setShowSuggestions(false);
+    } catch {
+      message.error("Failed to fetch recipe details");
+    }
+  };
 
   useEffect(() => {
     const stored = localStorage.getItem("username") ?? "U";
     setUsername(stored);
   }, []);
 
+  useEffect(() => {
+    if (!imageFile) {
+      setImagePreviewUrl(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(imageFile);
+    setImagePreviewUrl(objectUrl);
+
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [imageFile]);
+
   // debouncing for less API calls
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedRecipeName(recipeName);
-    }, 1000);
+    }, 250);
 
     return () => {
       clearTimeout(handler);
@@ -89,23 +188,39 @@ const CreateRecipePage: React.FC = () => {
 
   // API call
   useEffect(() => {
+    if (!shouldFetchSuggestions) {
+      setSuggestions([]);
+      setIsFetchingSuggestions(false);
+      return;
+    }
+
     if (!debouncedRecipeName || debouncedRecipeName.length < 2) {
       setSuggestions([]); // clear dropdown when input to short
+      setShowSuggestions(false);
+      setIsFetchingSuggestions(false);
       return;
     }
 
     const fetchRecipes = async () => {
+      setIsFetchingSuggestions(true);
       try {
         const res = await fetch(
           `https://www.themealdb.com/api/json/v1/1/search.php?s=${debouncedRecipeName}`
         );
         const data = await res.json();
 
-        setSuggestions(data.meals ||[]); // store API results
+        // only store 3 suggestions
+        data.meals = data.meals ? data.meals.slice(0, 3) : [];
+
+        setSuggestions(data.meals || []); // store API results
+        setShowSuggestions(Boolean(data.meals?.length));
         console.log("API result:", data);
       } catch (error) {
         console.error("API error:", error);
         setSuggestions([]); // clear dropdown
+        setShowSuggestions(false);
+      } finally {
+        setIsFetchingSuggestions(false);
       }
     };
 
@@ -151,8 +266,8 @@ const CreateRecipePage: React.FC = () => {
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
-      
+    <div style={{ display: "flex", minHeight: "100vh", background: "#fff" }}>
+
       {/* sidebar from cookbook page */}
       <Sidebar />
 
@@ -192,6 +307,70 @@ const CreateRecipePage: React.FC = () => {
 
         {/* create recipe page content */}
         <div style={{ padding: "24px", flex: 1 }}>
+          <div
+            onMouseEnter={() => setIsBannerHovered(true)}
+            onMouseLeave={() => setIsBannerHovered(false)}
+            style={{
+              position: "relative",
+              marginBottom: 24,
+              marginLeft: -24,
+              marginRight: -24,
+              marginTop: -24,
+              height: 250,
+              backgroundColor: "#fff",
+              backgroundImage: imagePreviewUrl ? `url(${imagePreviewUrl})` : "none",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png, image/jpeg"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  const file = e.target.files[0];
+
+                  const isValidType =
+                    file.type === "image/png" || file.type === "image/jpeg";
+
+                  if (!isValidType) {
+                    message.error("Only .PNG and .JPEG files are allowed");
+                    return;
+                  }
+
+                  setImageFile(file);
+                }
+              }}
+            />
+
+            <MuiButton
+              onClick={() => fileInputRef.current?.click()}
+              startIcon={<UploadIcon />}
+              variant="contained"
+              size="small"
+              sx={{
+                position: "absolute",
+                top: 16,
+                right: 16,
+                backgroundColor: "rgba(26, 26, 26, 0.82)",
+                color: "#fff",
+                opacity: isBannerHovered ? 1 : 0,
+                pointerEvents: isBannerHovered ? "auto" : "none",
+                transition: "opacity 160ms ease",
+                boxShadow: "0 8px 20px rgba(0, 0, 0, 0.18)",
+                textTransform: "none",
+                "&:hover": {
+                  backgroundColor: "rgba(26, 26, 26, 0.92)",
+                },
+              }}
+            >
+              {imageFile ? "Change image" : "Add image"}
+            </MuiButton>
+          </div>
+
           <Form
             form={form}
             layout="vertical"
@@ -208,64 +387,98 @@ const CreateRecipePage: React.FC = () => {
                   name="title"
                   rules={[{ required: true, message: "Please enter a recipe name!" }]}
                 >
-                  <div style={{ position: "relative"}}>
+                  <div style={{ position: "relative" }}>
                     <TextField
                       label="Recipe Name"
                       fullWidth
                       value={recipeName}
                       onChange={(e) => {
+                        setShouldFetchSuggestions(true);
                         setRecipeName(e.target.value);
-                        form.setFieldsValue({ title: e.target.value});
+                        form.setFieldsValue({ title: e.target.value });
+                        setShowSuggestions(true);
+                      }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "#4b6624",
+                          },
+                          "&:hover .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "#4b6624",
+                          },
+                        },
                       }}
                       InputLabelProps={{ style: { color: "grey" } }}
                     />
 
+                    {isFetchingSuggestions && (
+                      <LinearProgress
+                        variant="indeterminate"
+                        sx={{
+                          mt: 1,
+                          borderRadius: 999,
+                          "& .MuiLinearProgress-bar": {
+                            backgroundColor: "#4b6624",
+                          },
+                        }}
+                      />
+                    )}
+
                     {/* Dropdown for suggestions*/}
-                    {suggestions.length > 0 && (
-                      <div
-                        style={{
+                    {showSuggestions && suggestions.length > 0 && (
+                      <Paper
+                        elevation={3}
+                        sx={{
                           position: "absolute",
                           top: "100%",
                           left: 0,
                           right: 0,
-                          background: "white",
-                          border: "1px solid #ffffff",
-                          borderTop: "none",
                           zIndex: 10,
-                          maxHeight: "200px",
+                          mt: 0.5,
+                          maxHeight: 220,
                           overflowY: "auto",
+                          border: "1px solid #d9d9d9",
                         }}
                       >
-                        {suggestions.map((meal) => (
-                          <div
-                            key={meal.idMeal}
-                            style={{
-                              padding: "8px 12px",
-                              cursor: "pointer",
-                              borderBottom: "1px solid grey",
-                              color: "#000",
-                              backgroundColor: "white",
-                            }}
-                          >
-                            {meal.strMeal} {/* only recipe name */}
-                          </div>
-                        ))}
-                      </div>
+                        <List disablePadding>
+                          {suggestions.map((meal, index) => (
+                            <ListItemButton
+                              key={meal.idMeal}
+                              onClick={() => handleSuggestionSelect(meal.idMeal)}
+                              sx={{
+                                "&:hover": {
+                                  backgroundColor: "rgba(75, 102, 36, 0.08)",
+                                },
+                              }}
+                            >
+                              <ListItemText
+                                primary={meal.strMeal}
+                                primaryTypographyProps={{
+                                  color: "#1a1a1a",
+                                  fontSize: 14,
+                                }}
+                              />
+                            </ListItemButton>
+                          ))}
+                        </List>
+                      </Paper>
                     )}
                   </div>
                 </Form.Item>
 
-                <Form.Item
-                  label={<span style={{ color: "black", fontWeight: 500 }}>Select Recipe Type:</span>}
-                  name="types"
-                >
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <Form.Item name="types">
+                  <Row><span style={{ color: "black", fontWeight: 500, marginBottom: 10, marginTop: 8 }}>Recipe Type</span></Row>
+
+                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
                     {RECIPE_TYPES.map((type) => {
                       const isSelected = selectedTypes.includes(type);
 
                       return (
-                        <Button
+                        <Chip
                           key={type}
+                          label={type}
+                          clickable
+                          variant={isSelected ? "filled" : "outlined"}
                           onClick={() => {
                             const updated = isSelected
                               ? selectedTypes.filter((t: string) => t !== type)
@@ -273,30 +486,32 @@ const CreateRecipePage: React.FC = () => {
 
                             form.setFieldsValue({ types: updated });
                           }}
-                          style={{
-                            background: isSelected ? "#4b6624" : "#f5f5f5",
-                            borderColor: isSelected ? "#4b6624" : "#d9d9d9",
-                            color: isSelected ? "white" : "#555",
+                          sx={{
+                            backgroundColor: isSelected ? "rgba(75, 102, 36, 1)" : "rgba(75, 102, 36, 0.07)",
+                            borderColor: "transparent",
+                            color: isSelected ? "#fff" : "#4b6624",
+                            "&:hover": {
+                              backgroundColor: isSelected ? "#3d541d" : "#ebebeb",
+                            },
                           }}
-                        >
-                          {type}
-                        </Button>
+                        />
                       );
                     })}
                   </div>
                 </Form.Item>
 
-                <Form.Item
-                  label={<span style={{ color: "black", fontWeight: 500 }}>Select Dietary Type:</span>}
-                  name="diet"
-                >
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <Form.Item name="diet">
+                  <Row><span style={{ color: "black", fontWeight: 500, marginBottom: 10, marginTop: 8 }}>Dietary Type</span></Row>
+                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
                     {DIET_TYPES.map((type) => {
                       const isSelected = selectedDiet.includes(type);
 
                       return (
-                        <Button
+                        <Chip
                           key={type}
+                          label={type}
+                          clickable
+                          variant={isSelected ? "filled" : "outlined"}
                           onClick={() => {
                             const updated = isSelected
                               ? selectedDiet.filter((t: string) => t !== type)
@@ -304,22 +519,22 @@ const CreateRecipePage: React.FC = () => {
 
                             form.setFieldsValue({ diet: updated });
                           }}
-                          style={{
-                            background: isSelected ? "#4b6624" : "#f5f5f5",
-                            borderColor: isSelected ? "#4b6624" : "#d9d9d9",
-                            color: isSelected ? "white" : "#555",
+                          sx={{
+                            backgroundColor: isSelected ? "rgba(75, 102, 36, 1)" : "rgba(75, 102, 36, 0.07)",
+                            borderColor: "transparent",
+                            color: isSelected ? "#fff" : "#4b6624",
+                            "&:hover": {
+                              backgroundColor: isSelected ? "#3d541d" : "#ebebeb",
+                            },
                           }}
-                        >
-                          {type}
-                        </Button>
+                        />
                       );
                     })}
                   </div>
                 </Form.Item>
-                
-                <Form.Item
-                  label={<span style={{ color: "black", fontWeight: 500 }}>Recipe Ingredients:</span>}
-                >
+
+                <Form.Item>
+                  <Row><span style={{ color: "black", fontWeight: 500, marginBottom: 12, marginTop: 8 }}>Ingredients</span></Row>
                   <Form.List name="ingredients">
                     {(fields, { add, remove }) => (
                       <>
@@ -335,6 +550,16 @@ const CreateRecipePage: React.FC = () => {
                                   label="Ingredient"
                                   fullWidth
                                   InputLabelProps={{ style: { color: "grey" } }}
+                                  sx={{
+                                    "& .MuiOutlinedInput-root": {
+                                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                                        borderColor: "#4b6624",
+                                      },
+                                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                                        borderColor: "#4b6624",
+                                      },
+                                    },
+                                  }}
                                 />
                               </Form.Item>
                             </Col>
@@ -349,6 +574,16 @@ const CreateRecipePage: React.FC = () => {
                                   label="Amount"
                                   fullWidth
                                   InputLabelProps={{ style: { color: "grey" } }}
+                                  sx={{
+                                    "& .MuiOutlinedInput-root": {
+                                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                                        borderColor: "#4b6624",
+                                      },
+                                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                                        borderColor: "#4b6624",
+                                      },
+                                    },
+                                  }}
                                 />
                               </Form.Item>
                             </Col>
@@ -375,9 +610,19 @@ const CreateRecipePage: React.FC = () => {
                           </Row>
                         ))}
 
-                        <Button onClick={() => add()} style={{ marginTop: 8 }}>
+                        <MuiButton
+                          onClick={() => add()}
+                          variant="text"
+                          sx={{
+                            marginTop: 1,
+                            color: "#4b6624",
+                            "&:hover": {
+                              backgroundColor: "rgba(75, 102, 36, 0.08)",
+                            },
+                          }}
+                        >
                           + add another Ingredient
-                        </Button>
+                        </MuiButton>
                       </>
                     )}
                   </Form.List>
@@ -387,64 +632,28 @@ const CreateRecipePage: React.FC = () => {
               {/* right column */}
               <Col span={14}>
                 <Form.Item
-                    name="preparation"
-                    rules={[{ required: true, message: "Enter preparation steps!" }]}
+                  name="preparation"
+                  rules={[{ required: true, message: "Enter preparation steps!" }]}
                 >
-                    <TextField
+                  <TextField
                     label="Preparation steps"
                     multiline
                     rows={18}
                     fullWidth
-                    InputLabelProps={{ style: { color: "grey" } }}
-                    InputProps={{
-                        style: {
-                        backgroundColor: "#f5f5f5",
+                    value={preparationValue}
+                    onChange={(e) => form.setFieldsValue({ preparation: e.target.value })}
+                    InputLabelProps={{ style: { color: "grey" }, shrink: true }}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#4b6624",
                         },
-                    }}
-                    />
-                </Form.Item>
-                <Form.Item label={<span style={{ color: "black", fontWeight: 500 }}>Upload Picture:</span>}>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/png, image/jpeg" // only accept .png or .jpeg
-                    style={{ display: "none" }}
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        const file = e.target.files[0];
-
-                        const isValidType =
-                          file.type === "image/png" || file.type === "image/jpeg";
-
-                        if (!isValidType) {
-                          message.error("Only .PNG and .JPEG files are allowed");
-                          return;
-                        }
-
-                        setImageFile(file);
-                      }
+                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#4b6624",
+                        },
+                      },
                     }}
                   />
-
-                  <Button
-                    icon={<UploadIcon />}
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={!!imageFile}
-                    style={{
-                      background: !!imageFile ? "#e0e0e0" : "#f5f5f5",
-                      borderColor: "#d9d9d9",
-                      color: !!imageFile ? "#aaa" : "#555",
-                      cursor: !!imageFile ? "not-allowed" : "pointer",
-                    }}
-                  >
-                    Upload Image
-                  </Button>
-
-                  {imageFile && (
-                    <div style={{ marginTop: 8, color: "#888" }}>
-                      Selected: {imageFile.name}
-                    </div>
-                  )}
                 </Form.Item>
               </Col>
             </Row>
@@ -457,21 +666,11 @@ const CreateRecipePage: React.FC = () => {
                 gap: 10,
               }}
             >
-              <Button onClick={() => router.push("/cookbook")}>
-                Cancel
-              </Button>
+              <MuiButton style={{ color: "#4b6624" }} onClick={() => router.push("/cookbook")}>Cancel</MuiButton>
 
-              <Button
-                type="primary"
-                htmlType="submit"
-                style={{
-                  background: "#4b6624",
-                  borderColor: "#4b6624",
-                  color: "white",
-                }}
-              >
+              <MuiButton type="submit" variant="contained" style={{ background: "#4b6624", borderColor: "#4b6624", color: "white" }}>
                 Create Recipe
-              </Button>
+              </MuiButton>
             </div>
           </Form>
         </div>

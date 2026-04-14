@@ -37,8 +37,8 @@ reason).
 | **[@sushmstr]**    | [29.03.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/94aaab3] | [Implemented cookbook page with sidebar, avatar, filter tags, recipe grid (#38 #39 #40)] | [Allows logged-in users to access their cookbook and recipes immediately after login] |
 |                    | [27.03.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/d6c3ea7] | [Fixed post-login redirect to /cookbook and resolved conflicts (#80)] | [Ensures users land on their cookbook after login as per user story requirement] |
 | **[@jp-schl]** | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/4fa484892b6a36defcaa91aee0dad376917b5da0] | [Cleaned some tests regarding the user status, which isn't used anymore. The same does apply for get all users.] | [The tests need to test the current, relevant code and needed to be updated] |
-|                    | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/1bb4a335b87b57a996f9a5e39fd2e08410915e5d] | [Testing if when logging in, a token is generated and returned] | [toke is relevant for authorization] |
-|                    | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/f20a9cb332e3bdfd0bd541a1e8f5acfba4526cb7] | [Test for if user doesnt exist trying to login, it throws exception (unathorized)] | [throwing exception as important information to know what is/ could be going on] |
+|                    | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/1bb4a335b87b57a996f9a5e39fd2e08410915e5d] | [#37 Testing if when logging in, a token is generated and returned] | [toke is relevant for authorization] |
+|                    | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/f20a9cb332e3bdfd0bd541a1e8f5acfba4526cb7] | [#95 Test for if user doesnt exist trying to login, it throws exception (unathorized)] | [throwing exception as important information to know what is/ could be going on] |
 | **[@FinnPrivateGit]** | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/b7962936bfb537cac25f5a5238b83b1b5cad6aaa] | [Implemented the UI for creating a recipe as described in the dev tasks #15 and #16.] | [This is a critical feature for our WebApp and is used such that users can create and save recipes in their own cookbook.] |
 | **[@FinnPrivateGit]** | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/394a5abeef7d48d260184e0609a5de623c476fd0] | [Fixed some isues with the API request when creating a recipe] | [Without this change, the created recipe wouldn't get sent to the backend and it can't be added to the users list of recipes.] |
 | **[@FinnPrivateGit]** | [29.03.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/e282741953669a1518ce021f84969ac4d9375070] | [Implemented the whole backend structure such that a recipe that a user creates in the frontend gets saved as a recipe entity to the users list of recipes for dev task #37.] | [This is a critical feature for our WebApp, because else the user wouldn't have a possibility to see past saved recipes.] |
@@ -58,7 +58,7 @@ reason).
 | **[@FinnPrivateGit]** | [05.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/786a29c4efbc147f48e2fca58907ce7d0303a2d4] | [Did some bug fixes for user story #15 - creating events] | [Without these changes, the code wouldn't work according to our user storys and not as intended.] |
 | **[@sushmstr]** | [03.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/f614de8] | [Add event detail page with ingredients list and register/participate buttons (#19 #20)] | [Created the event details page with event information and allowing user to register & join an event] |
 |                    | [04.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/97f5ad8] | [Reduced code duplication, redundancy & complexity(nesting)] | [Helps the code meet quality benchmarks] |
-| **[jp-schl]** | [05.04.26] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/ca176fd8e82cb83a5acd7ca32d246fc4d5cd9c96] | [Implemented the option to join and leave an event (Also edited the user entity and the dto mapper)] | [As an user i want to join and leave an event so i can handle my decision if i want to play in the event or not (anymore).] |
+| **[jp-schl]** | [05.04.26] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/ca176fd8e82cb83a5acd7ca32d246fc4d5cd9c96] | [#64 Implemented the option to join and leave an event (Also edited the user entity and the dto mapper)] | [As an user i want to join and leave an event so i can handle my decision if i want to play in the event or not (anymore).] |
 |                    | [05.04.26] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/fbad46572def5838f3e6100fd5a85f6330380fa5] | [Created the EventControllerTest file to have a file for testing event-specific methods.] | [It is needed to test the implemented methods of the Eventcontroller to check if everything works as expected (same as for UserController).] |
 | **[@BestAchilles]** | [03.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/95c6b0e1445410fad675bd7fed8435e03d7c9556] | [Created the Event entity class defining the data model for events with fields like title, start time, cooking duration and participants] | [Provides the core data structure that all event-related backend and frontend features build on] |
 |                    | [05.04.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/85e75ccf634fffb902411b93f8a83e98c2ba0f63] | [Created separate events overview page with routing and layout (#13)] | [Provides the dedicated entry point for the event feature as required by user story #10] |
@@ -69,25 +69,22 @@ reason).
 
 ## Contributions Week 3 - [Begin Date] to [End Date]
 
+| **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
+| ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
 | **[@FinnPrivateGit]** | [07.04.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/2faf143ac3ce357f76b24599ff3aaab270a18be2] | [While typing the recipe title, API requests get sent to TheMealDB to get similar recipe titles with a one second debounce.] | [Mainly this is used such that users can copy existing recipes from TheMealDB and don't have to type everything themselfs. The 1sec debounce is important, because else we would have to many API request and would have to pay.] |
-
 | **[@FinnPrivateGit]** | [07.04.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/2fd2a343d8dfd7d73229a25b5a25b449e29b41ab] | [While typing the recipe title, the suggestions that we got from TheMealDB should get shown in a dropdown menu.] | [This is important, because the user should decide himself if he wants to use the existing recipe or not (and if a similar recipe even exists)] |
-
-
-| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-
-
-| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-
-
-| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-
+| **[@sushmstr]** | [09.04.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/82/commits/935b90af4234bd1c2125f77070192080e5ee291a] | [Implemented participated events page showing past participated events using time-based filtering] | [Enables users to view events they have already participated in] |
+| **[@sushmstr]**  | [09.04.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/82/commits/dee910025a8c694af5f870dea9774b3254a07eed] | [Implemented registered events page showing upcoming events using time-based filtering] | [Allows users to view events they have registered for in the future] |
+| **[@jp-schl]** | [10.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/335d817699e11248f1fbafc937d0b920ed5d121f] | [#126 Added test for user data return] | [Checks if when requesting from frontend user data, if it works] |
+|                    | [10.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/c4b66dfe87cb3da3d358f332554fa37d4b647693] | [#118 Added feature that creator of event gets automatically added to own event] | [If an user creates an event, he must be also a participant. for that i added this.] |
+|                    | [10.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/8e3ac5abf9cbf84dbb30432c9817534ed18c2f90] | [#120 Implementation of photo upload times in backend] | [while the event is going on, there will be time slots where photos need to be uploaded. for that the time has to be managed in the backend.] |
+|                    | [10.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/b013480a5edb792f4dd8183f6ded92aa09088b86] | [#121 Implementation for uploading photos: also new strucuture for photo submissions] | [In the event, every user needs to upload photos. for that i needed to come up with a new structure in db and a method to upload photos.] |
+|                    | [12.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/39c8f99f08ea1cdc1db2dedcdfde03826cc2cb65] | [#124 Updated eventcontroller and tests for new structure of photo upload] | [so the db gets updated correctly some fixed are needed. also a lot of tests needed to be updated because of new structure.] |
+|                    | [12.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/02ee06fcf5d6f157c11af2b83eb5c569b5c907ef] | [#83 For consistency with naming in backend, updated progressPhotoTimes to eventPrompt] | [Regarding future work with code, a consistent naming is important so not only me understands the code] |
+| **@valentinfrlch** |  12.04.26  | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/beb9de0a6778b241cf7c97629ea8a47d51192e71 | Pull recipe details on selection and populate fields | Makes it easier to create recipes by using existing ones |
+|                    | 12.04.26  | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/beb9de0a6778b241cf7c97629ea8a47d51192e71 | Limit suggestions to 3 | We don't want the UI to be too overwhelming |
+| **[@BestAchilles]** | [10.4.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/b6cc8b019ad9461f843c896850c2e0b25491c4c6] | [Implemented dynamic event state update (UPCOMING → ONGOING → FINISHED) in EventService (#39)] | [Backend needs to calculate event's current state so the frontend can show the right UI] |
+|                    | [12.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/475f845764552bfb17d04cdd10aef27984957068] | [Improved event detail page with state-based UI, getting actual data from events rather than mock data (#26, #33)] | [Users should only access the cooking interface if registered and if the event is currently ongoing] |
 ---
 
 ## Contributions Week 4 - [Begin Date] to [End Date]

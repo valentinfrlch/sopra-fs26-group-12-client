@@ -21,7 +21,7 @@ interface CreateEventFormValues {
     title: string;
     ingredients: Ingredient[];
     emojis: string[];
-    progressPhotoTimes: (string | unknown)[];
+    eventPrompts: (string | unknown)[];
     startDatetime: unknown;
     endDatetime: unknown;
 }
@@ -81,7 +81,7 @@ const CreateEventPage: React.FC = () => {
                 title: values.title,
                 emojis: emojisString,
                 ingredients: formattedIngredients,
-                progressPhotoTimes: (values.progressPhotoTimes || [])
+                eventPrompts: (values.eventPrompts || [])
                     .filter(Boolean)
                     .map((t: string | unknown) => new Date(String(t)).toISOString()),
                 startDatetime: values.startDatetime ? new Date(values.startDatetime as string | Date).toISOString() : null,
@@ -170,7 +170,7 @@ const CreateEventPage: React.FC = () => {
                         layout="vertical"
                         size="large"
                         onFinish={handleCreateEvent}
-                        initialValues={{ title: "", ingredients: [{ name: "" }], progressPhotoTimes: [null], emojis: ["🥖", "🥑", "🌶️"], startDatetime: null, endDatetime: null }}
+                        initialValues={{ title: "", ingredients: [{ name: "" }], eventPrompts: [null], emojis: ["🥖", "🥑", "🌶️"], startDatetime: null, endDatetime: null }}
                     >
                         {/* Register emojis field so Form tracks it and useWatch works */}
                         <Form.Item name="emojis" style={{ display: "none" }}>
@@ -278,11 +278,11 @@ const CreateEventPage: React.FC = () => {
                                     <Form.Item>
                                         <Row><span style={{ color: "black", fontWeight: 500, marginBottom: 4, marginTop: 8 }}>Progress Photos</span></Row>
                                         <Row><span style={{ fontSize: 12, color: "#888", marginBottom: 10 }}>Specify when you want participants to take progress photos.</span></Row>
-                                        <Form.List name="progressPhotoTimes">
+                                        <Form.List name="eventPrompts">
                                             {(fields, { add, remove }) => (
                                                 <>
                                                     {fields.map(({ key, name, ...restField }) => {
-                                                        const currentValue = form.getFieldValue("progressPhotoTimes")?.[name];
+                                                        const currentValue = form.getFieldValue("eventPrompts")?.[name];
                                                         return (
                                                             <Row key={key} gutter={8} align="middle">
                                                                 <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%" }}>
@@ -297,9 +297,9 @@ const CreateEventPage: React.FC = () => {
                                                                                     label={`Photo Time ${name + 1}`}
                                                                                     value={currentValue ? new Date(currentValue) : null}
                                                                                     onChange={(newVal) => {
-                                                                                        const arr = form.getFieldValue("progressPhotoTimes") || [];
+                                                                                        const arr = form.getFieldValue("eventPrompts") || [];
                                                                                         arr[name] = newVal ? newVal.toISOString() : null;
-                                                                                        form.setFieldsValue({ progressPhotoTimes: arr });
+                                                                                        form.setFieldsValue({ eventPrompts: arr });
                                                                                     }}
                                                                                     slotProps={{ textField: { fullWidth: true } }}
                                                                                 />
