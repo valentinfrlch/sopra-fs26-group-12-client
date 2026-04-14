@@ -83,9 +83,8 @@ reason).
 |                    | [12.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/02ee06fcf5d6f157c11af2b83eb5c569b5c907ef] | [#83 For consistency with naming in backend, updated progressPhotoTimes to eventPrompt] | [Regarding future work with code, a consistent naming is important so not only me understands the code] |
 | **@valentinfrlch** |  12.04.26  | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/beb9de0a6778b241cf7c97629ea8a47d51192e71 | Pull recipe details on selection and populate fields | Makes it easier to create recipes by using existing ones |
 |                    | 12.04.26  | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/beb9de0a6778b241cf7c97629ea8a47d51192e71 | Limit suggestions to 3 | We don't want the UI to be too overwhelming |
-| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-
+| **[@BestAchilles]** | [10.4.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/b6cc8b019ad9461f843c896850c2e0b25491c4c6] | [Implemented dynamic event state update (UPCOMING → ONGOING → FINISHED) in EventService (#39)] | [Backend needs to calculate event's current state so the frontend can show the right UI] |
+|                    | [12.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/475f845764552bfb17d04cdd10aef27984957068] | [Improved event detail page with state-based UI, getting actual data from events rather than mock data (#26, #33)] | [Users should only access the cooking interface if registered and if the event is currently ongoing] |
 ---
 
 ## Contributions Week 4 - [Begin Date] to [End Date]
