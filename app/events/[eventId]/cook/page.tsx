@@ -1,15 +1,26 @@
 "use client";
 
-import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
 import { useParams } from "next/navigation";
 import Sidebar from "@/components/appLayout";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { Spin } from "antd";
+import { useRouter } from "next/navigation";
 
 type ScheduleResponse = {
-  promptTimes: string[];
+  prompts: {
+    id: number;
+    promptTime: string;
+  }[];
   uploadWindowMinutes: number;
+  kicked: boolean;
 };
 
 export default function CookPage() {
@@ -24,13 +35,16 @@ export default function CookPage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
 
-  // NEW: selected file preview
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  // -----------------------------
-  // FETCH SCHEDULE
-  // -----------------------------
+  const router = useRouter();
+
+  const handleKickOut = useCallback(() => {
+    alert("You missed an upload. You are out.");
+    router.push(`/events/${eventId}/kicked`);
+  }, [router, eventId]);
+
   const fetchSchedule = useCallback(async () => {
     if (!eventId || !token) return;
 
@@ -39,6 +53,12 @@ export default function CookPage() {
         `/events/${eventId}/schedule`,
         { Authorization: `Bearer ${token}` }
       );
+
+      if (data.kicked) {
+        handleKickOut();
+        return;
+      }
+
       setSchedule(data);
     } catch (err) {
       console.error("Schedule fetch failed:", err);
@@ -46,7 +66,7 @@ export default function CookPage() {
     } finally {
       setLoading(false);
     }
-  }, [eventId, token, api]);
+  }, [eventId, token, api, handleKickOut]);
 
   useEffect(() => {
     if (!eventId || !token) return;
@@ -56,27 +76,22 @@ export default function CookPage() {
     return () => clearInterval(interval);
   }, [eventId, token, fetchSchedule]);
 
-  // -----------------------------
-  // ACTIVE WINDOW
-  // -----------------------------
   const activePromptIndex = useMemo(() => {
     if (!schedule) return -1;
 
     const now = Date.now();
     const windowMs = schedule.uploadWindowMinutes * 60 * 1000;
 
-    return schedule.promptTimes.findIndex((t) => {
-      const start = new Date(t).getTime();
+    return schedule.prompts.findIndex((p) => {
+      const start = new Date(p.promptTime).getTime();
       const end = start + windowMs;
+
       return now >= start && now < end;
     });
   }, [schedule]);
 
   const uploadActive = activePromptIndex !== -1;
 
-  // -----------------------------
-  // FILE SELECT
-  // -----------------------------
   const openFilePicker = () => {
     fileRef.current?.click();
   };
@@ -88,12 +103,8 @@ export default function CookPage() {
     setPreviewUrl(URL.createObjectURL(file));
   };
 
-  // -----------------------------
-  // UPLOAD (REAL)
-  // -----------------------------
   const handleUpload = useCallback(async () => {
     if (!selectedFile || !schedule || !token) return;
-
     if (activePromptIndex === -1) {
       alert("Upload window closed");
       return;
@@ -104,7 +115,11 @@ export default function CookPage() {
     try {
       const formData = new FormData();
       formData.append("file", selectedFile);
-      formData.append("promptId", String(activePromptIndex));
+
+      formData.append(
+        "promptId",
+        String(schedule.prompts[activePromptIndex].id)
+      );
 
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/events/${eventId}/submissions`,
@@ -125,7 +140,6 @@ export default function CookPage() {
 
       alert("Upload successful");
 
-      // reset
       setSelectedFile(null);
       setPreviewUrl(null);
     } catch (err) {
@@ -136,9 +150,6 @@ export default function CookPage() {
     }
   }, [selectedFile, schedule, token, activePromptIndex, eventId]);
 
-  // -----------------------------
-  // GUARDS
-  // -----------------------------
   if (!eventId) return <div>Invalid route</div>;
 
   if (loading) {
@@ -152,11 +163,8 @@ export default function CookPage() {
     );
   }
 
-  if (!schedule) return <div>No schedule (check backend / 401)</div>;
+  if (!schedule) return <div>No schedule (check backend / auth)</div>;
 
-  // -----------------------------
-  // UI
-  // -----------------------------
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
       <Sidebar />
@@ -164,7 +172,6 @@ export default function CookPage() {
       <main style={{ margin: "auto", textAlign: "center", width: 420 }}>
         <h2>Cook Event {eventId}</h2>
 
-        {/* hidden file input */}
         <input
           ref={fileRef}
           type="file"
@@ -173,12 +180,10 @@ export default function CookPage() {
           onChange={(e) => onFileSelected(e.target.files?.[0])}
         />
 
-        {/* select file */}
         <button onClick={openFilePicker} disabled={!uploadActive}>
-          Durchsuchen / Select Image
+          Select Image
         </button>
 
-        {/* preview */}
         {previewUrl && (
           <div style={{ marginTop: 20 }}>
             <img
@@ -186,14 +191,12 @@ export default function CookPage() {
               alt="preview"
               style={{ width: "100%", borderRadius: 8 }}
             />
-
             <p style={{ fontSize: 12, color: "#666" }}>
               {selectedFile?.name}
             </p>
           </div>
         )}
 
-        {/* upload button */}
         <button
           onClick={handleUpload}
           disabled={!selectedFile || uploading || !uploadActive}
