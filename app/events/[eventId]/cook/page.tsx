@@ -45,6 +45,59 @@ export default function CookPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const [permissionChecked, setPermissionChecked] = useState(false);
+  const [submissionIds, setSubmissionIds] = useState<number[]>([]);
+
+  // =========================
+  // LATEST FINISHED PROMPT
+  // =========================
+  const latestFinishedPromptIndex = useMemo(() => {
+    if (!schedule) return -1;
+
+    const now = Date.now();
+    const windowMs = schedule.uploadWindowMinutes * 60 * 1000;
+
+    let latestIndex = -1;
+
+    schedule.prompts.forEach((p, index) => {
+      const end = new Date(p.promptTime).getTime() + windowMs;
+      if (now > end) {
+        latestIndex = index;
+      }
+    });
+
+    return latestIndex;
+  }, [schedule]);
+
+  // =========================
+  // FETCH SUBMISSIONS (POLLING)
+  // =========================
+  useEffect(() => {
+    if (
+      latestFinishedPromptIndex === -1 ||
+      !schedule ||
+      !token
+    ) return;
+
+    const fetchSubmissions = async () => {
+      const promptId = schedule.prompts[latestFinishedPromptIndex].id;
+
+      try {
+        const ids = await api.get<number[]>(
+          `/events/${eventId}/prompts/${promptId}/submissions`,
+          { Authorization: `Bearer ${token}` }
+        );
+
+        setSubmissionIds(ids);
+      } catch (err) {
+        console.error("Failed to fetch submissions", err);
+      }
+    };
+
+    fetchSubmissions(); // initial
+    const interval = setInterval(fetchSubmissions, 5000);
+
+    return () => clearInterval(interval);
+  }, [latestFinishedPromptIndex, schedule, token, eventId, api]);
 
   // =========================
   // PERMISSION CHECK
@@ -93,7 +146,7 @@ export default function CookPage() {
   }, [router, eventId]);
 
   // =========================
-  // FETCH SCHEDULE
+  // FETCH SCHEDULE (POLLING)
   // =========================
   const fetchSchedule = useCallback(async () => {
     if (!eventId || !token) return;
@@ -138,7 +191,6 @@ export default function CookPage() {
     return schedule.prompts.findIndex((p) => {
       const start = new Date(p.promptTime).getTime();
       const end = start + windowMs;
-
       return now >= start && now < end;
     });
   }, [schedule]);
@@ -198,7 +250,7 @@ export default function CookPage() {
       setPreviewUrl(null);
     } catch (err) {
       console.error(err);
-      alert("Upload failed (you are not a participant of this event)");
+      alert("Upload failed");
     } finally {
       setUploading(false);
     }
@@ -209,7 +261,7 @@ export default function CookPage() {
   // =========================
   if (!eventId) return <div>Invalid route</div>;
 
-  if (!permissionChecked) {
+  if (!permissionChecked || loading) {
     return (
       <div style={{ display: "flex", minHeight: "100vh" }}>
         <Sidebar />
@@ -220,18 +272,7 @@ export default function CookPage() {
     );
   }
 
-  if (loading) {
-    return (
-      <div style={{ display: "flex", minHeight: "100vh" }}>
-        <Sidebar />
-        <div style={{ margin: "auto" }}>
-          <Spin />
-        </div>
-      </div>
-    );
-  }
-
-  if (!schedule) return <div>No schedule (check backend / auth)</div>;
+  if (!schedule) return <div>No schedule</div>;
 
   // =========================
   // UI
@@ -280,9 +321,32 @@ export default function CookPage() {
           {uploading ? "Uploading..." : "Upload Photo"}
         </button>
 
-        <p style={{ marginTop: 10, color: "#000000" }}>
+        <p style={{ marginTop: 10 }}>
           {uploadActive ? "🟢 Upload open" : "⚫ Upload closed"}
         </p>
+
+        {/* SUBMISSIONS GRID */}
+        {submissionIds.length > 0 && (
+          <div
+            style={{
+              marginTop: 30,
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 10,
+            }}
+          >
+            {submissionIds.map((id) => (
+              <img
+                key={id}
+                src={`${process.env.NEXT_PUBLIC_API_URL}/events/submissions/${id}/image`}
+                style={{
+                  width: "100%",
+                  borderRadius: 8,
+                }}
+              />
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );
