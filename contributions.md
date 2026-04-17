@@ -94,6 +94,9 @@ reason).
 | **[@FinnPrivateGit]** | [07.04.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/18fc21aa0635724166dd67c1e6f3c3e34c436435] | [Adding a homepage for our cookREAL webapp for unregistered and not logged in users.] | [This contribution is relevant, because we want that not logged in users also see a welcoming homepage of our webapp (every other page the user has to be logged in).] |
 | **@valentinfrlch** | 13.04.26   | https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/29e78abec517db9c9d37a1989a6ff5b5a9aad911 | Implement the `/recipe` endpoint | So we can retrieve recipe information #113 |
 |                    | 13.04.26   | https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/29e78abec517db9c9d37a1989a6ff5b5a9aad911 | Sort recipe list in chronological order (newest first) | So order is deterministic #41 |
+| **[@sushmstr]** | 2026-04-17 | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/3b9f3bc | Implemented label display and filtering UI for recipes (#42, #43) | Enables users to view recipe metadata and interactively filter recipes based on labels |
+| **[@sushmstr]** | 2026-04-17 | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/4e7a270 | Implemented recipe filtering logic and improved rendering (#87, #89) | Ensures correct filtering behavior and improves usability of the cookbook page |
+
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
