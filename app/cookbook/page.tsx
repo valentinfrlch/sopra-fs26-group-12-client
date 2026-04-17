@@ -266,6 +266,7 @@ const CookbookPage: React.FC = () => {
             ))}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: 16 }}>
+            // Filtering recipe cards
             {filteredRecipes.map((recipe) => (<RecipeCard key={recipe.id} recipe={recipe} />))}
           </div>
         </div>
