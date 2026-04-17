@@ -170,6 +170,7 @@ const CookbookPage: React.FC = () => {
 
   const [activeLabels, setActiveLabels] = useState<string[]>([]);
   // const filteredRecipes = activeLabels.length > 0 ? MOCK_RECIPES.filter((r) => activeLabels.every((active) => r.labels.includes(active))) : MOCK_RECIPES;
+  // Filtering logic
   const filteredRecipes =
     activeLabels.length > 0
       ? recipes.filter((r) =>
@@ -254,6 +255,7 @@ const CookbookPage: React.FC = () => {
             </Card>
           </div>
           <h2 style={{ color: "#1a1a1a", fontSize: 18, fontWeight: 600, marginBottom: 12 }}>Your Recipes</h2>
+          {/*Filtering/Selection: Font Change*/}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
             {ALL_LABELS.map((label) => (
               <Tag key={label} onClick={() => handleLabelToggle(label)}
@@ -264,14 +266,15 @@ const CookbookPage: React.FC = () => {
             ))}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: 16 }}>
+            {/*Filtering recipe cards*/}
             {filteredRecipes.map((recipe) => (<RecipeCard key={recipe.id} recipe={recipe} />))}
           </div>
         </div>
       </div>
 
 
-      {/* Floating + button
-      position: "fixed" — the most important property here. Removes the button from the normal page flow and pins it to the screen. It stays visible even when you scroll down — it never moves.
+      {/* 
+      Floating button
       */}
       <Button 
         type="primary" 
