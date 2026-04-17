@@ -4,7 +4,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import { User } from "@/types/user";
 import { getInitials as computeInitials } from "@/utils/getInitials";
-import { Avatar, Box, Button, Card, CircularProgress, Stack, Typography, TextField, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
+import { Avatar, Box, Button, Card, CircularProgress, Stack, Typography, TextField, Dialog, DialogTitle, DialogContent, DialogActions, IconButton } from "@mui/material";
+import EditIcon from '@mui/icons-material/Edit';
 import { Form, message } from "antd";
 
 const Profile: React.FC = () => {
@@ -16,6 +17,9 @@ const Profile: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [nameInput, setNameInput] = useState<string>("");
+  const [usernameInput, setUsernameInput] = useState<string>("");
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -30,6 +34,8 @@ const Profile: React.FC = () => {
         const headers = { Authorization: `Bearer ${storedToken}` };
         const fetched = await apiService.get<User>(`/users/${userId}`, headers);
         setUser(fetched);
+        setNameInput(fetched?.name ?? "");
+        setUsernameInput(fetched?.username ?? "");
       } catch (err: any) {
         // check for 401 and redirect to previous page
         const status = err?.status ?? err?.response?.status;
@@ -104,6 +110,35 @@ const Profile: React.FC = () => {
     }
   };
 
+  const handleSaveProfile = async () => {
+    if (!userId) return;
+    const payload: any = {};
+    if (nameInput !== (user?.name ?? "")) payload.name = nameInput;
+    if (usernameInput !== (user?.username ?? "")) payload.username = usernameInput;
+    if (Object.keys(payload).length === 0) {
+      message.info("No changes to save.");
+      return;
+    }
+
+    try {
+      const storedToken =
+        typeof window !== "undefined" && localStorage.getItem("token")
+          ? JSON.parse(localStorage.getItem("token") || '""')
+          : "";
+      const headers = { Authorization: `Bearer ${storedToken}` };
+
+      const updated = await apiService.patch<User>(`/users/${userId}`, payload, headers);
+      setUser(updated);
+      setNameInput(updated?.name ?? "");
+      setUsernameInput(updated?.username ?? "");
+      message.success("Profile updated successfully.");
+    } catch (err: any) {
+      console.error("Profile update failed", err);
+      const msg = err?.message || "Failed to update profile";
+      message.error(msg);
+    }
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", p: 6 }}>
@@ -115,39 +150,110 @@ const Profile: React.FC = () => {
   return (
     <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
       <Card sx={{ width: 520, p: 4, boxShadow: "none", borderRadius: "20px" }}>
-        <Stack spacing={2} alignItems="center">
-          <Avatar sx={{ width: 96, height: 96, bgcolor: "#4b6624", fontSize: 32 }}>
-            {initialsFor(user)}
-          </Avatar>
+        <Stack spacing={2} sx={{ width: "100%" }}>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={4}
+            alignItems="center"
+            sx={{ width: "100%" }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", minWidth: 96 }}>
+              <Avatar sx={{ width: 96, height: 96, bgcolor: "#4b6624", fontSize: 32 }}>
+                {initialsFor(user)}
+              </Avatar>
+            </Box>
 
-          <h2>{user?.name || user?.username || "Unknown user"}</h2>
-          <span style={{ marginTop: 4 }}>@{user?.username || "-"}</span>
+            <Box sx={{ display: "flex", flexDirection: "column", alignItems: { xs: "center", sm: "flex-start" }, flexGrow: 1 }}>
+              <h2 style={{ margin: 0 }}>{user?.name || "Unknown user"}</h2>
+              <span style={{ marginTop: 4 }}>@{user?.username || "-"}</span>
+            </Box>
 
-          <Box sx={{ width: "100%", mt: 2 }}>
-            <Stack direction="row" spacing={2} justifyContent="flex-end" style={{ marginTop: 24 }}>
-              <Button
-                variant="text"
-                onClick={handleLogout}
-                sx={{
-                  color: "red",
-                  borderRadius: "999px",
-                }}>
-                Logout
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={() => setIsModalOpen(true)}
-                sx={{
-                  borderColor: "#4b6624",
-                  color: "#4b6624",
-                  borderRadius: "999px",
-                }}>
-                Change password
-              </Button>
-              
-            </Stack>
-          </Box>
+            <Box sx={{ display: "flex", justifyContent: { xs: "center", sm: "flex-end" } }}>
+              <IconButton aria-label="edit" onClick={() => setIsEditModalOpen(true)} sx={{ color: "#4b6624" }}>
+                <EditIcon />
+              </IconButton>
+            </Box>
+          </Stack>
         </Stack>
+        <Box sx={{ width: "100%", mt: 2 }}>
+          <Stack direction="row" spacing={2} justifyContent="flex-end" style={{ marginTop: 24 }}>
+            <Button
+              variant="text"
+              onClick={handleLogout}
+              sx={{
+                color: "red",
+                borderRadius: "999px",
+              }}>
+              Logout
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => setIsModalOpen(true)}
+              sx={{
+                borderColor: "#4b6624",
+                color: "#4b6624",
+                borderRadius: "999px",
+              }}>
+              Change password
+            </Button>
+          </Stack>
+        </Box>
+
+        <Dialog
+          open={isEditModalOpen}
+          onClose={() => {
+            setNameInput(user?.name ?? "");
+            setUsernameInput(user?.username ?? "");
+            setIsEditModalOpen(false);
+          }}
+          PaperProps={{ sx: { borderRadius: "20px", padding: 1 } }}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle>Edit profile</DialogTitle>
+          <DialogContent style={{ paddingTop: 6 }}>
+            <TextField
+              label="Name"
+              fullWidth
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              sx={{
+                mt: 1, "& .MuiOutlinedInput-root": {
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#4b6624" },
+                  "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#4b6624" }
+                }
+              }}
+            />
+
+            <TextField
+              label="Username"
+              fullWidth
+              value={usernameInput}
+              onChange={(e) => setUsernameInput(e.target.value)}
+              sx={{
+                mt: 2, "& .MuiOutlinedInput-root": {
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#4b6624" },
+                  "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#4b6624" }
+                }
+              }}
+            />
+          </DialogContent>
+          <DialogActions style={{ padding: "24px", paddingTop: 0 }}>
+            <Button
+              onClick={() => {
+                setNameInput(user?.name ?? "");
+                setUsernameInput(user?.username ?? "");
+                setIsEditModalOpen(false);
+              }}
+              style={{ color: "#4b6624", borderRadius: "999px" }}
+            >
+              Cancel
+            </Button>
+            <Button variant="contained" onClick={async () => { await handleSaveProfile(); setIsEditModalOpen(false); }} style={{ background: "#4b6624", borderColor: "#4b6624", color: "white", borderRadius: "999px", boxShadow: "none" }}>
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Card>
       <Dialog
         open={isModalOpen}
@@ -155,6 +261,7 @@ const Profile: React.FC = () => {
           form.resetFields();
           setIsModalOpen(false);
         }}
+        PaperProps={{ sx: { borderRadius: "20px", padding: 1 } }}
         fullWidth
         maxWidth="sm"
       >
@@ -236,11 +343,11 @@ const Profile: React.FC = () => {
               form.resetFields();
               setIsModalOpen(false);
             }}
-            style={{ color: "#4b6624" }}
+            style={{ color: "#4b6624", borderRadius: "999px" }}
           >
             Cancel
           </Button>
-          <Button variant="contained" onClick={() => form.submit()} style={{ background: "#4b6624", borderColor: "#4b6624", color: "white" }}>
+          <Button variant="contained" onClick={() => form.submit()} style={{ background: "#4b6624", borderColor: "#4b6624", color: "white", borderRadius: "999px", boxShadow: "none" }}>
             Change
           </Button>
         </DialogActions>
