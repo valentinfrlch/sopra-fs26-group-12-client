@@ -88,24 +88,15 @@ reason).
 ---
 
 ## Contributions Week 4 - [Begin Date] to [End Date]
-
+| **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
+| ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
 | **[@FinnPrivateGit]** | [07.04.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/2b5585b7a8a560d65d11c0dd8a0b057e2e2fb00f] | [Adding a detail page for recipes.] | [This is important such that users can see their recipes and such that we can later implement the edit recipe user story.] |
-
 | **[@FinnPrivateGit]** | [07.04.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/18fc21aa0635724166dd67c1e6f3c3e34c436435] | [Adding a homepage for our cookREAL webapp for unregistered and not logged in users.] | [This contribution is relevant, because we want that not logged in users also see a welcoming homepage of our webapp (every other page the user has to be logged in).] |
-
-
 | **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-
-
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-
-
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 
 ---

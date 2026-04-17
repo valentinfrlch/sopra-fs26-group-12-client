@@ -53,9 +53,15 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
+        // read token from localStorage using the hook
+        const storedToken = localStorage.getItem("token")
+          ? JSON.parse(localStorage.getItem("token") || "\"")
+          : "";
+        const headers = storedToken ? { Authorization: `Bearer ${storedToken}` } : {};
+
         // apiService.get<User[]> returns the parsed JSON object directly,
         // thus we can simply assign it to our users variable.
-        const users: User[] = await apiService.get<User[]>("/users", {}); // must include headers
+        const users: User[] = await apiService.get<User[]>("/users", headers);
         setUsers(users);
         console.log("Fetched users:", users);
       } catch (error) {
