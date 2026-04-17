@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import { User } from "@/types/user";
 import { getInitials as computeInitials } from "@/utils/getInitials";
-import { Avatar, Box, Button, Card, CircularProgress, Stack, Typography, TextField, Dialog, DialogTitle, DialogContent, DialogActions, IconButton } from "@mui/material";
+import { Avatar, Box, Button, Card, CircularProgress, Stack, TextField, Dialog, DialogTitle, DialogContent, DialogActions, IconButton } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import { Form, message } from "antd";
 
@@ -22,6 +22,18 @@ const Profile: React.FC = () => {
   const [usernameInput, setUsernameInput] = useState<string>("");
   const [form] = Form.useForm();
 
+  type PasswordForm = {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword?: string;
+  };
+
+  type ApiError = {
+    status?: number;
+    response?: { status?: number };
+    message?: string;
+  };
+
   useEffect(() => {
     if (!userId) return;
 
@@ -36,9 +48,10 @@ const Profile: React.FC = () => {
         setUser(fetched);
         setNameInput(fetched?.name ?? "");
         setUsernameInput(fetched?.username ?? "");
-      } catch (err: any) {
+      } catch (err: unknown) {
         // check for 401 and redirect to previous page
-        const status = err?.status ?? err?.response?.status;
+        const e = err as ApiError;
+        const status = e?.status ?? e?.response?.status;
         if (status === 401) {
           message.error("Unauthorized access. Redirecting to previous page.");
           router.back();
@@ -52,7 +65,7 @@ const Profile: React.FC = () => {
     };
 
     fetchUser();
-  }, [apiService, userId]);
+  }, [apiService, userId, router]);
 
   const initialsFor = (u: User | null) => {
     const nameOrUsername = u?.name || u?.username || "?";
@@ -63,7 +76,7 @@ const Profile: React.FC = () => {
     }
   };
 
-  const onFinish = async (values: any) => {
+  const onFinish = async (values: PasswordForm) => {
     if (!userId) return;
     const { currentPassword, newPassword } = values;
     try {
@@ -78,9 +91,10 @@ const Profile: React.FC = () => {
       form.resetFields();
       setIsModalOpen(false);
       router.push("/login");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Password change failed", err);
-      const msg = err?.message || "Failed to change password";
+      const e = err as ApiError;
+      const msg = e?.message ?? "Failed to change password";
       message.error(msg);
     }
   };
@@ -103,16 +117,17 @@ const Profile: React.FC = () => {
       }
       message.success("Logged out successfully.");
       router.push("/login");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Logout failed", err);
-      const msg = err?.message || "Failed to logout";
+      const e = err as ApiError;
+      const msg = e?.message ?? "Failed to logout";
       message.error(msg);
     }
   };
 
   const handleSaveProfile = async () => {
     if (!userId) return;
-    const payload: any = {};
+    const payload: Record<string, unknown> = {};
     if (nameInput !== (user?.name ?? "")) payload.name = nameInput;
     if (usernameInput !== (user?.username ?? "")) payload.username = usernameInput;
     if (Object.keys(payload).length === 0) {
@@ -132,9 +147,10 @@ const Profile: React.FC = () => {
       setNameInput(updated?.name ?? "");
       setUsernameInput(updated?.username ?? "");
       message.success("Profile updated successfully.");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Profile update failed", err);
-      const msg = err?.message || "Failed to update profile";
+      const e = err as ApiError;
+      const msg = e?.message ?? "Failed to update profile";
       message.error(msg);
     }
   };

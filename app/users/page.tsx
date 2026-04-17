@@ -55,9 +55,11 @@ const Dashboard: React.FC = () => {
       try {
         // read token from localStorage using the hook
         const storedToken = localStorage.getItem("token")
-          ? JSON.parse(localStorage.getItem("token") || "\"")
+          ? JSON.parse(localStorage.getItem("token") || '""')
           : "";
-        const headers = storedToken ? { Authorization: `Bearer ${storedToken}` } : {};
+        const headers: Record<string, string> = storedToken
+          ? { Authorization: `Bearer ${storedToken}` }
+          : {};
 
         // apiService.get<User[]> returns the parsed JSON object directly,
         // thus we can simply assign it to our users variable.
