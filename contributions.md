@@ -92,8 +92,8 @@ reason).
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
 | **[@FinnPrivateGit]** | [07.04.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/2b5585b7a8a560d65d11c0dd8a0b057e2e2fb00f] | [Adding a detail page for recipes.] | [This is important such that users can see their recipes and such that we can later implement the edit recipe user story.] |
 | **[@FinnPrivateGit]** | [07.04.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/18fc21aa0635724166dd67c1e6f3c3e34c436435] | [Adding a homepage for our cookREAL webapp for unregistered and not logged in users.] | [This contribution is relevant, because we want that not logged in users also see a welcoming homepage of our webapp (every other page the user has to be logged in).] |
-| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **@valentinfrlch** | 13.04.26   | https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/29e78abec517db9c9d37a1989a6ff5b5a9aad911 | Implement the `/recipe` endpoint | So we can retrieve recipe information #113 |
+|                    | 13.04.26   | https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/29e78abec517db9c9d37a1989a6ff5b5a9aad911 | Sort recipe list in chronological order (newest first) | So order is deterministic #41 |
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
@@ -102,45 +102,27 @@ reason).
 ---
 
 ## Contributions Week 5 - [Begin Date] to [End Date]
-
-| **[@githubUser1]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-
-
+| **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
+| ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
+| **@valentinfrlch** | 17.04.26   | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/0bf98034da6193d8fa59f025050d56d3949c27ea | Implement frontend to change username, name, and password | So the user can update their personal information #6, #7, #8 |
+|                    | 17.04.26   | https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/c1ed1e83698fd08a9ffcb715d6077e2a9773e4df | Implement endpoints for PATCH requests  | So the user can change their information #22 |
 | **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-
-
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-
-
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 
 ---
 
 ## Contributions Week 6 - [Begin Date] to [End Date]
-
+| **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
+| ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
 | **[@githubUser1]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-
-
 | **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-
-
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-
-
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
