@@ -8,6 +8,7 @@ import { Form } from "antd";
 import { Button, TextField } from "@mui/material";
 import React, { useState } from "react";
 import { UserGetDTO } from "@/types/api";
+import { storeUserSession } from "@/utils/auth";
 // Optionally, you can import a CSS module or file for additional styling:
 // import styles from "@/styles/page.module.css";
 
@@ -35,14 +36,7 @@ const Login: React.FC = () => {
     try {
       const response = await apiService.post<UserGetDTO>("/users/login", values);
 
-      if (response.token) {
-        setToken(response.token);
-      }
-      
-      if (response.id && response.username) {
-      localStorage.setItem("userId", String(response.id));
-      localStorage.setItem("username", response.username);
-    }
+      storeUserSession(response);
 
       router.push("/cookbook");
     } catch (error) {

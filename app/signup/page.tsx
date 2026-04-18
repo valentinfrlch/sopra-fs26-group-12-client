@@ -7,6 +7,7 @@ import { User } from "@/types/user";
 import { Form } from "antd";
 import { Button, TextField } from "@mui/material";
 import React, { useState } from "react";
+import { storeUserSession } from "@/utils/auth";
 // Optionally, you can import a CSS module or file for additional styling:
 // import styles from "@/styles/page.module.css";
 
@@ -37,14 +38,7 @@ const Signup: React.FC = () => {
       console.log("Signup response:", response); // Log the entire response for debugging
 
       // Use the useLocalStorage hook that returned a setter function (setToken in line 41) to store the token if available
-      if (response.token) {
-        setToken(response.token);
-      }
-
-      if (response.id && response.username) {
-        localStorage.setItem("userId", String(response.id));
-        localStorage.setItem("username", response.username);
-      }
+      storeUserSession(response);
 
       // Navigate to the user overview
       router.push("/cookbook");
