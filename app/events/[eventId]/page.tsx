@@ -65,9 +65,11 @@ async function fetchEventData(
   setEvent: (e: CookingEvent) => void,
   setIsRegistered: (v: boolean) => void,
 ): Promise<void> {
+  const rawToken = localStorage.getItem("token");
+  const cleantoken = rawToken ? JSON.parse(rawToken) : null;
   const data = await apiService.get<CookingEvent>(
     `/events/${eventId}`,
-    { Authorization: `Bearer ${token}` }
+    { Authorization: `Bearer ${cleantoken}` }
   );
   setEvent(data);
   setIsRegistered(data.participants.some((p) => String(p.id) === userId));
