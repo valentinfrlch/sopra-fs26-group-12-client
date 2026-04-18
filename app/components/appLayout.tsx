@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { HomeOutlined, ReadOutlined } from "@ant-design/icons";
-import { Avatar } from "antd";
+import { HomeOutlined, ReadOutlined, MenuOutlined } from "@ant-design/icons";
+import { Avatar as AntAvatar } from "antd";
 
 
 
@@ -58,6 +58,15 @@ interface UserAvatarProps {
   size?: number;
 }
 
+// const getInitials = (name: string): string => {
+//   return name
+//     .split(" ")
+//     .map((w) => w[0])
+//     .join("")
+//     .toUpperCase()
+//     .slice(0, 2);
+// };
+
 const getInitials = (name: string): string => {
   return name
     .split(" ")
@@ -67,25 +76,51 @@ const getInitials = (name: string): string => {
     .slice(0, 2);
 };
 
-export const UserAvatar: React.FC<UserAvatarProps> = ({
-  username = "U",
-  size = 40,
-}) => {
-  const router = useRouter();
+export const UserAvatar: React.FC<{ size?: number }> = ({ size = 40 }) => {
+  const [username, setUsername] = useState("U");
+
+  useEffect(() => {
+    const stored = localStorage.getItem("username") ?? "U";
+    setUsername(stored);
+  }, []);
 
   return (
-    <Avatar
+    <AntAvatar
       size={size}
       style={{
         background: "#f0f0f0",
         color: "#1a1a1a",
-        cursor: "pointer",
         fontWeight: 600,
+        cursor: "pointer",
       }}
-      onClick={() => router.push("/user/me")}
     >
       {getInitials(username)}
-    </Avatar>
+    </AntAvatar>
+  );
+};
+
+
+export const Header: React.FC<{ title: string; rightContent?: React.ReactNode }> = ({ title, rightContent }) => {
+  return (
+    <div
+      style={{
+        background: "#fff",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "16px 24px",
+        borderBottom: "1px solid #e8e8e8",
+      }}
+    >
+      {/* Left */}
+      <div style={{ display: "flex", alignItems: "center", color: "#1a1a1a"}}>
+      {/* <MenuOutlined style={{ fontSize: 18, color: "#aaa" }} /> */}
+        <span style={{ fontWeight: 600, fontSize: 16 }}>{title}</span>
+      </div>
+
+      {/* Right */}
+      {rightContent }
+    </div>
   );
 };
 

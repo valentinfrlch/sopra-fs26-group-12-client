@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Sidebar, { UserAvatar } from "@/components/appLayout";
+import Sidebar, { UserAvatar, Header } from "@/components/appLayout";
 
 interface Event {
   id: number;
@@ -47,7 +47,12 @@ export default function RegisteredEventsPage() {
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
 
         {/* Header */}
-        <div style={{
+        <Header 
+          title="Registered Events"
+          rightContent={<UserAvatar size={40} />}
+        />
+
+        {/* <div style={{
           background: "#fff",
           display: "flex",
           alignItems: "center",
@@ -59,7 +64,7 @@ export default function RegisteredEventsPage() {
             Registered Events
           </span>
           <UserAvatar username={username} size={40} />
-        </div>
+        </div> */}
 
         {/* Content */}
         <div style={{ padding: 24 }}>

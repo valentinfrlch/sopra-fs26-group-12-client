@@ -40,6 +40,12 @@ const Signup: React.FC = () => {
       if (response.token) {
         setToken(response.token);
       }
+
+      if (response.id && response.username) {
+        localStorage.setItem("userId", String(response.id));
+        localStorage.setItem("username", response.username);
+      }
+
       // Navigate to the user overview
       router.push("/cookbook");
     } catch (error) {

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button, Card, Tag, Dropdown, MenuProps, ConfigProvider } from "antd";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import Sidebar, { UserAvatar } from "@/components/appLayout";
+import Sidebar, { UserAvatar, Header } from "@/components/appLayout";
 
 
 
@@ -194,17 +194,11 @@ const CookbookPage: React.FC = () => {
 
       {/* Main content */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-
-
         
-        <div style={{background: "#fff", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: "1px solid #2a2d3a" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            {/* <MenuOutlined style={{ fontSize: 18, color: "#aaa" }} /> */}
-            <span style={{ fontWeight: 600, fontSize: 16, color: "#1a1a1a" }}>Your Library</span>
-          </div>
-          <UserAvatar username={username} size={40} />
-        </div>
-
+        <Header 
+          title="Your Library" 
+          rightContent={<UserAvatar />} 
+        />
 
         
         <div style={{ padding: "24px", flex: 1 }}>

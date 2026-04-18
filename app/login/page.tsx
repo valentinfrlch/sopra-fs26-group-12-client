@@ -3,10 +3,11 @@
 import { useRouter } from "next/navigation"; // use NextJS router for navigation
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
-import { User } from "@/types/user";
+// import { User } from "@/types/user";
 import { Form } from "antd";
 import { Button, TextField } from "@mui/material";
 import React, { useState } from "react";
+import { UserGetDTO } from "@/types/api";
 // Optionally, you can import a CSS module or file for additional styling:
 // import styles from "@/styles/page.module.css";
 
@@ -32,12 +33,17 @@ const Login: React.FC = () => {
 
   const handleLogin = async (values: FormFieldProps) => {
     try {
-      const response = await apiService.post<User>("/users/login", values);
+      const response = await apiService.post<UserGetDTO>("/users/login", values);
 
       if (response.token) {
         setToken(response.token);
       }
       
+      if (response.id && response.username) {
+      localStorage.setItem("userId", String(response.id));
+      localStorage.setItem("username", response.username);
+    }
+
       router.push("/cookbook");
     } catch (error) {
       if (error instanceof Error) {

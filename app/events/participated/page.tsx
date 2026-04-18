@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Sidebar, { UserAvatar } from "@/components/appLayout";
+import Sidebar, { UserAvatar, Header } from "@/components/appLayout";
 
 interface Event {
   id: number;
@@ -46,8 +46,12 @@ export default function ParticipatedEventsPage() {
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
 
+        <Header 
+          title="Participated Events"
+          rightContent={<UserAvatar size={40} />}
+        />
         {/* Header */}
-        <div style={{
+        {/* <div style={{
           background: "#fff",
           display: "flex",
           alignItems: "center",
@@ -59,7 +63,7 @@ export default function ParticipatedEventsPage() {
             Participated Events
           </span>
           <UserAvatar username={username} size={40} />
-        </div>
+        </div> */}
 
         {/* Content */}
         <div style={{ padding: 24 }}>

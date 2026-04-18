@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
-import Sidebar, { UserAvatar } from "@/components/appLayout";
+import Sidebar, { UserAvatar, Header } from "@/components/appLayout";
 import { Spin } from "antd";
 import { Button, ButtonGroup, Avatar, AvatarGroup, Chip, Tooltip } from "@mui/material";
 
@@ -279,12 +279,17 @@ const EventDetailPage: React.FC = () => {
       <main style={{ flex: 1, display: "flex", flexDirection: "column" }}>
 
         {/* PAGE HEADING */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 32px", height: 72 }}>
+        {/* <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 32px", height: 72 }}>
           <h1 style={{ fontSize: 16, fontWeight: 600, margin: 0, color: "#1a1a1a" }}>
             {event.title}
           </h1>
           <UserAvatar size={40} />
-        </div>
+        </div> */}
+
+        <Header 
+          title={event.title} 
+          rightContent={<UserAvatar size={40} />} 
+        />
 
         {/* BANNER */}
         <div style={{ position: "relative", height: 280, backgroundColor: "#f0f5f1", overflow: "hidden" }}>
