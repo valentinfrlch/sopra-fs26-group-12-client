@@ -87,7 +87,7 @@ reason).
 |                    | [12.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/475f845764552bfb17d04cdd10aef27984957068] | [Improved event detail page with state-based UI, getting actual data from events rather than mock data (#26, #33)] | [Users should only access the cooking interface if registered and if the event is currently ongoing] |
 ---
 
-## Contributions Week 4 - [Begin Date] to [End Date]
+## Contributions Week 4 - [13.04.26] to [19.04.26]
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
 | **[@FinnPrivateGit]** | [07.04.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/2b5585b7a8a560d65d11c0dd8a0b057e2e2fb00f] | [Adding a detail page for recipes.] | [This is important such that users can see their recipes and such that we can later implement the edit recipe user story.] |
@@ -97,8 +97,13 @@ reason).
 | **[@sushmstr]** | 2026-04-17 | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/3b9f3bc | Implemented label display and filtering UI for recipes (#42, #43) | Enables users to view recipe metadata and interactively filter recipes based on labels |
 | **[@sushmstr]** | 2026-04-17 | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/4e7a270 | Implemented recipe filtering logic and improved rendering (#87, #89) | Ensures correct filtering behavior and improves usability of the cookbook page |
 
-| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@jp-schl]** | [14.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/f2a2d2c358f9b2de8c89cf3111a00b52557e3a84] | [#46 If an participant doesnt upload a photo in time, he gets kicked from the game (backend)] | [It contains to workflow of the event game] |
+|                    | [16.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/928532f6f0836ad14f1ca5ccfd9a8b156a0ffafa] | [#137 Backend implementation for photo upload handling] |[It contains to the gameflow] |
+|                    | [14.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/b9ff351a4abbc5738b77616ddc3f607167d67766] | [#93 If an participant doesnt upload a photo in time, he gets kicked from the game (frontend)] | [It contains to workflow of the event game] |
+
+
+
+
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 
