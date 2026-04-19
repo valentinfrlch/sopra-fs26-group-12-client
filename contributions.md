@@ -109,8 +109,8 @@ reason).
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
 | **@valentinfrlch** | 17.04.26   | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/0bf98034da6193d8fa59f025050d56d3949c27ea | Implement frontend to change username, name, and password | So the user can update their personal information #6, #7, #8 |
 |                    | 17.04.26   | https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/c1ed1e83698fd08a9ffcb715d6077e2a9773e4df | Implement endpoints for PATCH requests  | So the user can change their information #22 |
-| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@sushmstr]** | [18.04.26]   | https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/106/commits/9984cd8cff633a7a9b4b4c3a86f43e5d1c54126f | Store userId and username on login/signup, fix avatar initialization, and integrate reusable header (#102,#103) | Enables consistent UI across pages and improves user experience |
+|                 | [18.04.26]   | https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/106/commits/1efe5f648a3592ae880ca9af153cdfd7980e7493 | Implemented event cards for registered and partcipated events pages | User able to view complete details of participated and registered upcoming events, access individual event page |
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
