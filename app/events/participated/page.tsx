@@ -7,16 +7,46 @@ import Sidebar, { Header, UserAvatar } from "@/components/appLayout";
 import EventCard from "@/components/EventCard";
 import { useEvents } from "@/hooks/useEvents";
 
+
+
+type Participant = {
+  id: number;
+};
+
+type Event = {
+  id: number;
+  title?: string;
+  state?: string;
+  participants?: { id: number }[];
+};
+
 const ParticipatedEventsPage: React.FC = () => {
   const events = useEvents();
-  const userId = Number(localStorage.getItem("userId"));
+  const [userId, setUserId] = React.useState<number | null>(null);
+
+  React.useEffect(() => {
+    const id = localStorage.getItem("userId");
+    if (id) setUserId(Number(id));
+  }, []);
 
   // Filter: finished + user is participant
-  const participatedEvents = events.filter(
-    (e: any) =>
-      e.state === "FINISHED" &&
-      e.participants?.some((p: any) => p.id === userId)
+  
+  const participatedEvents = React.useMemo(() => {
+    if (userId === null) return [];
+    return (events as Event[]).filter(
+      (e) =>
+        e.state === "FINISHED" &&
+        e.participants?.some((p) => Number(p.id) === userId)
+    );
+  }, [events, userId]);
+
+  console.log("All events:", events);
+  console.log("userId:", userId, typeof userId);
+  console.log(
+    "Participant IDs in first event:",
+    (events as Event[])[0]?.participants?.map((p) => ({ id: p.id, type: typeof p.id }))
   );
+  console.log("Filtered result:", participatedEvents);
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
@@ -44,7 +74,7 @@ const ParticipatedEventsPage: React.FC = () => {
                 gap: 16,
               }}
             >
-              {participatedEvents.map((event: any) => (
+              {participatedEvents.map((event) => (
                 <EventCard key={event.id} event={event} />
               ))}
             </div>

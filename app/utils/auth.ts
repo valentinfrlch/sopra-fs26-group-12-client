@@ -1,4 +1,10 @@
-export const storeUserSession = (response: any) => {
+type AuthResponse = {
+  token?: string | null;
+  id?: number | string | null;
+  username?: string | null;
+};
+
+export const storeUserSession = (response: AuthResponse) => {
   if (response.token) {
     localStorage.setItem("token", response.token);
   }

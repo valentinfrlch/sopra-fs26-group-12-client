@@ -8,6 +8,8 @@ import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Sidebar, { UserAvatar, Header } from "@/components/appLayout";
 
+import { useApi } from "@/hooks/useApi"; 
+import { getApiDomain } from "@/utils/domain";
 
 
 interface Recipe {
@@ -103,7 +105,7 @@ const RecipeCard: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
 
         {recipe.imageURL ? (
           <img
-            src={`http://localhost:8080${recipe.imageURL}`}
+            src={`${getApiDomain()}${recipe.imageURL.startsWith("/") ? "" : "/"}${recipe.imageURL}`}
             alt={recipe.title}
             style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
           />
@@ -122,11 +124,9 @@ const RecipeCard: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
 const CookbookPage: React.FC = () => {
 
    
-
+  const api = useApi(); // add inside component
   const router = useRouter();
-  
   const [username, setUsername] = useState<string>("U");
-
   const [recipes, setRecipes] = useState<Recipe[]>([]);
 
   useEffect(() => {
@@ -136,38 +136,65 @@ const CookbookPage: React.FC = () => {
 
 
 
-  useEffect(() => {
+
+  const [token, setToken] = useState<string | null>(null);
+
+useEffect(() => {
+    const stored = localStorage.getItem("token");
+    if (stored) setToken(stored.replace(/"/g, ""));
+  }, []);
+
+// useEffect(() => {
+//   if (!token) return;
+
+//   const fetchRecipes = async () => {
+//     try {
+//       console.log("TOKEN USED:", token);
+
+//       const res = await fetch("http://localhost:8080/recipes", {
+//         method: "GET",
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//         },
+//         cache: "no-store",
+//       });
+
+//       console.log("STATUS:", res.status);
+
+//       if (!res.ok) {
+//         throw new Error("Failed to fetch recipes");
+//       }
+
+//       const data = await res.json();
+//       console.log("RECIPES:", data);
+
+//       setRecipes(data);
+//     } catch (err) {
+//       console.error("FETCH ERROR:", err);
+//     }
+//   };
+
+//   fetchRecipes();
+// }, [token]);
+
+useEffect(() => {
+  if (!token) return;
+
   const fetchRecipes = async () => {
     try {
-      const rawToken = localStorage.getItem("token");
-
-      if (!rawToken) return;
-
-      const token = rawToken.replace(/"/g, "");
-      const res = await fetch("http://localhost:8080/recipes", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const data = await api.get<Recipe[]>("/recipes", {
+        Authorization: `Bearer ${token}`,
       });
 
-      if (!res.ok) throw new Error("Failed to fetch recipes");
-
-      const data = await res.json();
-
       console.log("RECIPES:", data);
-
       setRecipes(data);
-
     } catch (err) {
-      console.error(err);
+      console.error("FETCH ERROR:", err);
     }
   };
 
   fetchRecipes();
-}, []);
-  
-
-  const now = new Date();
+}, [token]);
 
   
 

@@ -57,22 +57,37 @@ function formatEventTime(startIso: string, endIso: string): string {
 // ---------------------------------------------------------------------------
 // DATA FETCHING
 // ---------------------------------------------------------------------------
+
+
 async function fetchEventData(
   apiService: ReturnType<typeof useApi>,
   eventId: string,
   token: string,
   userId: string,
-  setEvent: (e: CookingEvent) => void,
-  setIsRegistered: (v: boolean) => void,
-): Promise<void> {
-  const rawToken = localStorage.getItem("token");
-  const cleantoken = rawToken ? JSON.parse(rawToken) : null;
-  const data = await apiService.get<CookingEvent>(
-    `/events/${eventId}`,
-    { Authorization: `Bearer ${cleantoken}` }
-  );
-  setEvent(data);
-  setIsRegistered(data.participants.some((p) => String(p.id) === userId));
+  setEvent: (e: CookingEvent | null) => void,
+  setIsRegistered: (v: boolean) => void,) {
+  try {
+
+    console.log("TOKEN BEING SENT:", token);
+
+    const headers: HeadersInit  = token
+      ? { Authorization: `Bearer ${token}` }
+      : {};
+
+    const data = await apiService.get<CookingEvent>(
+      `/events/${eventId}`,
+      headers
+    );
+
+    console.log("EVENT DATA:", data);
+
+    setEvent(data);
+    setIsRegistered(data.participants.some((p) => String(p.id) === userId));
+
+  } catch (err) {
+    console.error("FETCH ERROR:", err);
+    setEvent(null);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -145,7 +160,10 @@ async function cancelRegistration(
   setEvent: (e: CookingEvent) => void,
 ): Promise<void> {
   try {
-    await apiService.delete<void>(`/events/${eventId}/participants`);
+    await apiService.delete<void>(
+      `/events/${eventId}/participants`,
+      { Authorization: `Bearer ${token}` }
+    );
     setIsRegistered(false);
     const updated = await apiService.get<CookingEvent>(
       `/events/${eventId}`,
@@ -232,10 +250,13 @@ const StatusBadge = ({ state }: { state: CookingEvent["state"] }) => {
 // ---------------------------------------------------------------------------
 const EventDetailPage: React.FC = () => {
   const params = useParams();
+  // const eventId = Array.isArray(params?.eventid) ? params.eventid[0] : params?.eventid;
   const eventId = params?.eventId as string;
   const router = useRouter();
   const apiService = useApi();
-  const { value: token } = useLocalStorage<string>("token", "");
+  // const { value: token } = useLocalStorage<string>("token", "");
+  const { value: rawToken } = useLocalStorage<string>("token", "");
+  const token = rawToken?.replace(/^"|"$/g, "");
 
   const [userId, setUserId] = useState<string>("");
   const [event, setEvent] = useState<CookingEvent | null>(null);
@@ -248,27 +269,40 @@ const EventDetailPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!eventId) return;
+    if (!eventId || !token) return;
+
     setLoading(true);
+
     fetchEventData(apiService, eventId, token, userId, setEvent, setIsRegistered)
       .finally(() => setLoading(false));
+
   }, [eventId, apiService, userId, token]);
 
+
   const handleRegister = useCallback(async () => {
+    if(!eventId) {
+    console.log("eventId not ready yet");
+    return;
+  };
     await registerForEvent(apiService, eventId, token, router, setRegistering, setIsRegistered, setEvent as (e: CookingEvent) => void);
   }, [eventId, token, apiService, router]);
 
   const handleCancel = useCallback(async () => {
+    if(!eventId) {
+    console.log("eventId not ready yet");
+    return;
+  };
     await cancelRegistration(apiService, eventId, token, setIsRegistered, setEvent as (e: CookingEvent) => void);
   }, [eventId, apiService, token]);
 
   const handleParticipate = useCallback(() => {
+    if (!eventId) return;
     router.push(`/events/${eventId}/cook`);
   }, [eventId, router]);
 
   if (loading) return <LoadingScreen />;
-  if (!event) return <NotFoundScreen onBack={() => router.back()} />;
-
+  if (!loading && !event) return <NotFoundScreen onBack={() => router.back()} />;
+  if (!event) return null;
   // obtained states
   const isUpcoming = event.state === "UPCOMING";
   const isOngoing = event.state === "ONGOING";

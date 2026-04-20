@@ -35,7 +35,7 @@ export default function CookPage() {
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   const eventId = params?.eventId as string;
-  const { value: token } = useLocalStorage<string>("token", "");
+  const { value: token } = useLocalStorage<string>("token", "");  
 
   const [schedule, setSchedule] = useState<ScheduleResponse | null>(null);
   const [loading, setLoading] = useState(true);
