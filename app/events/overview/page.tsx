@@ -43,7 +43,7 @@ const EventsPage: React.FC = () => {
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                         <span style={{ fontWeight: 600, fontSize: 16, color: "#1a1a1a" }}>Events</span>
                     </div>
-                    <UserAvatar username={username} size={40} />
+                    <UserAvatar size={40} />
                 </div>
 
                 {/* Content */}

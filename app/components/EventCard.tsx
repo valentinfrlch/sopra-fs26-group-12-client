@@ -6,20 +6,31 @@ import React from "react";
 import { Card } from "antd";
 import { useRouter } from "next/navigation";
 
+type Participant = {
+    id: number;
+  };
+
 interface Event {
   id: number;
   title?: string;
   name?: string;
-  emojis: string;
+  emojis?: string;
   startDatetime?: string;
   endDatetime?: string;
   startDate?: string;
   endDate?: string;
-  participants?: any[];
+  
+  participants?: Participant[];
+  // participants?: any[];
   participantCount?: number;
+  state?: string;
+  creator?: {
+    id: number;
+    name?: string;
+  };
 }
 
-interface Props {
+type Props ={
   event: Event;
 }
 
@@ -31,8 +42,8 @@ const EventCard: React.FC<Props> = ({ event }) => {
   const end = event.endDatetime || event.endDate;
 
   const participantCount =
-    event.participantCount ?? event.participants?.length ?? 0;
-
+    (event.participants?.length || 0) +
+    (event.creator ? 1 : 0);
   return (
     <Card
       hoverable
