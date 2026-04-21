@@ -153,8 +153,14 @@ async function cancelRegistration(
   apiService: ReturnType<typeof useApi>,
   eventId: string,
   token: string,
+<<<<<<< HEAD
+  setCancelling: (v: boolean) => void,
+  setIsRegistered: (v: boolean) => void,
+=======
+>>>>>>> origin/dev
   setEvent: (e: CookingEvent) => void,
 ): Promise<void> {
+  setCancelling(true); 
   try {
     await apiService.delete<void>(
       `/events/${eventId}/participants`,
@@ -166,7 +172,14 @@ async function cancelRegistration(
     );
     setEvent(updated);
   } catch (error) {
+<<<<<<< HEAD
+    // Error handling
+    console.error("CANCEL ERROR:", error);
+  } finally{
+    setCancelling(false); 
+=======
     console.error("Cancel error:", error);
+>>>>>>> origin/dev
   }
 }
 
@@ -256,6 +269,7 @@ const EventDetailPage: React.FC = () => {
   const [userId, setUserId] = useState<string>("");
   const [event, setEvent] = useState<CookingEvent | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [cancelling, setCancelling] = useState<boolean>(false)
   const [registering, setRegistering] = useState<boolean>(false);
   const isRegistered = useMemo(() => {
     if (!event || !userId) return false;
@@ -284,11 +298,19 @@ const EventDetailPage: React.FC = () => {
   }, [eventId, token, apiService, router]);
 
   const handleCancel = useCallback(async () => {
+<<<<<<< HEAD
+    if(!eventId) {
+    console.log("eventId not ready yet");
+    return;
+  };
+    await cancelRegistration(apiService, eventId, token, setCancelling, setIsRegistered, setEvent as (e: CookingEvent) => void);
+=======
     if (!eventId) {
       console.log("eventId not ready yet");
       return;
     }
     await cancelRegistration(apiService, eventId, token, setEvent as (e: CookingEvent) => void);
+>>>>>>> origin/dev
   }, [eventId, apiService, token]);
 
   const handleParticipate = useCallback(() => {
