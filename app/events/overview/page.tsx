@@ -6,31 +6,54 @@ import { useRouter } from "next/navigation";
 import { Button } from "@mui/material";
 import { Card } from "antd";
 import Sidebar, { UserAvatar } from "@/components/appLayout";
+import { useApi } from "@/hooks/useApi";
+import useLocalStorage from "@/hooks/useLocalStorage";
+import { CircularProgress } from "@mui/material";
 
-// This is just temporary/placeholder (will be later replaced with actual data from events (API call))
-const PLACEHOLDER_EVENTS = [
-    { id: 1, title: "Pizza", emojis: "🍕🧄🍅", startDatetime: "2026-04-10T18:00:00Z", endDatetime: "2026-04-10T19:00:00Z", participantCount: 5 },
-    { id: 2, title: "Sushi", emojis: "🍣🥢🐟", startDatetime: "2026-04-12T17:00:00Z", endDatetime: "2026-04-12T18:30:00Z", participantCount: 3 },
-    { id: 3, title: "Taco", emojis: "🌮🫑🧀", startDatetime: "2026-04-15T19:00:00Z", endDatetime: "2026-04-15T20:00:00Z", participantCount: 8 },
-    { id: 4, title: "Pasta", emojis: "🍝🧈🌿", startDatetime: "2026-04-18T18:30:00Z", endDatetime: "2026-04-18T19:30:00Z", participantCount: 4 },
-    { id: 5, title: "Curry", emojis: "🍛🌶️🥥", startDatetime: "2026-04-20T18:00:00Z", endDatetime: "2026-04-20T19:15:00Z", participantCount: 6 },
-    { id: 6, title: "Burger", emojis: "🍔🥬🧅", startDatetime: "2026-04-22T19:00:00Z", endDatetime: "2026-04-22T20:00:00Z", participantCount: 2 },
-];
+
+interface CookingEvent {
+  id: string;
+  title: string;
+  emojis: string;
+  startDatetime: string;
+  endDatetime: string;
+  participants: { id: string; username: string }[];
+  state: "UPCOMING" | "ONGOING" | "FINISHED";
+}
 
 
 
 const EventsPage: React.FC = () => {
     const router = useRouter();
-    const [username, setUsername] = useState("U");
+    const apiService = useApi();
+    const { value: rawToken } = useLocalStorage<string>("token", "");
+    const token = rawToken?.replace(/^"|"$/g, "");
 
+    const [events, setEvents] = useState<CookingEvent[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const stored = localStorage.getItem("username") ?? "U";
-        setUsername(stored);
-    }, []);
+        if (!token) { setLoading(false); return; }
+        setLoading(true);
+        apiService
+            .get<CookingEvent[]>("/events", { Authorization: `Bearer ${token}` })
+            .then(setEvents)
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, [token]);
 
-    const happeningSoon = PLACEHOLDER_EVENTS.slice(0, 3);
-    const seasonalEvents = PLACEHOLDER_EVENTS.slice(3);
+    if (loading) {
+        return (
+            <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
+                <Sidebar />
+                <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <CircularProgress size={40} sx={{ color: "#4a6741" }} />
+                </div>
+            </div>
+        );
+    }
+
+    const upcomingEvents = events.filter(e => e.state === "UPCOMING");
 
     return (
         <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
@@ -49,9 +72,9 @@ const EventsPage: React.FC = () => {
                 {/* Content */}
                 <div style={{ padding: 24, flex: 1}}>
 
-                    <h2 style={{ color: "#1a1a1a", fontSize: 18, fontWeight: 600, marginBottom: 16}}>Happening soon</h2>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 32}}>
-                        {happeningSoon.map((event) => (
+                    <h2 style={{ color: "#1a1a1a", fontSize: 18, fontWeight: 600, marginBottom: 16}}>Upcoming Events</h2>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: 16, marginBottom: 32}}>
+                        {upcomingEvents.map((event) => (
                             <Card
                                 key={event.id}
                                 hoverable
@@ -88,58 +111,18 @@ const EventsPage: React.FC = () => {
 
                                     <div style={{ color: "#666", fontSize: 13, marginTop: 4}}>
                                         <span className="material-symbols-rounded" style={{fontSize: 16, verticalAlign: "middle", marginRight: 6}}>group</span>
-                                        {event.participantCount} joined
+                                        {event.participants?.length ?? 0} joined
                                     </div>
                                 </div>
                             </Card>
                         ))}
                     </div>
-
-                    <h2 style={{ color: "#1a1a1a", fontSize: 18, fontWeight: 600, marginBottom: 16}}>Seasonal Events</h2>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16}}>
-                        {seasonalEvents.map((event) => (
-                            <Card
-                                key={event.id}
-                                hoverable
-                                onClick={() => router.push(`/events/${event.id}`)}
-                                style={{ borderRadius: 16, background: "#fff", border: "none", cursor: "pointer"}}
-                                styles={{ body: { padding: 0}}}
-                            >
-                                <div style={{
-                                    height: 120,
-                                    background: "#f0eef6",
-                                    borderRadius: "16px 16px 0 0",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    fontSize: 40,
-                                }}>
-                                    {event.emojis}
-                                </div>
-
-                                <div style={{ padding: 16}}>
-                                    <div style={{ fontWeight: 600, fontSize: 15, color: "#1a1a1a"}}>
-                                        {event.title}
-                                    </div>
-                                    
-                                    <div style={{ color: "#666", fontSize: 13, marginTop: 4}}>
-                                        <span className="material-symbols-rounded" style={{ fontSize: 16, verticalAlign: "middle", marginRight: 6}}>calendar_today</span>
-                                        {new Date(event.startDatetime).toLocaleDateString()} · {new Date(event.startDatetime).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})}
-                                    </div>
-                                    
-                                    <div style={{ color: "#666", fontSize: 13, marginTop: 4}}>
-                                        <span className="material-symbols-rounded" style={{ fontSize: 16, verticalAlign: "middle", marginRight: 6}}>timer</span>
-                                        {Math.round((new Date(event.endDatetime).getTime() - new Date(event.startDatetime).getTime()) / 60000)} min
-                                    </div>
-
-                                    <div style={{ color: "#666", fontSize: 13, marginTop: 4}}>
-                                        <span className="material-symbols-rounded" style={{fontSize: 16, verticalAlign: "middle", marginRight: 6}}>group</span>
-                                        {event.participantCount} joined
-                                    </div>
-                                </div>
-                            </Card>
-                        ))}
-                    </div>
+                    {upcomingEvents.length === 0 && (
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "60px 24px", gap: 12 }}>
+                            <span className="material-symbols-rounded" style={{ fontSize: 48, color: "#ccc"}}>event_busy</span>
+                            <p style={{ color: "#999", fontSize: 15 }}>No upcoming events. Create the first one!</p>
+                        </div>
+                    )}
                 </div>
             </div>
 
