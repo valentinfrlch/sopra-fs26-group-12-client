@@ -153,11 +153,7 @@ async function cancelRegistration(
   apiService: ReturnType<typeof useApi>,
   eventId: string,
   token: string,
-<<<<<<< HEAD
   setCancelling: (v: boolean) => void,
-  setIsRegistered: (v: boolean) => void,
-=======
->>>>>>> origin/dev
   setEvent: (e: CookingEvent) => void,
 ): Promise<void> {
   setCancelling(true); 
@@ -172,14 +168,9 @@ async function cancelRegistration(
     );
     setEvent(updated);
   } catch (error) {
-<<<<<<< HEAD
-    // Error handling
-    console.error("CANCEL ERROR:", error);
-  } finally{
-    setCancelling(false); 
-=======
     console.error("Cancel error:", error);
->>>>>>> origin/dev
+  }finally {
+    setCancelling(false);                  // ← add back
   }
 }
 
@@ -298,19 +289,11 @@ const EventDetailPage: React.FC = () => {
   }, [eventId, token, apiService, router]);
 
   const handleCancel = useCallback(async () => {
-<<<<<<< HEAD
-    if(!eventId) {
-    console.log("eventId not ready yet");
-    return;
-  };
-    await cancelRegistration(apiService, eventId, token, setCancelling, setIsRegistered, setEvent as (e: CookingEvent) => void);
-=======
     if (!eventId) {
       console.log("eventId not ready yet");
       return;
     }
-    await cancelRegistration(apiService, eventId, token, setEvent as (e: CookingEvent) => void);
->>>>>>> origin/dev
+    await cancelRegistration(apiService, eventId, token, setCancelling, setEvent as (e: CookingEvent) => void);
   }, [eventId, apiService, token]);
 
   const handleParticipate = useCallback(() => {
