@@ -166,7 +166,7 @@ export class ApiService {
 
     const res = await fetch(url, {
       method: "DELETE",
-      headers: this.defaultHeaders,
+      headers: finalHeaders,
     });
 
     return this.processResponse<T>(

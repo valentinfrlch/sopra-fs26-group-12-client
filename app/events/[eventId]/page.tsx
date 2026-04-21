@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
@@ -63,14 +63,12 @@ async function fetchEventData(
   apiService: ReturnType<typeof useApi>,
   eventId: string,
   token: string,
-  userId: string,
   setEvent: (e: CookingEvent | null) => void,
-  setIsRegistered: (v: boolean) => void,) {
+) {
   try {
-
     console.log("TOKEN BEING SENT:", token);
 
-    const headers: HeadersInit  = token
+    const headers: HeadersInit = token
       ? { Authorization: `Bearer ${token}` }
       : {};
 
@@ -80,9 +78,7 @@ async function fetchEventData(
     );
 
     console.log("EVENT DATA:", data);
-
     setEvent(data);
-    setIsRegistered(data.participants.some((p) => String(p.id) === userId));
 
   } catch (err) {
     console.error("FETCH ERROR:", err);
@@ -125,7 +121,6 @@ async function registerForEvent(
   token: string,
   router: ReturnType<typeof useRouter>,
   setRegistering: (v: boolean) => void,
-  setIsRegistered: (v: boolean) => void,
   setEvent: (e: CookingEvent) => void,
 ): Promise<void> {
   if (!token) {
@@ -134,18 +129,20 @@ async function registerForEvent(
   }
   setRegistering(true);
   try {
-    await apiService.post(`/events/${eventId}/participants`, {}, {Authorization: `Bearer ${token}` });
-    setIsRegistered(true);
+    await apiService.post(`/events/${eventId}/participants`, {}, { Authorization: `Bearer ${token}` });
     const updated = await apiService.get<CookingEvent>(
       `/events/${eventId}`,
       { Authorization: `Bearer ${token}` }
     );
     setEvent(updated);
   } catch (error) {
-    if (error instanceof Error) {
-      if (error.message.includes("409")) {
-        setIsRegistered(true);
-      }
+    if (error instanceof Error && error.message.includes("409")) {
+      // Already registered -> just refetch
+      const updated = await apiService.get<CookingEvent>(
+        `/events/${eventId}`,
+        { Authorization: `Bearer ${token}` }
+      );
+      setEvent(updated);
     }
   } finally {
     setRegistering(false);
@@ -156,7 +153,6 @@ async function cancelRegistration(
   apiService: ReturnType<typeof useApi>,
   eventId: string,
   token: string,
-  setIsRegistered: (v: boolean) => void,
   setEvent: (e: CookingEvent) => void,
 ): Promise<void> {
   try {
@@ -164,14 +160,13 @@ async function cancelRegistration(
       `/events/${eventId}/participants`,
       { Authorization: `Bearer ${token}` }
     );
-    setIsRegistered(false);
     const updated = await apiService.get<CookingEvent>(
       `/events/${eventId}`,
       { Authorization: `Bearer ${token}` }
     );
     setEvent(updated);
   } catch (error) {
-    // Error handling
+    console.error("Cancel error:", error);
   }
 }
 
@@ -262,7 +257,10 @@ const EventDetailPage: React.FC = () => {
   const [event, setEvent] = useState<CookingEvent | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [registering, setRegistering] = useState<boolean>(false);
-  const [isRegistered, setIsRegistered] = useState<boolean>(false);
+  const isRegistered = useMemo(() => {
+    if (!event || !userId) return false;
+    return event.participants.some((p) => String(p.id) === userId);
+  }, [event, userId]);
 
   useEffect(() => {
     setUserId(localStorage.getItem("userId") ?? "");
@@ -272,27 +270,25 @@ const EventDetailPage: React.FC = () => {
     if (!eventId || !token) return;
 
     setLoading(true);
-
-    fetchEventData(apiService, eventId, token, userId, setEvent, setIsRegistered)
+    fetchEventData(apiService, eventId, token, setEvent)
       .finally(() => setLoading(false));
-
-  }, [eventId, apiService, userId, token]);
+  }, [eventId, token]);
 
 
   const handleRegister = useCallback(async () => {
-    if(!eventId) {
-    console.log("eventId not ready yet");
-    return;
-  };
-    await registerForEvent(apiService, eventId, token, router, setRegistering, setIsRegistered, setEvent as (e: CookingEvent) => void);
+    if (!eventId) {
+      console.log("eventId not ready yet");
+      return;
+    }
+    await registerForEvent(apiService, eventId, token, router, setRegistering, setEvent as (e: CookingEvent) => void);
   }, [eventId, token, apiService, router]);
 
   const handleCancel = useCallback(async () => {
-    if(!eventId) {
-    console.log("eventId not ready yet");
-    return;
-  };
-    await cancelRegistration(apiService, eventId, token, setIsRegistered, setEvent as (e: CookingEvent) => void);
+    if (!eventId) {
+      console.log("eventId not ready yet");
+      return;
+    }
+    await cancelRegistration(apiService, eventId, token, setEvent as (e: CookingEvent) => void);
   }, [eventId, apiService, token]);
 
   const handleParticipate = useCallback(() => {
