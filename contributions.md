@@ -96,17 +96,11 @@ reason).
 |                    | 13.04.26   | https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/29e78abec517db9c9d37a1989a6ff5b5a9aad911 | Sort recipe list in chronological order (newest first) | So order is deterministic #41 |
 | **[@sushmstr]** | 2026-04-17 | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/3b9f3bc | Implemented label display and filtering UI for recipes (#42, #43) | Enables users to view recipe metadata and interactively filter recipes based on labels |
 | **[@sushmstr]** | 2026-04-17 | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/4e7a270 | Implemented recipe filtering logic and improved rendering (#87, #89) | Ensures correct filtering behavior and improves usability of the cookbook page |
-
 | **[@jp-schl]** | [14.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/f2a2d2c358f9b2de8c89cf3111a00b52557e3a84] | [#46 If an participant doesnt upload a photo in time, he gets kicked from the game (backend)] | [It contains to workflow of the event game] |
 |                    | [16.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/928532f6f0836ad14f1ca5ccfd9a8b156a0ffafa] | [#137 Backend implementation for photo upload handling] |[It contains to the gameflow] |
 |                    | [14.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/b9ff351a4abbc5738b77616ddc3f607167d67766] | [#93 If an participant doesnt upload a photo in time, he gets kicked from the game (frontend)] | [It contains to workflow of the event game] |
-
-
-
-
-| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-
+| **[@BestAchilles]** | [19.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/f1504c43fef3ec719ca31101efdcda90e536f8aa] | [Implemented winner determination: last man standing wins (#51), no winner if no final submissions (#52)] | [Ensures game ends correctly, i.e. only the last non-kicked participant wins, and if nobody submitted, there is no winner] |
+|                    | [19.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/bd55b24f85f33ef075a494ec45cd2fab25eacce9] | [Added tests for checkLastManStanding and determineWinner (#51, #52)] | [Tests verify the two winner conditions are correctly enforced at the event of an event] |
 ---
 
 ## Contributions Week 5 - [Begin Date] to [End Date]
