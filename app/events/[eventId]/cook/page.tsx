@@ -362,7 +362,7 @@ export default function CookPage() {
             </button>
 
             <p style={{ marginTop: 10 }}>
-              {uploadActive ? "🟢 Upload open" : "⚫ Upload closed"}
+              {uploadActive ? "🟢Upload open" : "⚫Upload closed"}
             </p>
           </>
         )}
