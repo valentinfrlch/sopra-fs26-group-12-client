@@ -164,57 +164,64 @@ export default function CookPage() {
     fetchSchedule();
     const interval = setInterval(fetchSchedule, 5000);
     return () => clearInterval(interval);
-  }, [eventId, token, permissionChecked, fetchSchedule]);
+  }, [fetchSchedule, eventId, token, permissionChecked]);
 
   // =========================
-  // FETCH SUBMISSIONS
+  // FETCH SUBMISSIONS (LIVE)
   // =========================
-  useEffect(() => {
+  const fetchSubmissions = useCallback(async () => {
     if (!schedule || !token) return;
 
-    const fetchSubmissions = async () => {
-      const promptId = schedule.prompts[schedule.prompts.length - 1]?.id;
-      if (!promptId) return;
+    const promptId = schedule.prompts[schedule.prompts.length - 1]?.id;
+    if (!promptId) return;
 
-      try {
-        const data = await api.get<SubmissionDTO[]>(
-          `/events/${eventId}/prompts/${promptId}/submissions`,
-          { Authorization: `Bearer ${token}` }
-        );
+    try {
+      const data = await api.get<SubmissionDTO[]>(
+        `/events/${eventId}/prompts/${promptId}/submissions`,
+        { Authorization: `Bearer ${token}` }
+      );
 
-        setSubmissions(data);
-      } catch (err) {
-        console.error("Failed to fetch submissions", err);
-      }
-    };
+      setSubmissions(data);
+    } catch (err) {
+      console.error("Failed to fetch submissions", err);
+    }
+  }, [schedule, token, eventId, api]);
+
+  useEffect(() => {
+    if (!schedule || !token) return;
 
     fetchSubmissions();
     const interval = setInterval(fetchSubmissions, 5000);
 
     return () => clearInterval(interval);
-  }, [schedule, token, eventId, api]);
+  }, [fetchSubmissions, schedule, token]);
 
   // =========================
-  // FETCH WINNER
+  // FETCH WINNER (FIXED LIVE SYNC)
   // =========================
+  const fetchWinner = useCallback(async () => {
+    if (!eventFinished || !token) return;
+
+    try {
+      const data = await api.get<WinnerDTO>(
+        `/events/${eventId}/winner`,
+        { Authorization: `Bearer ${token}` }
+      );
+
+      setWinner(data);
+    } catch (err) {
+      console.error("Failed to fetch winner", err);
+    }
+  }, [eventFinished, token, eventId, api]);
+
   useEffect(() => {
     if (!eventFinished || !token) return;
 
-    const fetchWinner = async () => {
-      try {
-        const data = await api.get<WinnerDTO>(
-          `/events/${eventId}/winner`,
-          { Authorization: `Bearer ${token}` }
-        );
-
-        setWinner(data);
-      } catch (err) {
-        console.error("Failed to fetch winner", err);
-      }
-    };
-
     fetchWinner();
-  }, [eventFinished, token, eventId, api]);
+    const interval = setInterval(fetchWinner, 5000);
+
+    return () => clearInterval(interval);
+  }, [fetchWinner, eventFinished, token]);
 
   // =========================
   // UPLOAD
@@ -276,13 +283,15 @@ export default function CookPage() {
 
         if (!res.ok) throw new Error(await res.text());
 
-        alert("Vote submitted");
+        // 🔥 refresh BOTH submissions + winner immediately
+        await fetchSubmissions();
+        await fetchWinner();
       } catch (err) {
         console.error(err);
         alert("Voting failed");
       }
     },
-    [token]
+    [token, fetchSubmissions, fetchWinner]
   );
 
   // =========================
@@ -309,9 +318,6 @@ export default function CookPage() {
       <main style={{ margin: "auto", textAlign: "center", width: 420 }}>
         <h2>Cook Event {eventId}</h2>
 
-        {/* =========================
-            UPLOAD PHASE
-        ========================= */}
         {!eventFinished && (
           <>
             <input
@@ -361,9 +367,6 @@ export default function CookPage() {
           </>
         )}
 
-        {/* =========================
-            VOTING PHASE
-        ========================= */}
         {eventFinished && (
           <>
             <h3>Voting Phase</h3>
@@ -371,7 +374,7 @@ export default function CookPage() {
             {winner && (
               <div style={{ marginBottom: 20 }}>
                 <h2>🏆 Winner: {winner.username}</h2>
-                <p>{winner.voteCount} votes</p>
+                <p>⭐ {winner.voteCount}</p>
               </div>
             )}
 
@@ -393,6 +396,8 @@ export default function CookPage() {
                   <div style={{ fontSize: 12, marginTop: 5 }}>
                     👤 {s.username}
                   </div>
+
+                  <div>⭐ {s.voteCount ?? 0}</div>
 
                   <button
                     style={{ marginTop: 5 }}
