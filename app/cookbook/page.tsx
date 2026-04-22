@@ -6,8 +6,10 @@ import { useRouter } from "next/navigation";
 import { Button, Card, Tag, Dropdown, MenuProps, ConfigProvider } from "antd";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import Sidebar, { UserAvatar } from "@/components/appLayout";
+import Sidebar, { UserAvatar, Header } from "@/components/appLayout";
 
+import { useApi } from "@/hooks/useApi"; 
+import { getApiDomain } from "@/utils/domain";
 
 
 interface Recipe {
@@ -103,7 +105,7 @@ const RecipeCard: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
 
         {recipe.imageURL ? (
           <img
-            src={`http://localhost:8080${recipe.imageURL}`}
+            src={`${getApiDomain()}${recipe.imageURL.startsWith("/") ? "" : "/"}${recipe.imageURL}`}
             alt={recipe.title}
             style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
           />
@@ -120,10 +122,11 @@ const RecipeCard: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
 
 
 const CookbookPage: React.FC = () => {
-  const router = useRouter();
-  
-  const [username, setUsername] = useState<string>("U");
 
+   
+  const api = useApi(); // add inside component
+  const router = useRouter();
+  const [username, setUsername] = useState<string>("U");
   const [recipes, setRecipes] = useState<Recipe[]>([]);
 
   useEffect(() => {
@@ -133,43 +136,71 @@ const CookbookPage: React.FC = () => {
 
 
 
-  useEffect(() => {
+
+  const [token, setToken] = useState<string | null>(null);
+
+useEffect(() => {
+    const stored = localStorage.getItem("token");
+    if (stored) setToken(stored.replace(/"/g, ""));
+  }, []);
+
+// useEffect(() => {
+//   if (!token) return;
+
+//   const fetchRecipes = async () => {
+//     try {
+//       console.log("TOKEN USED:", token);
+
+//       const res = await fetch("http://localhost:8080/recipes", {
+//         method: "GET",
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//         },
+//         cache: "no-store",
+//       });
+
+//       console.log("STATUS:", res.status);
+
+//       if (!res.ok) {
+//         throw new Error("Failed to fetch recipes");
+//       }
+
+//       const data = await res.json();
+//       console.log("RECIPES:", data);
+
+//       setRecipes(data);
+//     } catch (err) {
+//       console.error("FETCH ERROR:", err);
+//     }
+//   };
+
+//   fetchRecipes();
+// }, [token]);
+
+useEffect(() => {
+  if (!token) return;
+
   const fetchRecipes = async () => {
     try {
-      const rawToken = localStorage.getItem("token");
-
-      if (!rawToken) return;
-
-      const token = rawToken.replace(/"/g, "");
-      const res = await fetch("http://localhost:8080/recipes", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const data = await api.get<Recipe[]>("/recipes", {
+        Authorization: `Bearer ${token}`,
       });
 
-      if (!res.ok) throw new Error("Failed to fetch recipes");
-
-      const data = await res.json();
-
       console.log("RECIPES:", data);
-
       setRecipes(data);
-
     } catch (err) {
-      console.error(err);
+      console.error("FETCH ERROR:", err);
     }
   };
 
   fetchRecipes();
-}, []);
-  
-
-  const now = new Date();
+}, [token]);
 
   
 
   const [activeLabels, setActiveLabels] = useState<string[]>([]);
   // const filteredRecipes = activeLabels.length > 0 ? MOCK_RECIPES.filter((r) => activeLabels.every((active) => r.labels.includes(active))) : MOCK_RECIPES;
+  // Filtering logic
   const filteredRecipes =
     activeLabels.length > 0
       ? recipes.filter((r) =>
@@ -193,17 +224,11 @@ const CookbookPage: React.FC = () => {
 
       {/* Main content */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-
-
         
-        <div style={{background: "#fff", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: "1px solid #2a2d3a" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            {/* <MenuOutlined style={{ fontSize: 18, color: "#aaa" }} /> */}
-            <span style={{ fontWeight: 600, fontSize: 16, color: "#1a1a1a" }}>Your Library</span>
-          </div>
-          <UserAvatar username={username} size={40} />
-        </div>
-
+        <Header 
+          title="Your Library" 
+          rightContent={<UserAvatar />} 
+        />
 
         
         <div style={{ padding: "24px", flex: 1 }}>
@@ -254,6 +279,7 @@ const CookbookPage: React.FC = () => {
             </Card>
           </div>
           <h2 style={{ color: "#1a1a1a", fontSize: 18, fontWeight: 600, marginBottom: 12 }}>Your Recipes</h2>
+          {/*Filtering/Selection: Font Change*/}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
             {ALL_LABELS.map((label) => (
               <Tag key={label} onClick={() => handleLabelToggle(label)}
@@ -264,14 +290,15 @@ const CookbookPage: React.FC = () => {
             ))}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: 16 }}>
+            {/*Filtering recipe cards*/}
             {filteredRecipes.map((recipe) => (<RecipeCard key={recipe.id} recipe={recipe} />))}
           </div>
         </div>
       </div>
 
 
-      {/* Floating + button
-      position: "fixed" — the most important property here. Removes the button from the normal page flow and pins it to the screen. It stays visible even when you scroll down — it never moves.
+      {/* 
+      Floating button
       */}
       <Button 
         type="primary" 

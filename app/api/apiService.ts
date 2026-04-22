@@ -64,10 +64,11 @@ export class ApiService {
   public async get<T>(endpoint: string, headers: HeadersInit): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
     // merge the default headers with 'headers' paramter
-    this.defaultHeaders = { ...this.defaultHeaders, ...headers };
+    // this.defaultHeaders = { ...this.defaultHeaders, ...headers };
+    const finalHeaders = { ...this.defaultHeaders, ...headers };
     const res = await fetch(url, {
       method: "GET",
-      headers: this.defaultHeaders,
+      headers: finalHeaders,
     });
     return this.processResponse<T>(
       res,
@@ -155,12 +156,19 @@ export class ApiService {
    * @param endpoint - The API endpoint (e.g. "/users/123").
    * @returns JSON data of type T.
    */
-  public async delete<T>(endpoint: string): Promise<T> {
+  public async delete<T>(endpoint: string, headers?: HeadersInit): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
+    //
+    const finalHeaders = {
+      ...this.defaultHeaders,
+      ...(headers || {}),
+    };
+
     const res = await fetch(url, {
       method: "DELETE",
-      headers: this.defaultHeaders,
+      headers: finalHeaders,
     });
+
     return this.processResponse<T>(
       res,
       "An error occurred while deleting the data.\n",
