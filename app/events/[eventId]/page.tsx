@@ -279,6 +279,29 @@ const EventDetailPage: React.FC = () => {
       .finally(() => setLoading(false));
   }, [eventId, token]);
 
+  // Timer cheks if event has started
+  useEffect(() => {
+    // Timer only needed if event loaded and state is UPCOMINg
+    if (!event || event.state !== "UPCOMING") return;
+
+    const checkStateInterval = setInterval(() => {
+      const now = new Date().getTime();
+      const startTime = new Date(event.startDatetime).getTime();
+
+      if (now >= startTime) {
+        console.log("Event startet jetzt! Hole neue Daten vom Server...");
+        
+        // call fetch -> triggers backend  
+        // sets state in frontend to ONGOING
+        fetchEventData(apiService, eventId, token, setEvent);
+        
+        // stop interval after we updated
+        clearInterval(checkStateInterval); 
+      }
+    }, 5000); // all 5 seconds
+
+    return () => clearInterval(checkStateInterval);
+  }, [event, eventId, token, apiService]);
 
   const handleRegister = useCallback(async () => {
     if (!eventId) {
