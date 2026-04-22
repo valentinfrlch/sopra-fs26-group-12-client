@@ -27,6 +27,20 @@ type PermissionResponse = {
   reason?: "NOT_PARTICIPANT" | "KICKED" | "FORBIDDEN";
 };
 
+type SubmissionDTO = {
+  submissionId: number;
+  userId: number;
+  username: string;
+  voteCount?: number;
+};
+
+type WinnerDTO = {
+  submissionId: number;
+  userId: number;
+  username: string;
+  voteCount: number;
+};
+
 export default function CookPage() {
   const params = useParams();
   const router = useRouter();
@@ -35,7 +49,7 @@ export default function CookPage() {
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   const eventId = params?.eventId as string;
-  const { value: token } = useLocalStorage<string>("token", "");  
+  const { value: token } = useLocalStorage<string>("token", "");
 
   const [schedule, setSchedule] = useState<ScheduleResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,139 +59,25 @@ export default function CookPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const [permissionChecked, setPermissionChecked] = useState(false);
-  const [submissionIds, setSubmissionIds] = useState<number[]>([]);
+
+  const [submissions, setSubmissions] = useState<SubmissionDTO[]>([]);
+  const [winner, setWinner] = useState<WinnerDTO | null>(null);
 
   // =========================
-  // LATEST FINISHED PROMPT
+  // EVENT FINISHED
   // =========================
-  const latestFinishedPromptIndex = useMemo(() => {
-    if (!schedule) return -1;
+  const eventFinished = useMemo(() => {
+    if (!schedule) return false;
 
-    const now = Date.now();
-    const windowMs = schedule.uploadWindowMinutes * 60 * 1000;
+    const lastPrompt = schedule.prompts[schedule.prompts.length - 1];
+    if (!lastPrompt) return false;
 
-    let latestIndex = -1;
+    const end =
+      new Date(lastPrompt.promptTime).getTime() +
+      schedule.uploadWindowMinutes * 60 * 1000;
 
-    schedule.prompts.forEach((p, index) => {
-      const end = new Date(p.promptTime).getTime() + windowMs;
-      if (now > end) {
-        latestIndex = index;
-      }
-    });
-
-    return latestIndex;
+    return Date.now() > end;
   }, [schedule]);
-
-  // =========================
-  // FETCH SUBMISSIONS (POLLING)
-  // =========================
-  useEffect(() => {
-    if (
-      latestFinishedPromptIndex === -1 ||
-      !schedule ||
-      !token
-    ) return;
-
-    const fetchSubmissions = async () => {
-      const promptId = schedule.prompts[latestFinishedPromptIndex].id;
-
-      try {
-        const ids = await api.get<number[]>(
-          `/events/${eventId}/prompts/${promptId}/submissions`,
-          { Authorization: `Bearer ${token}` }
-        );
-
-        setSubmissionIds(ids);
-      } catch (err) {
-        console.error("Failed to fetch submissions", err);
-      }
-    };
-
-    fetchSubmissions(); // initial
-    const interval = setInterval(fetchSubmissions, 5000);
-
-    return () => clearInterval(interval);
-  }, [latestFinishedPromptIndex, schedule, token, eventId, api]);
-
-  // =========================
-  // PERMISSION CHECK
-  // =========================
-  const checkPermission = useCallback(async () => {
-    if (!eventId || !token) return;
-
-    try {
-      const perm = await api.get<PermissionResponse>(
-        `/events/${eventId}/permission`,
-        { Authorization: `Bearer ${token}` }
-      );
-
-      if (!perm.allowed) {
-        switch (perm.reason) {
-          case "NOT_PARTICIPANT":
-            router.push("/not-participant");
-            return;
-          case "KICKED":
-            router.push(`/events/${eventId}/kicked`);
-            return;
-          default:
-            router.push("/403");
-            return;
-        }
-      }
-
-      setPermissionChecked(true);
-    } catch (err) {
-      console.error("Permission check failed:", err);
-      router.push("/403");
-    }
-  }, [eventId, token, api, router]);
-
-  useEffect(() => {
-    if (!eventId || !token) return;
-    checkPermission();
-  }, [checkPermission, eventId, token]);
-
-  // =========================
-  // KICK LOGIC
-  // =========================
-  const handleKickOut = useCallback(() => {
-    alert("You missed an upload. You are out.");
-    router.push(`/events/${eventId}/kicked`);
-  }, [router, eventId]);
-
-  // =========================
-  // FETCH SCHEDULE (POLLING)
-  // =========================
-  const fetchSchedule = useCallback(async () => {
-    if (!eventId || !token) return;
-
-    try {
-      const data = await api.get<ScheduleResponse>(
-        `/events/${eventId}/schedule`,
-        { Authorization: `Bearer ${token}` }
-      );
-
-      if (data.kicked) {
-        handleKickOut();
-        return;
-      }
-
-      setSchedule(data);
-    } catch (err) {
-      console.error("Schedule fetch failed:", err);
-      setSchedule(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [eventId, token, api, handleKickOut]);
-
-  useEffect(() => {
-    if (!eventId || !token || !permissionChecked) return;
-
-    fetchSchedule();
-    const interval = setInterval(fetchSchedule, 5000);
-    return () => clearInterval(interval);
-  }, [eventId, token, permissionChecked, fetchSchedule]);
 
   // =========================
   // ACTIVE PROMPT
@@ -198,26 +98,130 @@ export default function CookPage() {
   const uploadActive = activePromptIndex !== -1;
 
   // =========================
-  // FILE HANDLING
+  // FILE PREVIEW MEMORY SAFE
   // =========================
-  const openFilePicker = () => fileRef.current?.click();
+  useEffect(() => {
+    if (!selectedFile) {
+      setPreviewUrl(null);
+      return;
+    }
 
-  const onFileSelected = (file?: File) => {
-    if (!file) return;
-    setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
-  };
+    const url = URL.createObjectURL(selectedFile);
+    setPreviewUrl(url);
+
+    return () => URL.revokeObjectURL(url);
+  }, [selectedFile]);
+
+  // =========================
+  // PERMISSION CHECK
+  // =========================
+  const checkPermission = useCallback(async () => {
+    if (!eventId || !token) return;
+
+    try {
+      const perm = await api.get<PermissionResponse>(
+        `/events/${eventId}/permission`,
+        { Authorization: `Bearer ${token}` }
+      );
+
+      if (!perm.allowed) {
+        router.push("/403");
+        return;
+      }
+
+      setPermissionChecked(true);
+    } catch {
+      router.push("/403");
+    }
+  }, [eventId, token, api, router]);
+
+  useEffect(() => {
+    if (!eventId || !token) return;
+    checkPermission();
+  }, [checkPermission, eventId, token]);
+
+  // =========================
+  // FETCH SCHEDULE
+  // =========================
+  const fetchSchedule = useCallback(async () => {
+    if (!eventId || !token) return;
+
+    try {
+      const data = await api.get<ScheduleResponse>(
+        `/events/${eventId}/schedule`,
+        { Authorization: `Bearer ${token}` }
+      );
+
+      setSchedule(data);
+    } finally {
+      setLoading(false);
+    }
+  }, [eventId, token, api]);
+
+  useEffect(() => {
+    if (!eventId || !token || !permissionChecked) return;
+
+    fetchSchedule();
+    const interval = setInterval(fetchSchedule, 5000);
+    return () => clearInterval(interval);
+  }, [eventId, token, permissionChecked, fetchSchedule]);
+
+  // =========================
+  // FETCH SUBMISSIONS
+  // =========================
+  useEffect(() => {
+    if (!schedule || !token) return;
+
+    const fetchSubmissions = async () => {
+      const promptId = schedule.prompts[schedule.prompts.length - 1]?.id;
+      if (!promptId) return;
+
+      try {
+        const data = await api.get<SubmissionDTO[]>(
+          `/events/${eventId}/prompts/${promptId}/submissions`,
+          { Authorization: `Bearer ${token}` }
+        );
+
+        setSubmissions(data);
+      } catch (err) {
+        console.error("Failed to fetch submissions", err);
+      }
+    };
+
+    fetchSubmissions();
+    const interval = setInterval(fetchSubmissions, 5000);
+
+    return () => clearInterval(interval);
+  }, [schedule, token, eventId, api]);
+
+  // =========================
+  // FETCH WINNER
+  // =========================
+  useEffect(() => {
+    if (!eventFinished || !token) return;
+
+    const fetchWinner = async () => {
+      try {
+        const data = await api.get<WinnerDTO>(
+          `/events/${eventId}/winner`,
+          { Authorization: `Bearer ${token}` }
+        );
+
+        setWinner(data);
+      } catch (err) {
+        console.error("Failed to fetch winner", err);
+      }
+    };
+
+    fetchWinner();
+  }, [eventFinished, token, eventId, api]);
 
   // =========================
   // UPLOAD
   // =========================
   const handleUpload = useCallback(async () => {
     if (!selectedFile || !schedule || !token) return;
-
-    if (activePromptIndex === -1) {
-      alert("Upload window closed");
-      return;
-    }
+    if (activePromptIndex === -1) return;
 
     setUploading(true);
 
@@ -240,14 +244,10 @@ export default function CookPage() {
         }
       );
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text);
-      }
+      if (!res.ok) throw new Error(await res.text());
 
       alert("Upload successful");
       setSelectedFile(null);
-      setPreviewUrl(null);
     } catch (err) {
       console.error(err);
       alert("Upload failed");
@@ -257,11 +257,38 @@ export default function CookPage() {
   }, [selectedFile, schedule, token, activePromptIndex, eventId]);
 
   // =========================
-  // GUARDS
+  // VOTE
   // =========================
-  if (!eventId) return <div>Invalid route</div>;
+  const voteSubmission = useCallback(
+    async (submissionId: number) => {
+      if (!token) return;
 
-  if (!permissionChecked || loading) {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/events/submissions/${submissionId}/vote`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!res.ok) throw new Error(await res.text());
+
+        alert("Vote submitted");
+      } catch (err) {
+        console.error(err);
+        alert("Voting failed");
+      }
+    },
+    [token]
+  );
+
+  // =========================
+  // LOADING GUARD
+  // =========================
+  if (!schedule || loading) {
     return (
       <div style={{ display: "flex", minHeight: "100vh" }}>
         <Sidebar />
@@ -271,8 +298,6 @@ export default function CookPage() {
       </div>
     );
   }
-
-  if (!schedule) return <div>No schedule</div>;
 
   // =========================
   // UI
@@ -284,68 +309,101 @@ export default function CookPage() {
       <main style={{ margin: "auto", textAlign: "center", width: 420 }}>
         <h2>Cook Event {eventId}</h2>
 
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          style={{ display: "none" }}
-          onChange={(e) => onFileSelected(e.target.files?.[0])}
-        />
-
-        <button onClick={openFilePicker} disabled={!uploadActive}>
-          Select Image
-        </button>
-
-        {previewUrl && (
-          <div style={{ marginTop: 20 }}>
-            <img
-              src={previewUrl}
-              alt="preview"
-              style={{ width: "100%", borderRadius: 8 }}
+        {/* =========================
+            UPLOAD PHASE
+        ========================= */}
+        {!eventFinished && (
+          <>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={(e) =>
+                setSelectedFile(e.target.files?.[0] || null)
+              }
             />
-          </div>
+
+            <button
+              onClick={() => fileRef.current?.click()}
+              disabled={!uploadActive}
+            >
+              Select Image
+            </button>
+
+            {previewUrl && (
+              <div style={{ marginTop: 20 }}>
+                <img
+                  src={previewUrl}
+                  style={{ width: "100%", borderRadius: 8 }}
+                />
+              </div>
+            )}
+
+            <button
+              style={{
+                marginTop: 15,
+                padding: 10,
+                width: "100%",
+                background: uploadActive ? "#4a7c59" : "#ccc",
+                color: "#000000",
+                borderRadius: 8,
+              }}
+              disabled={!selectedFile || uploading || !uploadActive}
+              onClick={handleUpload}
+            >
+              {uploading ? "Uploading..." : "Upload Photo"}
+            </button>
+
+            <p style={{ marginTop: 10 }}>
+              {uploadActive ? "🟢 Upload open" : "⚫ Upload closed"}
+            </p>
+          </>
         )}
 
-        <button
-          onClick={handleUpload}
-          disabled={!selectedFile || uploading || !uploadActive}
-          style={{
-            marginTop: 15,
-            padding: 10,
-            width: "100%",
-            background: uploadActive ? "#4a7c59" : "#ccc",
-            color: "#000000",
-            borderRadius: 8,
-          }}
-        >
-          {uploading ? "Uploading..." : "Upload Photo"}
-        </button>
+        {/* =========================
+            VOTING PHASE
+        ========================= */}
+        {eventFinished && (
+          <>
+            <h3>Voting Phase</h3>
 
-        <p style={{ marginTop: 10 }}>
-          {uploadActive ? "🟢 Upload open" : "⚫ Upload closed"}
-        </p>
+            {winner && (
+              <div style={{ marginBottom: 20 }}>
+                <h2>🏆 Winner: {winner.username}</h2>
+                <p>{winner.voteCount} votes</p>
+              </div>
+            )}
 
-        {/* SUBMISSIONS GRID */}
-        {submissionIds.length > 0 && (
-          <div
-            style={{
-              marginTop: 30,
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 10,
-            }}
-          >
-            {submissionIds.map((id) => (
-              <img
-                key={id}
-                src={`${process.env.NEXT_PUBLIC_API_URL}/events/submissions/${id}/image`}
-                style={{
-                  width: "100%",
-                  borderRadius: 8,
-                }}
-              />
-            ))}
-          </div>
+            <div
+              style={{
+                marginTop: 20,
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 10,
+              }}
+            >
+              {submissions.map((s) => (
+                <div key={s.submissionId}>
+                  <img
+                    src={`${process.env.NEXT_PUBLIC_API_URL}/events/submissions/${s.submissionId}/image`}
+                    style={{ width: "100%", borderRadius: 8 }}
+                  />
+
+                  <div style={{ fontSize: 12, marginTop: 5 }}>
+                    👤 {s.username}
+                  </div>
+
+                  <button
+                    style={{ marginTop: 5 }}
+                    onClick={() => voteSubmission(s.submissionId)}
+                  >
+                    Vote
+                  </button>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </main>
     </div>
