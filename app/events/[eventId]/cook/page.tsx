@@ -61,7 +61,7 @@ export default function CookPage() {
   const [permissionChecked, setPermissionChecked] = useState(false);
 
   const [submissions, setSubmissions] = useState<SubmissionDTO[]>([]);
-  const [winner, setWinner] = useState<WinnerDTO | null>(null);
+  const [winners, setWinners] = useState<WinnerDTO[]>([]); // ✅ CHANGED
 
   // =========================
   // EVENT FINISHED
@@ -98,7 +98,7 @@ export default function CookPage() {
   const uploadActive = activePromptIndex !== -1;
 
   // =========================
-  // FILE PREVIEW MEMORY SAFE
+  // FILE PREVIEW
   // =========================
   useEffect(() => {
     if (!selectedFile) {
@@ -167,7 +167,7 @@ export default function CookPage() {
   }, [fetchSchedule, eventId, token, permissionChecked]);
 
   // =========================
-  // FETCH SUBMISSIONS (LIVE)
+  // FETCH SUBMISSIONS
   // =========================
   const fetchSubmissions = useCallback(async () => {
     if (!schedule || !token) return;
@@ -197,18 +197,18 @@ export default function CookPage() {
   }, [fetchSubmissions, schedule, token]);
 
   // =========================
-  // FETCH WINNER (FIXED LIVE SYNC)
+  // FETCH WINNERS (UPDATED)
   // =========================
   const fetchWinner = useCallback(async () => {
     if (!eventFinished || !token) return;
 
     try {
-      const data = await api.get<WinnerDTO>(
+      const data = await api.get<WinnerDTO[]>(
         `/events/${eventId}/winner`,
         { Authorization: `Bearer ${token}` }
       );
 
-      setWinner(data);
+      setWinners(data);
     } catch (err) {
       console.error("Failed to fetch winner", err);
     }
@@ -244,9 +244,7 @@ export default function CookPage() {
         `${process.env.NEXT_PUBLIC_API_URL}/events/${eventId}/submissions`,
         {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
           body: formData,
         }
       );
@@ -275,15 +273,12 @@ export default function CookPage() {
           `${process.env.NEXT_PUBLIC_API_URL}/events/submissions/${submissionId}/vote`,
           {
             method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
 
         if (!res.ok) throw new Error(await res.text());
 
-        // 🔥 refresh BOTH submissions + winner immediately
         await fetchSubmissions();
         await fetchWinner();
       } catch (err) {
@@ -295,7 +290,7 @@ export default function CookPage() {
   );
 
   // =========================
-  // LOADING GUARD
+  // LOADING
   // =========================
   if (!schedule || loading) {
     return (
@@ -311,6 +306,8 @@ export default function CookPage() {
   // =========================
   // UI
   // =========================
+  const hasRealWinner = winners.some((w) => w.voteCount > 0);
+
   return (
     <div style={{ display: "flex", minHeight: "100vh", color: "#000000" }}>
       <Sidebar />
@@ -339,10 +336,7 @@ export default function CookPage() {
 
             {previewUrl && (
               <div style={{ marginTop: 20 }}>
-                <img
-                  src={previewUrl}
-                  style={{ width: "100%", borderRadius: 8 }}
-                />
+                <img src={previewUrl} style={{ width: "100%", borderRadius: 8 }} />
               </div>
             )}
 
@@ -371,10 +365,21 @@ export default function CookPage() {
           <>
             <h3>Voting Phase</h3>
 
-            {winner && (
+            {winners.length === 0 && <div>No winner</div>}
+
+            {winners.length > 0 && !hasRealWinner && (
+              <div>No votes yet</div>
+            )}
+
+            {hasRealWinner && (
               <div style={{ marginBottom: 20 }}>
-                <h2>🏆 Winner: {winner.username}</h2>
-                <p>⭐ {winner.voteCount}</p>
+                <h2>🏆 Winner{winners.length > 1 ? "s" : ""}</h2>
+
+                {winners.map((w) => (
+                  <div key={w.submissionId}>
+                    {w.username} — ⭐ {w.voteCount}
+                  </div>
+                ))}
               </div>
             )}
 
