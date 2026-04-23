@@ -53,8 +53,8 @@ export default function CookPage() {
 
   const [schedule, setSchedule] = useState<ScheduleResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
 
+  const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -64,34 +64,15 @@ export default function CookPage() {
   const [winners, setWinners] = useState<WinnerDTO[]>([]);
 
   const [now, setNow] = useState(Date.now());
-
-  // ✅ NEW: upload success UI state
   const [uploadSuccess, setUploadSuccess] = useState(false);
+
+  const prevUploadActive = useRef<boolean | null>(null);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
   }, []);
 
-  // =========================
-  // EVENT FINISHED
-  // =========================
-  const eventFinished = useMemo(() => {
-    if (!schedule) return false;
-
-    const lastPrompt = schedule.prompts[schedule.prompts.length - 1];
-    if (!lastPrompt) return false;
-
-    const end =
-      new Date(lastPrompt.promptTime).getTime() +
-      schedule.uploadWindowMinutes * 60 * 1000;
-
-    return Date.now() > end;
-  }, [schedule]);
-
-  // =========================
-  // ACTIVE PROMPT
-  // =========================
   const activePromptIndex = useMemo(() => {
     if (!schedule) return -1;
 
@@ -107,29 +88,35 @@ export default function CookPage() {
 
   const uploadActive = activePromptIndex !== -1;
 
-  // =========================
-  // COUNTDOWN
-  // =========================
+  const eventFinished = useMemo(() => {
+    if (!schedule) return false;
+
+    const last = schedule.prompts[schedule.prompts.length - 1];
+    if (!last) return false;
+
+    const end =
+      new Date(last.promptTime).getTime() +
+      schedule.uploadWindowMinutes * 60 * 1000;
+
+    return Date.now() > end;
+  }, [schedule]);
+
   const timeLeftMs = useMemo(() => {
     if (!schedule || activePromptIndex === -1) return null;
 
-    const prompt = schedule.prompts[activePromptIndex];
-    const start = new Date(prompt.promptTime).getTime();
+    const p = schedule.prompts[activePromptIndex];
+    const start = new Date(p.promptTime).getTime();
     const end = start + schedule.uploadWindowMinutes * 60 * 1000;
 
     return Math.max(0, end - now);
   }, [schedule, activePromptIndex, now]);
 
   const formatTime = (ms: number) => {
-    const totalSeconds = Math.floor(ms / 1000);
-    const m = Math.floor(totalSeconds / 60);
-    const s = totalSeconds % 60;
-    return `${m}:${s.toString().padStart(2, "0")}`;
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    return `${m}:${(s % 60).toString().padStart(2, "0")}`;
   };
 
-  // =========================
-  // FILE PREVIEW
-  // =========================
   useEffect(() => {
     if (!selectedFile) {
       setPreviewUrl(null);
@@ -138,13 +125,12 @@ export default function CookPage() {
 
     const url = URL.createObjectURL(selectedFile);
     setPreviewUrl(url);
-
     return () => URL.revokeObjectURL(url);
   }, [selectedFile]);
 
-  // =========================
-  // PERMISSION CHECK
-  // =========================
+  /**
+   * INITIAL permission check (safe startup)
+   */
   const checkPermission = useCallback(async () => {
     if (!eventId || !token) return;
 
@@ -155,6 +141,14 @@ export default function CookPage() {
       );
 
       if (!perm.allowed) {
+        if (perm.reason === "KICKED") {
+          router.push(`/events/${eventId}/kicked`);
+          return;
+        }
+        if (perm.reason === "NOT_PARTICIPANT") {
+          router.push("/cookbook");
+          return;
+        }
         router.push("/403");
         return;
       }
@@ -170,9 +164,29 @@ export default function CookPage() {
     checkPermission();
   }, [checkPermission, eventId, token]);
 
-  // =========================
-  // FETCH SCHEDULE
-  // =========================
+  /**
+   * IMPORTANT:
+   * permission check ONLY when upload window closes
+   */
+  useEffect(() => {
+    const prev = prevUploadActive.current;
+
+    if (prev === null) {
+      prevUploadActive.current = uploadActive;
+      return;
+    }
+
+    // OPEN → CLOSED transition
+    if (prev === true && uploadActive === false) {
+      checkPermission();
+    }
+
+    prevUploadActive.current = uploadActive;
+  }, [uploadActive, checkPermission]);
+
+  /**
+   * FETCH SCHEDULE
+   */
   const fetchSchedule = useCallback(async () => {
     if (!eventId || !token) return;
 
@@ -196,38 +210,34 @@ export default function CookPage() {
     return () => clearInterval(interval);
   }, [fetchSchedule, eventId, token, permissionChecked]);
 
-  // =========================
-  // FETCH SUBMISSIONS
-  // =========================
+  /**
+   * FETCH SUBMISSIONS
+   * (visible in upload CLOSED window)
+   */
   const fetchSubmissions = useCallback(async () => {
     if (!schedule || !token) return;
 
     const now = Date.now();
     const windowMs = schedule.uploadWindowMinutes * 60 * 1000;
 
-    const pastPrompts = schedule.prompts.filter((p) => {
+    const finished = schedule.prompts.filter((p) => {
       const start = new Date(p.promptTime).getTime();
       const end = start + windowMs;
       return now >= end;
     });
 
-    const lastFinishedPrompt = pastPrompts[pastPrompts.length - 1];
-
-    if (!lastFinishedPrompt) {
+    const last = finished[finished.length - 1];
+    if (!last) {
       setSubmissions([]);
       return;
     }
 
-    try {
-      const data = await api.get<SubmissionDTO[]>(
-        `/events/${eventId}/prompts/${lastFinishedPrompt.id}/submissions`,
-        { Authorization: `Bearer ${token}` }
-      );
+    const data = await api.get<SubmissionDTO[]>(
+      `/events/${eventId}/prompts/${last.id}/submissions`,
+      { Authorization: `Bearer ${token}` }
+    );
 
-      setSubmissions(data);
-    } catch (err) {
-      console.error("Failed to fetch submissions", err);
-    }
+    setSubmissions(data);
   }, [schedule, token, eventId, api]);
 
   useEffect(() => {
@@ -238,22 +248,18 @@ export default function CookPage() {
     return () => clearInterval(interval);
   }, [fetchSubmissions, schedule, token]);
 
-  // =========================
-  // WINNER
-  // =========================
+  /**
+   * FETCH WINNER
+   */
   const fetchWinner = useCallback(async () => {
     if (!eventFinished || !token) return;
 
-    try {
-      const data = await api.get<WinnerDTO[]>(
-        `/events/${eventId}/winner`,
-        { Authorization: `Bearer ${token}` }
-      );
+    const data = await api.get<WinnerDTO[]>(
+      `/events/${eventId}/winner`,
+      { Authorization: `Bearer ${token}` }
+    );
 
-      setWinners(data);
-    } catch (err) {
-      console.error("Failed to fetch winner", err);
-    }
+    setWinners(data);
   }, [eventFinished, token, eventId, api]);
 
   useEffect(() => {
@@ -264,9 +270,9 @@ export default function CookPage() {
     return () => clearInterval(interval);
   }, [fetchWinner, eventFinished, token]);
 
-  // =========================
-  // UPLOAD
-  // =========================
+  /**
+   * UPLOAD
+   */
   const handleUpload = useCallback(async () => {
     if (!selectedFile || !schedule || !token) return;
     if (activePromptIndex === -1) return;
@@ -294,39 +300,30 @@ export default function CookPage() {
       if (!res.ok) throw new Error(await res.text());
 
       setSelectedFile(null);
-
-      // ✅ show success message
       setUploadSuccess(true);
-
       setTimeout(() => setUploadSuccess(false), 3000);
     } finally {
       setUploading(false);
     }
   }, [selectedFile, schedule, token, activePromptIndex, eventId]);
 
-  // =========================
-  // VOTE
-  // =========================
+  /**
+   * VOTING
+   */
   const voteSubmission = useCallback(
     async (submissionId: number) => {
       if (!token) return;
 
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/events/submissions/${submissionId}/vote`,
-          {
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+      await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/events/submissions/${submissionId}/vote`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-        if (!res.ok) throw new Error(await res.text());
-
-        await fetchSubmissions();
-        await fetchWinner();
-      } catch (err) {
-        console.error(err);
-      }
+      await fetchSubmissions();
+      await fetchWinner();
     },
     [token, fetchSubmissions, fetchWinner]
   );
@@ -342,29 +339,27 @@ export default function CookPage() {
     );
   }
 
-  const hasRealWinner = winners.some((w) => w.voteCount > 0);
-
   return (
-    <div style={{ display: "flex", minHeight: "100vh", color: "#000000" }}>
+    <div style={{ display: "flex", minHeight: "100vh", color: "#000" }}>
       <Sidebar />
 
-      <main style={{ margin: "0 auto", paddingTop: 40, textAlign: "center", width: 420 }}>
-        <h2>Cook Event {eventId}</h2>
+      <main style={{ margin: "0 auto", paddingTop: 40, width: 420 }}>
+        <h2>Cook Event</h2>
 
-        {uploadSuccess && (
-          <p style={{ color: "green", marginBottom: 10 }}>
-            ✅ Upload successful!
-          </p>
-        )}
+        {uploadSuccess && <p style={{ color: "green" }}>Upload successful</p>}
 
-        {/* rest stays unchanged */}
+        {/* ================= UPLOAD PHASE ================= */}
         {uploadActive && !eventFinished && (
           <>
+            <p style={{ color: "green", fontWeight: 600 }}>
+              🟢Upload open: submit your photo and continue cooking!
+            </p>
+
             <input
               ref={fileRef}
               type="file"
               accept="image/*"
-              style={{ display: "none" }}
+              hidden
               onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
             />
 
@@ -373,64 +368,42 @@ export default function CookPage() {
             </button>
 
             {previewUrl && (
-              <img src={previewUrl} style={{ width: "100%", borderRadius: 8 }} />
+              <img src={previewUrl} style={{ width: "100%" }} />
             )}
 
             <button
-              style={{
-                marginTop: 15,
-                padding: 10,
-                width: "100%",
-                background: "#007423",
-                color: "#fff",
-                borderRadius: 8,
-              }}
               disabled={!selectedFile || uploading}
               onClick={handleUpload}
             >
-              {uploading ? "Uploading..." : "Upload Photo"}
+              {uploading ? "Uploading..." : "Upload"}
             </button>
 
-            <p>🟢 Upload open</p>
-
-            {timeLeftMs !== null && <p>⏳ {formatTime(timeLeftMs)}</p>}
+            {timeLeftMs !== null && <p>{formatTime(timeLeftMs)}</p>}
           </>
         )}
 
+        {/* ================= CLOSED PHASE ================= */}
         {!uploadActive && (
           <>
-            <p>⚫ Upload closed</p>
+            <p>⚫Upload closed: Keep cooking!</p>
 
-            <div
-              style={{
-                marginTop: 20,
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 10,
-              }}
-            >
+            {/* SHOW SUBMISSIONS WITH NAMES */}
+            <div style={{ display: "grid", gap: 10 }}>
               {submissions.map((s) => (
-                <div
-                  key={s.submissionId}
-                  style={{
-                    border: "1px solid #ddd",
-                    borderRadius: 10,
-                    padding: 10,
-                  }}
-                >
+                <div key={s.submissionId}>
                   <img
                     src={`${process.env.NEXT_PUBLIC_API_URL}/events/submissions/${s.submissionId}/image`}
-                    style={{ width: "100%", borderRadius: 8 }}
+                    style={{ width: "100%" }}
                   />
-
                   <div>👤 {s.username}</div>
 
-                  {eventFinished && <div>⭐ {s.voteCount ?? 0}</div>}
-
                   {eventFinished && (
-                    <button onClick={() => voteSubmission(s.submissionId)}>
-                      Vote
-                    </button>
+                    <>
+                      <div>⭐ {s.voteCount ?? 0}</div>
+                      <button onClick={() => voteSubmission(s.submissionId)}>
+                        Vote
+                      </button>
+                    </>
                   )}
                 </div>
               ))}
@@ -438,20 +411,15 @@ export default function CookPage() {
           </>
         )}
 
-        {eventFinished && (
+        {/* ================= WINNERS ================= */}
+        {eventFinished && winners.length > 0 && (
           <>
-            <h3 style={{ marginTop: 30 }}>Voting Phase</h3>
-
-            {hasRealWinner && (
-              <div>
-                <h2>🏆 Winners</h2>
-                {winners.map((w) => (
-                  <div key={w.submissionId}>
-                    {w.username} — ⭐ {w.voteCount}
-                  </div>
-                ))}
+            <h3>🏆 Winners</h3>
+            {winners.map((w) => (
+              <div key={w.submissionId}>
+                {w.username} — ⭐ {w.voteCount}
               </div>
-            )}
+            ))}
           </>
         )}
       </main>
