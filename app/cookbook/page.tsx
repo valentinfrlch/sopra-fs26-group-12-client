@@ -28,7 +28,8 @@ const RecipeCard: React.FC<{ recipe: Recipe; onDelete: (recipeId: number) => voi
       key: "edit", 
       label: "Edit Recipe", 
       onClick: ({ domEvent }) => {
-        domEvent.stopPropagation();  
+        domEvent.stopPropagation();
+        router.push(`/recipe/${recipe.id}/edit`);
       }
     },
     { 
