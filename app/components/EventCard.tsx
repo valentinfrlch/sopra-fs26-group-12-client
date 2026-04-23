@@ -42,8 +42,7 @@ const EventCard: React.FC<Props> = ({ event }) => {
   const end = event.endDatetime || event.endDate;
 
   const participantCount =
-    (event.participants?.length || 0) +
-    (event.creator ? 1 : 0);
+    (event.participants?.length ?? 0);
   return (
     <Card
       hoverable
