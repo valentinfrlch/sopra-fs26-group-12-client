@@ -144,38 +144,6 @@ useEffect(() => {
     if (stored) setToken(stored.replace(/"/g, ""));
   }, []);
 
-// useEffect(() => {
-//   if (!token) return;
-
-//   const fetchRecipes = async () => {
-//     try {
-//       console.log("TOKEN USED:", token);
-
-//       const res = await fetch("http://localhost:8080/recipes", {
-//         method: "GET",
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//         cache: "no-store",
-//       });
-
-//       console.log("STATUS:", res.status);
-
-//       if (!res.ok) {
-//         throw new Error("Failed to fetch recipes");
-//       }
-
-//       const data = await res.json();
-//       console.log("RECIPES:", data);
-
-//       setRecipes(data);
-//     } catch (err) {
-//       console.error("FETCH ERROR:", err);
-//     }
-//   };
-
-//   fetchRecipes();
-// }, [token]);
 
 useEffect(() => {
   if (!token) return;
