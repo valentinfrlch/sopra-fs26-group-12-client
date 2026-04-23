@@ -39,12 +39,12 @@ const Profile: React.FC = () => {
 
     const fetchUser = async () => {
       try {
-        const storedToken =
-          typeof window !== "undefined" && localStorage.getItem("token")
-            ? JSON.parse(localStorage.getItem("token") || '""')
-            : "";
+        const storedToken = localStorage.getItem("token") ?? "";
+        console.log("Stored token:", storedToken);
         const headers = { Authorization: `Bearer ${storedToken}` };
+        console.log("Headers for API call:", headers);
         const fetched = await apiService.get<User>(`/users/${userId}`, headers);
+        console.log("Fetched user:", fetched);
         setUser(fetched);
         setNameInput(fetched?.name ?? "");
         setUsernameInput(fetched?.username ?? "");
@@ -80,10 +80,7 @@ const Profile: React.FC = () => {
     if (!userId) return;
     const { currentPassword, newPassword } = values;
     try {
-      const storedToken =
-        typeof window !== "undefined" && localStorage.getItem("token")
-          ? JSON.parse(localStorage.getItem("token") || '""')
-          : "";
+      const storedToken = localStorage.getItem("token") ?? "";
       const headers = { Authorization: `Bearer ${storedToken}` };
 
       await apiService.patch(`/users/${userId}`, { oldPassword: currentPassword, newPassword }, headers);
@@ -102,10 +99,7 @@ const Profile: React.FC = () => {
   const handleLogout = async () => {
     if (!userId) return;
     try {
-      const storedToken =
-        typeof window !== "undefined" && localStorage.getItem("token")
-          ? JSON.parse(localStorage.getItem("token") || '""')
-          : "";
+      const storedToken = localStorage.getItem("token") ?? "";
       const headers = { Authorization: `Bearer ${storedToken}` };
 
       // Call logout endpoint
@@ -136,10 +130,7 @@ const Profile: React.FC = () => {
     }
 
     try {
-      const storedToken =
-        typeof window !== "undefined" && localStorage.getItem("token")
-          ? JSON.parse(localStorage.getItem("token") || '""')
-          : "";
+      const storedToken = localStorage.getItem("token") ?? "";
       const headers = { Authorization: `Bearer ${storedToken}` };
 
       const updated = await apiService.patch<User>(`/users/${userId}`, payload, headers);

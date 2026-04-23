@@ -2,52 +2,149 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { HomeOutlined, ReadOutlined, MenuOutlined } from "@ant-design/icons";
 import { Avatar as AntAvatar } from "antd";
+import { Drawer, Box, ListItemButton, ListItemIcon, BottomNavigation, BottomNavigationAction } from "@mui/material";
+import { RestaurantMenuRounded, HomeRounded, HomeOutlined, LibraryBooksRounded, LibraryBooksOutlined } from "@mui/icons-material";
+import useWindowSize from "@/hooks/useWndowSize";
+
 
 
 
 const Sidebar: React.FC = () => {
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "/";
+  const { isMobile } = useWindowSize();
 
   const isActive = (path: string) => pathname.startsWith(path);
 
-  return (
-    <div style={{
-      width: 64,
-      background: "#fff",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      paddingTop: 24,
-      gap: 24,
-      borderRight: "1px solid #e8e8e8",
-      flexShrink: 0,
-      minHeight: "100vh",
-    }}>
-      <div
-        onClick={() => router.push("/events/overview")}
-        onKeyDown={(e) => e.key === "Enter" && router.push("/events")}
-        role="button"
-        tabIndex={0}
-        style={{ display: "flex", flexDirection: "column", alignItems: "center", cursor: "pointer", gap: 4 }}
-      >
-        <HomeOutlined style={{ fontSize: 22, color: isActive("/events") ? "#4a6741" : "#aaa" }} />
-        <span style={{ fontSize: 10, color: isActive("/events") ? "#4a6741" : "#aaa" }}>Events</span>
-      </div>
+  const navItems = [
+    {
+      key: "events",
+      path: "/events/overview",
+      inactiveIcon: <HomeOutlined style={{ fontSize: 22 }} />,
+      activeIcon: <HomeRounded style={{ fontSize: 22 }} />,
+      label: "Events"
+    },
+    { key: "cookbook", path: "/cookbook", inactiveIcon: <LibraryBooksOutlined style={{ fontSize: 22 }} />, activeIcon: <LibraryBooksRounded style={{ fontSize: 22 }} />, label: "Library" },
+  ];
 
-      <div
-        onClick={() => router.push("/cookbook")}
-        onKeyDown={(e) => e.key === "Enter" && router.push("/cookbook")}
-        role="button"
-        tabIndex={0}
-        style={{ display: "flex", flexDirection: "column", alignItems: "center", cursor: "pointer", gap: 4 }}
+  const activeIndex = Math.max(
+    navItems.findIndex((item) => isActive(item.path)),
+    0,
+  );
+
+  if (isMobile) {
+    return (
+      <BottomNavigation
+        showLabels
+        value={activeIndex}
+        onChange={(_, newValue: number) => router.push(navItems[newValue].path)}
+        sx={{
+          position: "fixed",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 1300,
+          height: 65,
+          borderTop: "1px solid #e8e8e8",
+          bgcolor: "#fff",
+          pb: "max(env(safe-area-inset-bottom), 0px)",
+        }}
       >
-        <ReadOutlined style={{ fontSize: 22, color: isActive("/cookbook") ? "#4a6741" : "#aaa" }} />
-        <span style={{ fontSize: 10, color: isActive("/cookbook") ? "#4a6741" : "#aaa" }}>Library</span>
-      </div>
-    </div>
+        {navItems.map((item, index) => {
+          const active = index === activeIndex;
+
+          return (
+            <BottomNavigationAction
+              key={item.key}
+              label={item.label}
+              icon={active ? item.activeIcon : item.inactiveIcon}
+              sx={{
+                color: "#6b7280",
+                "&.Mui-selected": {
+                  color: "#485F23",
+                },
+              }}
+            />
+          );
+        })}
+      </BottomNavigation>
+    );
+  }
+
+  return (
+    <Drawer
+      variant="permanent"
+      PaperProps={{ sx: { width: 64, background: "#fff", borderRight: "1px solid #e8e8e8", boxSizing: "border-box" } }}
+      sx={{ width: 64, flexShrink: 0 }}
+    >
+      <Box
+        sx={{
+          width: "100%",
+          height: 56,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <RestaurantMenuRounded style={{ marginTop: "20px" }} />
+        <Box component="span" sx={{ marginTop: "5px", fontSize: 10, fontWeight: 700, color: "#485F23", lineHeight: 1 }}>
+          cookREAL
+        </Box>
+      </Box>
+      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", pt: 2, gap: 1.5 }}>
+        {navItems.map((item) => {
+          const active = isActive(item.path);
+
+          return (
+            <ListItemButton
+              key={item.key}
+              onClick={() => router.push(item.path)}
+              onKeyDown={(e) => e.key === "Enter" && router.push(item.path)}
+              role="button"
+              tabIndex={0}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 52,
+                minHeight: 56,
+                maxHeight: 56,
+                px: 0.5,
+                py: 0.75,
+                gap: 0.5,
+                cursor: "pointer",
+                color: active ? "#485F23" : "#6b7280",
+                "&:hover": {
+                  backgroundColor: "#f8fafc",
+                },
+              }}
+            >
+              <Box
+                sx={{
+                  width: 45,
+                  height: 33,
+                  borderRadius: "999px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: active ? "#dcefd5" : "transparent",
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: "auto", color: "inherit", lineHeight: 1 }}>
+                  {active ? item.activeIcon : item.inactiveIcon}
+                </ListItemIcon>
+              </Box>
+              <Box component="span" sx={{ fontSize: 10, fontWeight: active ? 600 : 500, color: "inherit", lineHeight: 1 }}>
+                {item.label}
+              </Box>
+            </ListItemButton>
+          );
+        })}
+      </Box>
+    </Drawer>
   );
 };
 
@@ -78,21 +175,27 @@ const getInitials = (name: string): string => {
 
 export const UserAvatar: React.FC<{ size?: number }> = ({ size = 40 }) => {
   const [username, setUsername] = useState("U");
+  const [userId, setUserId] = useState("1");
 
   useEffect(() => {
     const stored = localStorage.getItem("username") ?? "U";
     setUsername(stored);
+    const storedUserId = localStorage.getItem("userId") ?? "1";
+    setUserId(storedUserId);
   }, []);
+
+  const router = useRouter();
 
   return (
     <AntAvatar
       size={size}
       style={{
-        background: "#f0f0f0",
-        color: "#1a1a1a",
+        background: "rgba(220, 239, 213, 0.8)",
+        color: "rgba(72, 95, 35, 1)",
         fontWeight: 600,
         cursor: "pointer",
       }}
+      onClick={() => router.push(`/users/${userId}`)}
     >
       {getInitials(username)}
     </AntAvatar>
@@ -113,13 +216,13 @@ export const Header: React.FC<{ title: string; rightContent?: React.ReactNode }>
       }}
     >
       {/* Left */}
-      <div style={{ display: "flex", alignItems: "center", color: "#1a1a1a"}}>
-      {/* <MenuOutlined style={{ fontSize: 18, color: "#aaa" }} /> */}
+      <div style={{ display: "flex", alignItems: "center", color: "#1a1a1a" }}>
+        {/* <MenuOutlined style={{ fontSize: 18, color: "#aaa" }} /> */}
         <span style={{ fontWeight: 600, fontSize: 16 }}>{title}</span>
       </div>
 
       {/* Right */}
-      {rightContent }
+      {rightContent}
     </div>
   );
 };

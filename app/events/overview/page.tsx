@@ -5,20 +5,21 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@mui/material";
 import { Card } from "antd";
-import Sidebar, { UserAvatar } from "@/components/appLayout";
+import Sidebar, { Header, UserAvatar } from "@/components/appLayout";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
+import useWindowSize from "@/hooks/useWndowSize";
 import { CircularProgress } from "@mui/material";
 
 
 interface CookingEvent {
-  id: string;
-  title: string;
-  emojis: string;
-  startDatetime: string;
-  endDatetime: string;
-  participants: { id: string; username: string }[];
-  state: "UPCOMING" | "ONGOING" | "FINISHED";
+    id: string;
+    title: string;
+    emojis: string;
+    startDatetime: string;
+    endDatetime: string;
+    participants: { id: string; username: string }[];
+    state: "UPCOMING" | "ONGOING" | "FINISHED";
 }
 
 
@@ -26,6 +27,7 @@ interface CookingEvent {
 const EventsPage: React.FC = () => {
     const router = useRouter();
     const apiService = useApi();
+    const { isMobile } = useWindowSize();
     const { value: rawToken } = useLocalStorage<string>("token", "");
     const token = rawToken?.replace(/^"|"$/g, "");
 
@@ -61,26 +63,23 @@ const EventsPage: React.FC = () => {
 
             <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
 
-                {/* Header */}
-                <div style={{ background: "#fff", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: "1px solid #2a2d3a" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <span style={{ fontWeight: 600, fontSize: 16, color: "#1a1a1a" }}>Events</span>
-                    </div>
-                    <UserAvatar size={40} />
-                </div>
+                <Header
+                    title="Events"
+                    rightContent={<UserAvatar />}
+                />
 
                 {/* Content */}
-                <div style={{ padding: 24, flex: 1}}>
+                <div style={{ padding: 24, flex: 1 }}>
 
-                    <h2 style={{ color: "#1a1a1a", fontSize: 18, fontWeight: 600, marginBottom: 16}}>Upcoming Events</h2>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: 16, marginBottom: 32}}>
+                    <h2 style={{ color: "#1a1a1a", fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Upcoming Events</h2>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: 16, marginBottom: 32 }}>
                         {upcomingEvents.map((event) => (
                             <Card
                                 key={event.id}
                                 hoverable
                                 onClick={() => router.push(`/events/${event.id}`)}
-                                style={{ borderRadius: 16, background: "#fff", border: "none", cursor: "pointer"}}
-                                styles={{ body: { padding: 0}}}
+                                style={{ borderRadius: 16, background: "#fff", border: "none", cursor: "pointer" }}
+                                styles={{ body: { padding: 0 } }}
                             >
                                 <div style={{
                                     height: 120,
@@ -94,23 +93,23 @@ const EventsPage: React.FC = () => {
                                     {event.emojis}
                                 </div>
 
-                                <div style={{ padding: 16}}>
-                                    <div style={{ fontWeight: 600, fontSize: 15, color: "#1a1a1a"}}>
+                                <div style={{ padding: 16 }}>
+                                    <div style={{ fontWeight: 600, fontSize: 15, color: "#1a1a1a" }}>
                                         {event.title}
                                     </div>
-                                    
-                                    <div style={{ color: "#666", fontSize: 13, marginTop: 4}}>
-                                        <span className="material-symbols-rounded" style={{ fontSize: 16, verticalAlign: "middle", marginRight: 6}}>calendar_today</span>
-                                        {new Date(event.startDatetime).toLocaleDateString()} · {new Date(event.startDatetime).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})}
+
+                                    <div style={{ color: "#666", fontSize: 13, marginTop: 4 }}>
+                                        <span className="material-symbols-rounded" style={{ fontSize: 16, verticalAlign: "middle", marginRight: 6 }}>calendar_today</span>
+                                        {new Date(event.startDatetime).toLocaleDateString()} · {new Date(event.startDatetime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                     </div>
-                                    
-                                    <div style={{ color: "#666", fontSize: 13, marginTop: 4}}>
-                                        <span className="material-symbols-rounded" style={{ fontSize: 16, verticalAlign: "middle", marginRight: 6}}>timer</span>
+
+                                    <div style={{ color: "#666", fontSize: 13, marginTop: 4 }}>
+                                        <span className="material-symbols-rounded" style={{ fontSize: 16, verticalAlign: "middle", marginRight: 6 }}>timer</span>
                                         {Math.round((new Date(event.endDatetime).getTime() - new Date(event.startDatetime).getTime()) / 60000)} min
                                     </div>
 
-                                    <div style={{ color: "#666", fontSize: 13, marginTop: 4}}>
-                                        <span className="material-symbols-rounded" style={{fontSize: 16, verticalAlign: "middle", marginRight: 6}}>group</span>
+                                    <div style={{ color: "#666", fontSize: 13, marginTop: 4 }}>
+                                        <span className="material-symbols-rounded" style={{ fontSize: 16, verticalAlign: "middle", marginRight: 6 }}>group</span>
                                         {event.participants?.length ?? 0} joined
                                     </div>
                                 </div>
@@ -119,7 +118,7 @@ const EventsPage: React.FC = () => {
                     </div>
                     {upcomingEvents.length === 0 && (
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "60px 24px", gap: 12 }}>
-                            <span className="material-symbols-rounded" style={{ fontSize: 48, color: "#ccc"}}>event_busy</span>
+                            <span className="material-symbols-rounded" style={{ fontSize: 48, color: "#ccc" }}>event_busy</span>
                             <p style={{ color: "#999", fontSize: 15 }}>No upcoming events. Create the first one!</p>
                         </div>
                     )}
@@ -138,8 +137,8 @@ const EventsPage: React.FC = () => {
                 onClick={() => router.push("/events/create")}
                 style={{
                     position: "fixed",
-                    bottom: 32,
-                    right: 32,
+                    bottom: isMobile ? 80 : 32,
+                    right: isMobile ? 16 : 32,
                     borderRadius: 24,
                     height: 44,
                     paddingLeft: 20,
@@ -151,6 +150,7 @@ const EventsPage: React.FC = () => {
                     display: "flex",
                     alignItems: "center",
                     gap: 6,
+                    zIndex: 1400,
                 }}>
                 Event
             </Button>

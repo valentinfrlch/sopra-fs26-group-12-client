@@ -3,13 +3,15 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Card, Tag, Dropdown, MenuProps, ConfigProvider } from "antd";
+import { Card, Tag, Dropdown, MenuProps, ConfigProvider } from "antd";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Sidebar, { UserAvatar, Header } from "@/components/appLayout";
 
 import { useApi } from "@/hooks/useApi"; 
 import { getApiDomain } from "@/utils/domain";
+import useWindowSize from "@/hooks/useWndowSize";
+import { Button } from "@mui/material";
 
 
 interface Recipe {
@@ -126,6 +128,7 @@ const CookbookPage: React.FC = () => {
    
   const api = useApi(); // add inside component
   const router = useRouter();
+  const { isMobile } = useWindowSize();
   const [username, setUsername] = useState<string>("U");
   const [recipes, setRecipes] = useState<Recipe[]>([]);
 
@@ -269,23 +272,18 @@ useEffect(() => {
       Floating button
       */}
       <Button 
-        type="primary" 
-        icon={
+        type="button"
+        variant="contained"
+        startIcon={
         <span className="material-symbols-rounded" 
-          style={{
-            fontSize: 20,
-            display: "flex",          
-            alignItems: "center",
-            lineHeight: 1,
-          }}
-        >
+            style={{ fontSize: 20, display: "flex", alignItems: "center", lineHeight: 1 }}>
           add
           </span>} 
         onClick={() => router.push("/recipe/create")}
         style={{
            position: "fixed",
-           bottom: 32, 
-           right: 32, 
+          bottom: isMobile ? 80 : 32,
+          right: isMobile ? 16 : 32,
            borderRadius: 24, 
            height: 44, 
            paddingLeft: 20, 
@@ -293,9 +291,12 @@ useEffect(() => {
            fontWeight: 600, 
            background: "#4a6741", 
            border: "none",
+          textTransform: "none",
            display: "flex",             
            alignItems: "center",        
-           gap: 6, }}>
+          gap: 6,
+          zIndex: 1400,
+        }}>
         Recipe
       </Button>
     </div>
