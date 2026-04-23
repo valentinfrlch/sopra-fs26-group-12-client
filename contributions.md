@@ -117,8 +117,8 @@ reason).
 |                    | [22.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/3a77abe76ed8a000599a148175d2b3d6d5c7656c] | [#28 Frontend implementation of the winner] | [The users need to see who is winning the event game] |
 
 
-| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@FinnPrivateGit]** | [22.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/ee075472e1378debfdad58213b7b8c2d69def8f7] | [#17 Frontend & Backend implementation for the functionality to delete a recipe in the users cookbook.] | [If a user doesnt want a recipe anymore, he can now delete it. Before it stayed in his cookbook forever. This makes the user experience better.] |
+| **[@FinnPrivateGit]** | [23.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/2320f8539aefbf07d8a2367610fdfe2b89f18609] | [#10 #26 Frontend & backend implementation for the functionality to edit a recipe in the users cookbook.] | [Beforehand a user had to live with a mistake in his recipes, now a user can edit the mistake and keep the recipe. This makes the user experience better.] |
 
 ---
 
