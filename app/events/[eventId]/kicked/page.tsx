@@ -20,7 +20,7 @@ export default function KickedPage() {
         You are kicked out
       </h1>
 
-      <p style={{ marginTop: 10 }}>
+      <p style={{ marginTop: 10, color: "#db1e1e" }}>
         Event ID: {eventId}
       </p>
     </div>
