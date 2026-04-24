@@ -68,6 +68,7 @@ const RecipeCard: React.FC<{ recipe: Recipe; onDelete: (recipeId: number) => voi
       label: "Edit Recipe",
       onClick: ({ domEvent }) => {
         domEvent.stopPropagation();
+        console.log("Editing recipe:", recipe);
         router.push(`/recipe/${recipe.id}/edit`);
       }
     },
@@ -137,16 +138,15 @@ const RecipeCard: React.FC<{ recipe: Recipe; onDelete: (recipeId: number) => voi
         </ConfigProvider>
       </div>
 
-        {imageSrc ? (
-          <img
-            src={imageSrc}
-            alt={recipe.title}
-            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
-          />
-        ) : (
-          "No image yet"
-        )}
-      </div>
+      {imageSrc ? (
+        <img
+          src={imageSrc}
+          alt={recipe.title}
+          style={{ width: "100%", height: 200, objectFit: "cover", borderRadius: 8 }}
+        />
+      ) : (
+        <div>No image yet</div>
+      )}
     </Card>
   );
 };
@@ -167,16 +167,10 @@ const CookbookPage: React.FC = () => {
     setUsername(stored);
   }, []);
 
-
-
-
-  const [token, setToken] = useState<string | null>(null);
-
   useEffect(() => {
     const stored = localStorage.getItem("token");
     if (stored) setToken(stored.replace(/"/g, ""));
   }, []);
-
 
   useEffect(() => {
     if (!token) return;
@@ -215,7 +209,6 @@ const CookbookPage: React.FC = () => {
     }
   };
 
-  const [activeLabels, setActiveLabels] = useState<string[]>([]);
   // const filteredRecipes = activeLabels.length > 0 ? MOCK_RECIPES.filter((r) => activeLabels.every((active) => r.labels.includes(active))) : MOCK_RECIPES;
   // Filtering logic
   const filteredRecipes =
@@ -224,13 +217,6 @@ const CookbookPage: React.FC = () => {
         activeLabels.every((label) => r.labels.includes(label))
       )
       : recipes;
-  const handleLabelToggle = (label: string) => {
-    setActiveLabels((prev) =>
-      prev.includes(label)
-        ? prev.filter((l) => l !== label)
-        : [...prev, label]
-    );
-  };
 
   const handleLabelToggle = (label: string) => {
     setActiveLabels((prev) =>
@@ -319,7 +305,7 @@ const CookbookPage: React.FC = () => {
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: 16 }}>
             {/*Filtering recipe cards*/}
-            {filteredRecipes.map((recipe) => (<RecipeCard key={recipe.id} recipe={recipe} token={token} />))}
+            {filteredRecipes.map((recipe) => (<RecipeCard key={recipe.id} recipe={recipe} token={token} onDelete={handleDeleteRecipe}/>))}
           </div>
         </div>
       </div>
