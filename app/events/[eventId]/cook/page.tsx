@@ -8,7 +8,7 @@ import React, {
   useRef,
 } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Sidebar from "@/components/appLayout";
+import Sidebar, { Header } from "@/components/appLayout";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { Spin } from "antd";
@@ -128,9 +128,6 @@ export default function CookPage() {
     return () => URL.revokeObjectURL(url);
   }, [selectedFile]);
 
-  /**
-   * INITIAL permission check (safe startup)
-   */
   const checkPermission = useCallback(async () => {
     if (!eventId || !token) return;
 
@@ -164,10 +161,6 @@ export default function CookPage() {
     checkPermission();
   }, [checkPermission, eventId, token]);
 
-  /**
-   * IMPORTANT:
-   * permission check ONLY when upload window closes
-   */
   useEffect(() => {
     const prev = prevUploadActive.current;
 
@@ -176,7 +169,6 @@ export default function CookPage() {
       return;
     }
 
-    // OPEN → CLOSED transition
     if (prev === true && uploadActive === false) {
       checkPermission();
     }
@@ -184,9 +176,6 @@ export default function CookPage() {
     prevUploadActive.current = uploadActive;
   }, [uploadActive, checkPermission]);
 
-  /**
-   * FETCH SCHEDULE
-   */
   const fetchSchedule = useCallback(async () => {
     if (!eventId || !token) return;
 
@@ -210,10 +199,6 @@ export default function CookPage() {
     return () => clearInterval(interval);
   }, [fetchSchedule, eventId, token, permissionChecked]);
 
-  /**
-   * FETCH SUBMISSIONS
-   * (visible in upload CLOSED window)
-   */
   const fetchSubmissions = useCallback(async () => {
     if (!schedule || !token) return;
 
@@ -248,9 +233,6 @@ export default function CookPage() {
     return () => clearInterval(interval);
   }, [fetchSubmissions, schedule, token]);
 
-  /**
-   * FETCH WINNER
-   */
   const fetchWinner = useCallback(async () => {
     if (!eventFinished || !token) return;
 
@@ -270,9 +252,6 @@ export default function CookPage() {
     return () => clearInterval(interval);
   }, [fetchWinner, eventFinished, token]);
 
-  /**
-   * UPLOAD
-   */
   const handleUpload = useCallback(async () => {
     if (!selectedFile || !schedule || !token) return;
     if (activePromptIndex === -1) return;
@@ -307,9 +286,6 @@ export default function CookPage() {
     }
   }, [selectedFile, schedule, token, activePromptIndex, eventId]);
 
-  /**
-   * VOTING
-   */
   const voteSubmission = useCallback(
     async (submissionId: number) => {
       if (!token) return;
@@ -328,101 +304,213 @@ export default function CookPage() {
     [token, fetchSubmissions, fetchWinner]
   );
 
+  /* ================= LOADING DESIGN ================= */
   if (!schedule || loading) {
     return (
-      <div style={{ display: "flex", minHeight: "100vh" }}>
+      <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
         <Sidebar />
-        <div style={{ margin: "auto" }}>
+        <div style={{
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
           <Spin />
         </div>
       </div>
     );
   }
 
+  /* ================= MAIN DESIGN ================= */
   return (
-    <div style={{ display: "flex", minHeight: "100vh", color: "#000" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
       <Sidebar />
 
-      <main style={{ margin: "0 auto", paddingTop: 40, width: 420 }}>
-        <h2>Cook Event</h2>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+        
+        <Header title="Cook Event" rightContent={null} />
 
-        {uploadSuccess && <p style={{ color: "green" }}>Upload successful</p>}
-
-        {/* ================= UPLOAD PHASE ================= */}
-        {uploadActive && !eventFinished && (
-          <>
-            <p style={{ color: "green", fontWeight: 600 }}>
-              🟢Upload open: submit your photo and continue cooking!
-            </p>
-
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-            />
-
-            <button onClick={() => fileRef.current?.click()}>
-              Select Image
-            </button>
-
-            {previewUrl && (
-              <img src={previewUrl} style={{ width: "100%" }} />
+        <div style={{ padding: 24, flex: 1 }}>
+          <div style={{
+            maxWidth: 480,
+            margin: "0 auto",
+            background: "#fff",
+            borderRadius: 16,
+            padding: 20,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.06)"
+          }}>
+            {eventFinished && (
+              <button
+                onClick={() => router.push("/cookbook")}
+                style={{
+                position: "fixed",
+                bottom: 20,
+                right: 20,
+                padding: "10px 16px",
+                borderRadius: 12,
+                border: "none",
+                background: "#4a6741",
+                color: "#fff",
+                fontWeight: 600,
+                cursor: "pointer",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.15)"
+                }}>
+                Return to Home
+                </button>
             )}
 
-            <button
-              disabled={!selectedFile || uploading}
-              onClick={handleUpload}
-            >
-              {uploading ? "Uploading..." : "Upload"}
-            </button>
+            {uploadSuccess && (
+              <p style={{ color: "#4a6741", fontWeight: 500 }}>
+                Upload successful
+              </p>
+            )}
 
-            {timeLeftMs !== null && <p>{formatTime(timeLeftMs)}</p>}
-          </>
-        )}
+            {uploadActive && !eventFinished && (
+              <>
+                <p style={{ color: "#4a6741", fontWeight: 600 }}>
+                  🟢 Upload open: submit your photo and continue cooking!
+                </p>
 
-        {/* ================= CLOSED PHASE ================= */}
-        {!uploadActive && (
-          <>
-            <p>⚫Upload closed: Keep cooking!</p>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                />
 
-            {/* SHOW SUBMISSIONS WITH NAMES */}
-            <div style={{ display: "grid", gap: 10 }}>
-              {submissions.map((s) => (
-                <div key={s.submissionId}>
+                <button
+                  onClick={() => fileRef.current?.click()}
+                  style={{
+                    marginTop: 12,
+                    padding: "10px 16px",
+                    borderRadius: 12,
+                    border: "1px solid #4a6741",
+                    background: "transparent",
+                    color: "#4a6741",
+                    fontWeight: 500,
+                    cursor: "pointer"
+                    }}>
+                  Select Image
+                  </button>
+
+                {previewUrl && (
                   <img
-                    src={`${process.env.NEXT_PUBLIC_API_URL}/events/submissions/${s.submissionId}/image`}
-                    style={{ width: "100%" }}
+                    src={previewUrl}
+                    style={{
+                      width: "100%",
+                      borderRadius: 12,
+                      marginTop: 12
+                    }}
                   />
-                  <div>👤 {s.username}</div>
+                )}
 
-                  {eventFinished && (
-                    <>
-                      <div>⭐ {s.voteCount ?? 0}</div>
-                      <button onClick={() => voteSubmission(s.submissionId)}>
-                        Vote
-                      </button>
-                    </>
-                  )}
+                <button
+                  disabled={!selectedFile || uploading}
+                  onClick={handleUpload}
+                  style={{
+                    marginTop: 12,
+                    padding: "10px 16px",
+                    borderRadius: 12,
+                    border: "none",
+                    background: !selectedFile || uploading ? "#c7d1c3" : "#4a6741",
+                    color: "#fff",
+                    fontWeight: 600,
+                    cursor: !selectedFile || uploading ? "not-allowed" : "pointer"
+                    }}>
+                  {uploading ? "Uploading..." : "Upload"}
+                </button>
+
+                {timeLeftMs !== null && (
+                  <p style={{ color: "#666", marginTop: 8 }}>
+                    {formatTime(timeLeftMs)}
+                  </p>
+                )}
+              </>
+            )}
+
+            {!uploadActive && (
+              <>
+                <p style={{ color: "#666" }}>
+                  ⚫ Upload closed: Keep cooking!
+                </p>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 16, marginTop: 12 }}>
+                  {submissions.map((s) => (
+                    <div
+                      key={s.submissionId}
+                      style={{
+                        borderRadius: 12,
+                        overflow: "hidden",
+                        background: "#fafafa"
+                      }}
+                    >
+                      <div
+                        style={{
+                        width: "100%",
+                        height: 140,
+                        overflow: "hidden",
+                        background: "#f0eef6"
+                        }}>
+                        <img
+                          src={`${process.env.NEXT_PUBLIC_API_URL}/events/submissions/${s.submissionId}/image`}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            display: "block"
+                          }}/>
+                      </div>
+
+                      <div style={{ padding: 12 }}>
+                        <div style={{ fontSize: 14, color: "#1a1a1a" }}>
+                          👤 {s.username}
+                        </div>
+
+                        {eventFinished && (
+                          <>
+                            <div style={{ fontSize: 13, color: "#666" }}>
+                              ⭐ {s.voteCount ?? 0}
+                            </div>
+
+                            <button onClick={() => voteSubmission(s.submissionId)}>
+                              Vote
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </>
-        )}
+              </>
+            )}
 
-        {/* ================= WINNERS ================= */}
-        {eventFinished && winners.length > 0 && (
-          <>
-            <h3>🏆 Winners</h3>
-            {winners.map((w) => (
-              <div key={w.submissionId}>
-                {w.username} — ⭐ {w.voteCount}
+            {eventFinished && winners.length > 0 && (
+              <div style={{ marginTop: 24, color: "#9e8600" }}>
+                <h3 style={{ marginBottom: 12 }}>🏆 Winners</h3>
+
+                {winners.map((w) => (
+                  <div
+                    key={w.submissionId}
+                    style={{
+                      padding: 12,
+                      borderRadius: 12,
+                      background: "#f0eef6",
+                      marginBottom: 8
+                    }}
+                  >
+                    {w.username} — ⭐ {w.voteCount}
+                  </div>
+                ))}
               </div>
-            ))}
-          </>
-        )}
-      </main>
+
+              
+            )}
+            
+
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
