@@ -5,6 +5,9 @@
 import React from "react";
 import { Card } from "antd";
 import { useRouter } from "next/navigation";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import TimerIcon from "@mui/icons-material/Timer";
+import GroupIcon from "@mui/icons-material/Group";
 
 type Participant = {
     id: number;
@@ -42,8 +45,7 @@ const EventCard: React.FC<Props> = ({ event }) => {
   const end = event.endDatetime || event.endDate;
 
   const participantCount =
-    (event.participants?.length || 0) +
-    (event.creator ? 1 : 0);
+    (event.participants?.length ?? 0);
   return (
     <Card
       hoverable
@@ -81,16 +83,7 @@ const EventCard: React.FC<Props> = ({ event }) => {
         {/* Date */}
         {start && (
           <div style={{ color: "#666", fontSize: 13, marginTop: 4 }}>
-            <span
-              className="material-symbols-rounded"
-              style={{
-                fontSize: 16,
-                verticalAlign: "middle",
-                marginRight: 6,
-              }}
-            >
-              calendar_today
-            </span>
+            <CalendarTodayIcon sx={{ fontSize: 16, verticalAlign: "middle", mr: "6px" }} />
             {new Date(start).toLocaleDateString()} ·{" "}
             {new Date(start).toLocaleTimeString([], {
               hour: "2-digit",
@@ -102,16 +95,7 @@ const EventCard: React.FC<Props> = ({ event }) => {
         {/* Duration */}
         {start && end && (
           <div style={{ color: "#666", fontSize: 13, marginTop: 4 }}>
-            <span
-              className="material-symbols-rounded"
-              style={{
-                fontSize: 16,
-                verticalAlign: "middle",
-                marginRight: 6,
-              }}
-            >
-              timer
-            </span>
+            <TimerIcon sx={{ fontSize: 16, verticalAlign: "middle", mr: "6px" }} />
             {Math.round(
               (new Date(end).getTime() - new Date(start).getTime()) / 60000
             )}{" "}
@@ -121,16 +105,7 @@ const EventCard: React.FC<Props> = ({ event }) => {
 
         {/* Participants */}
         <div style={{ color: "#666", fontSize: 13, marginTop: 4 }}>
-          <span
-            className="material-symbols-rounded"
-            style={{
-              fontSize: 16,
-              verticalAlign: "middle",
-              marginRight: 6,
-            }}
-          >
-            group
-          </span>
+          <GroupIcon sx={{ fontSize: 16, verticalAlign: "middle", mr: "6px" }} />
           {participantCount} joined
         </div>
       </div>

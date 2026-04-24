@@ -5,8 +5,7 @@ import { Form, Row, Col, App, Avatar } from "antd";
 import { TextField, Button as MuiButton, Chip, List, ListItemButton, ListItemText, Paper, LinearProgress } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
-import Sidebar from "@/components/appLayout";
-import { MenuOutlined } from "@ant-design/icons";
+import Sidebar, { Header, UserAvatar } from "@/components/appLayout";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import UploadIcon from "@mui/icons-material/Upload";
 
@@ -82,7 +81,6 @@ const CreateRecipePage: React.FC = () => {
   const { message } = App.useApp();
 
   const [username, setUsername] = useState<string>("U");
-  const userId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
@@ -248,7 +246,9 @@ const CreateRecipePage: React.FC = () => {
         formData.append("image", imageFile);
       }
 
-      const token = localStorage.getItem("token")?.replace(/"/g, "");
+      const token = typeof window !== "undefined"
+        ? localStorage.getItem("token")
+        : null;
 
       await apiService.post("/recipes", formData, {
         Authorization: `Bearer ${token}`,
@@ -273,37 +273,10 @@ const CreateRecipePage: React.FC = () => {
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
 
-        {/* header from cookbook page */}
-        <div
-          style={{
-            background: "#fff",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "16px 24px",
-            borderBottom: "1px solid #2a2d3a",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <MenuOutlined style={{ fontSize: 18, color: "#aaa" }} />
-            <span style={{ fontWeight: 600, fontSize: 16, color: "#1a1a1a" }}>
-              Create Recipe
-            </span>
-          </div>
-
-          <Avatar
-            size={40}
-            style={{
-              background: "#f0f0f0",
-              color: "#1a1a1a",
-              cursor: "pointer",
-              fontWeight: 600,
-            }}
-            onClick={() => router.push(`/users/${userId}`)}
-          >
-            {getInitials(username)}
-          </Avatar>
-        </div>
+        <Header
+          title="Create New Recipe"
+          rightContent={<UserAvatar />}
+        />
 
         {/* create recipe page content */}
         <div style={{ padding: "24px", flex: 1 }}>
