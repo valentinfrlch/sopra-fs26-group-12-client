@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { Row, Col, Avatar, Button } from "antd";
+import { Row, Col, Avatar, Button, App } from "antd";
 import { TextField } from "@mui/material";
 import { useRouter, useParams } from "next/navigation";
+import { useApi } from "@/hooks/useApi";
+import { getApiDomain } from "@/utils/domain";
 import Sidebar from "@/components/appLayout";
-import { MenuOutlined } from "@ant-design/icons"; // Image will be used for recipe display
+import { MenuOutlined } from "@ant-design/icons";
 
 type Recipe = {
   id: number;
@@ -14,10 +16,13 @@ type Recipe = {
   preparation: string;
   ingredients?: string[];
   labels: string[];
-  image?: string;
-  imageType?: string;
-  createdAt: string;
+  imageURL?: string;
+  createdAt?: string;
+  userId?: number;
 };
+
+const RECIPE_TYPES = ["Breakfast", "Lunch", "Dinner"];
+const DIET_TYPES = ["Vegetarian", "Vegan", "High Protein", "Low Carb"];
 
 const getInitials = (name: string): string => {
   return name
@@ -31,16 +36,17 @@ const getInitials = (name: string): string => {
 const RecipeDetailPage: React.FC = () => {
   const router = useRouter();
   const params = useParams();
+  const apiService = useApi();
+  const { message } = App.useApp();
+
   const recipeId = params?.id;
 
   const [username, setUsername] = useState<string>("U");
+  const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
   const userId =
     typeof window !== "undefined" ? localStorage.getItem("userId") : null;
-
-  const [recipe, setRecipe] = useState<Recipe | null>(null);
-
-  const RECIPE_TYPES = ["Breakfast", "Lunch", "Dinner"];
-  const DIET_TYPES = ["Vegetarian", "Vegan", "High Protein", "Low Carb"];
 
   useEffect(() => {
     const stored = localStorage.getItem("username") ?? "U";
@@ -48,43 +54,78 @@ const RecipeDetailPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!recipeId) return;
+    const fetchRecipe = async () => {
+      if (!recipeId) return;
 
-    // TODO: replace with real API call
-    setRecipe({
-      id: 1,
-      title: "Spaghetti Bolognese",
-      preparation:
-        "1. Cook pasta\n2. Prepare sauce\n3. Mix together\n4. Serve hot",
-      ingredients: [
-        "Spaghetti - 200g",
-        "Minced Meat - 300g",
-        "Tomato Sauce - 1 cup",
-      ],
-      labels: ["Dinner", "High Protein"],
-      image: "",
-      imageType: "image/jpeg",
-      createdAt: new Date().toISOString(),
-    });
-  }, [recipeId]);
+      try {
+        setLoading(true);
 
-  // needed because react can be faster than useEffect
-  if (!recipe) {
+        const token = localStorage.getItem("token")?.replace(/"/g, "");
+        if (!token) {
+          throw new Error("No auth token found.");
+        }
+
+        const recipes = await apiService.get<Recipe[]>("/recipes", {
+          Authorization: `Bearer ${token}`,
+        });
+
+        const numericRecipeId = Number(recipeId);
+        const foundRecipe = recipes.find((r) => r.id === numericRecipeId);
+
+        if (!foundRecipe) {
+          throw new Error("Recipe not found.");
+        }
+
+        setRecipe(foundRecipe);
+      } catch (error: unknown) {
+        console.error("Failed to fetch recipe:", error);
+        message.error(
+          error instanceof Error ? error.message : "Failed to load recipe.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecipe();
+  }, [recipeId, apiService, message]);
+
+  const ingredientPairs = useMemo(() => {
+    if (!recipe?.ingredients || recipe.ingredients.length === 0) return [];
+
+    const pairs: Array<{ name: string; amount: string }> = [];
+
+    for (let i = 0; i < recipe.ingredients.length; i += 2) {
+      pairs.push({
+        name: recipe.ingredients[i] || "",
+        amount: recipe.ingredients[i + 1] || "",
+      });
+    }
+
+    return pairs;
+  }, [recipe]);
+
+  if (loading) {
     return <div style={{ padding: 24 }}>Loading...</div>;
   }
 
-  const imageSrc =
-    recipe.image && recipe.imageType
-      ? `data:${recipe.imageType};base64,${recipe.image}`
-      : null;
+  if (!recipe) {
+    return <div style={{ padding: 24 }}>Recipe not found.</div>;
+  }
+
+  const apiDomain = getApiDomain();
+
+  const imageSrc = recipe.imageURL
+    ? recipe.imageURL.startsWith("http")
+      ? recipe.imageURL
+      : `${apiDomain}${recipe.imageURL}`
+    : null;
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
-      {/* sidebar from cookbook page */}
       <Sidebar />
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        {/* header from cookbook page */}
         <div
           style={{
             background: "#fff",
@@ -116,10 +157,8 @@ const RecipeDetailPage: React.FC = () => {
           </Avatar>
         </div>
 
-        {/* recipe details page content */}
         <div style={{ padding: "24px", flex: 1 }}>
           <Row gutter={40}>
-            {/* left column */}
             <Col span={10}>
               <TextField
                 label="Recipe Name"
@@ -204,34 +243,30 @@ const RecipeDetailPage: React.FC = () => {
                 </span>
 
                 <div style={{ marginTop: 10 }}>
-                  {recipe.ingredients && recipe.ingredients.length > 0 ? (
-                    recipe.ingredients.map((ingredient, index) => {
-                      const [name, amount] = ingredient.split(" - ");
+                  {ingredientPairs.length > 0 ? (
+                    ingredientPairs.map((ingredient, index) => (
+                      <Row key={index} gutter={8} style={{ marginBottom: 10 }}>
+                        <Col span={12}>
+                          <TextField
+                            fullWidth
+                            value={ingredient.name}
+                            disabled
+                            label="Ingredient"
+                            InputLabelProps={{ style: { color: "grey" } }}
+                          />
+                        </Col>
 
-                      return (
-                        <Row key={index} gutter={8} style={{ marginBottom: 10 }}>
-                          <Col span={12}>
-                            <TextField
-                              fullWidth
-                              value={name || ""}
-                              disabled
-                              label="Ingredient"
-                              InputLabelProps={{ style: { color: "grey" } }}
-                            />
-                          </Col>
-
-                          <Col span={12}>
-                            <TextField
-                              fullWidth
-                              value={amount || ""}
-                              disabled
-                              label="Amount"
-                              InputLabelProps={{ style: { color: "grey" } }}
-                            />
-                          </Col>
-                        </Row>
-                      );
-                    })
+                        <Col span={12}>
+                          <TextField
+                            fullWidth
+                            value={ingredient.amount}
+                            disabled
+                            label="Amount"
+                            InputLabelProps={{ style: { color: "grey" } }}
+                          />
+                        </Col>
+                      </Row>
+                    ))
                   ) : (
                     <span style={{ color: "#888" }}>No ingredients provided.</span>
                   )}
@@ -256,16 +291,15 @@ const RecipeDetailPage: React.FC = () => {
               </div>
             </Col>
 
-            {/* right column */}
             <Col span={14}>
               <div>
-
                 {imageSrc ? (
                   <Image
                     src={imageSrc}
                     alt="recipe"
                     width={500}
                     height={500}
+                    unoptimized
                     style={{
                       width: "100%",
                       height: "auto",
@@ -282,7 +316,6 @@ const RecipeDetailPage: React.FC = () => {
             </Col>
           </Row>
 
-          {/* button */}
           <div
             style={{
               marginTop: 30,

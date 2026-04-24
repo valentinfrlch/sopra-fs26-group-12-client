@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -15,7 +14,6 @@ import { getApiDomain } from "@/utils/domain";
 import useWindowSize from "@/hooks/useWndowSize";
 import { Button } from "@mui/material";
 
-
 interface Recipe {
   id: number;
   title: string;
@@ -24,13 +22,11 @@ interface Recipe {
   userId?: number;
 }
 
-
-
 const ALL_LABELS = ["Breakfast", "Lunch", "Dinner", "Vegetarian", "Vegan", "High Protein", "Low Carbs"];
 
 
 
-const RecipeCard: React.FC<{ recipe: Recipe; token: string | null }> = ({ recipe, token }) => {
+const RecipeCard: React.FC<{ recipe: Recipe; onDelete: (recipeId: number) => void; token: string | null }> = ({ recipe, onDelete, token }) => {
   const router = useRouter();
   const [imageSrc, setImageSrc] = useState<string | null>(null);
 
@@ -72,7 +68,7 @@ const RecipeCard: React.FC<{ recipe: Recipe; token: string | null }> = ({ recipe
       label: "Edit Recipe",
       onClick: ({ domEvent }) => {
         domEvent.stopPropagation();
-
+        router.push(`/recipe/${recipe.id}/edit`);
       }
     },
     {
@@ -81,11 +77,12 @@ const RecipeCard: React.FC<{ recipe: Recipe; token: string | null }> = ({ recipe
       danger: true,
       onClick: ({ domEvent }) => {
         domEvent.stopPropagation();
-
-        alert("Delete recipe clicked!");
+        onDelete(recipe.id);
+        
       }
     }
   ];
+
   return (
 
     <Card hoverable onClick={() => router.push(`/recipe/${recipe.id}`)}
@@ -101,7 +98,6 @@ const RecipeCard: React.FC<{ recipe: Recipe; token: string | null }> = ({ recipe
           <div style={{ fontWeight: 600, fontSize: 14, color: "#1a1a1a" }}>{recipe.title}</div>
           <div style={{ fontSize: 12, color: "#888" }}>{recipe.labels.join(", ")}</div>
         </div>
-
 
         <ConfigProvider
           theme={{
@@ -140,7 +136,6 @@ const RecipeCard: React.FC<{ recipe: Recipe; token: string | null }> = ({ recipe
           </Dropdown>
         </ConfigProvider>
       </div>
-      <div style={{ height: 240, background: "#f0f0f0", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#555", fontSize: 12 }}>
 
         {imageSrc ? (
           <img
@@ -156,10 +151,6 @@ const RecipeCard: React.FC<{ recipe: Recipe; token: string | null }> = ({ recipe
   );
 };
 
-
-
-
-
 const CookbookPage: React.FC = () => {
 
 
@@ -168,6 +159,8 @@ const CookbookPage: React.FC = () => {
   const { isMobile } = useWindowSize();
   const [username, setUsername] = useState<string>("U");
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [token, setToken] = useState<string | null>(null);
+  const [activeLabels, setActiveLabels] = useState<string[]>([]);
 
   useEffect(() => {
     const stored = localStorage.getItem("username") ?? "U";
@@ -204,7 +197,23 @@ const CookbookPage: React.FC = () => {
     fetchRecipes();
   }, [token]);
 
+  const handleDeleteRecipe = async (recipeId: number) => {
+    try {
+      if (!token) {
+        alert("No token found.");
+        return;
+      }
 
+      await api.delete(`/recipes/${recipeId}`, {
+        Authorization: `Bearer ${token}`,
+      });
+
+      setRecipes((prev) => prev.filter((recipe) => recipe.id !== recipeId));
+    } catch (err) {
+      console.error("DELETE ERROR:", err);
+      alert("Failed to delete recipe.");
+    }
+  };
 
   const [activeLabels, setActiveLabels] = useState<string[]>([]);
   // const filteredRecipes = activeLabels.length > 0 ? MOCK_RECIPES.filter((r) => activeLabels.every((active) => r.labels.includes(active))) : MOCK_RECIPES;
@@ -223,14 +232,19 @@ const CookbookPage: React.FC = () => {
     );
   };
 
+  const handleLabelToggle = (label: string) => {
+    setActiveLabels((prev) =>
+      prev.includes(label)
+        ? prev.filter((l) => l !== label)
+        : [...prev, label]
+    );
+  };
 
   return (
 
     <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
-
       <Sidebar />
 
-      {/* Main content */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
 
         <Header
@@ -286,8 +300,11 @@ const CookbookPage: React.FC = () => {
               </div>
             </Card>
           </div>
-          <h2 style={{ color: "#1a1a1a", fontSize: 18, fontWeight: 600, marginBottom: 12 }}>Your Recipes</h2>
-          {/*Filtering/Selection: Font Change*/}
+
+          <h2 style={{ color: "#1a1a1a", fontSize: 18, fontWeight: 600, marginBottom: 12 }}>
+            Your Recipes
+          </h2>
+
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
             {ALL_LABELS.map((label) => (
               <Tag key={label} onClick={() => handleLabelToggle(label)}
@@ -299,6 +316,7 @@ const CookbookPage: React.FC = () => {
               </Tag>
             ))}
           </div>
+
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: 16 }}>
             {/*Filtering recipe cards*/}
             {filteredRecipes.map((recipe) => (<RecipeCard key={recipe.id} recipe={recipe} token={token} />))}
