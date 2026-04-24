@@ -27,7 +27,7 @@ interface CookingEvent {
     state: "UPCOMING" | "ONGOING" | "FINISHED";
 }
 
-
+const REFRESH_MS = 15_000;
 
 const EventsPage: React.FC = () => {
     const router = useRouter();
@@ -41,12 +41,28 @@ const EventsPage: React.FC = () => {
 
     useEffect(() => {
         if (!token) { setLoading(false); return; }
-        setLoading(true);
-        apiService
-            .get<CookingEvent[]>("/events", { Authorization: `Bearer ${token}` })
-            .then(setEvents)
-            .catch(console.error)
-            .finally(() => setLoading(false));
+
+        let cancelled = false;
+        let isFirst = true;
+
+        const fetchEvents = () => {
+            if (isFirst) setLoading(true);
+            apiService
+                .get<CookingEvent[]>("/events", { Authorization: `Bearer ${token}` })
+                .then((data) => { if (!cancelled) setEvents(data); })
+                .catch(console.error)
+                .finally(() => {
+                    if (isFirst && !cancelled) setLoading(false);
+                    isFirst = false;
+                });
+        };
+
+        fetchEvents();
+        const interval = setInterval(fetchEvents, REFRESH_MS);
+        return () => {
+            cancelled = true;
+            clearInterval(interval);
+        };
     }, [token]);
 
     if (loading) {

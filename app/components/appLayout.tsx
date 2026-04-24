@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Avatar as AntAvatar } from "antd";
 import { Drawer, Box, ListItemButton, ListItemIcon, BottomNavigation, BottomNavigationAction } from "@mui/material";
-import { RestaurantMenuRounded, HomeRounded, HomeOutlined, LibraryBooksRounded, LibraryBooksOutlined } from "@mui/icons-material";
+import { RestaurantMenuRounded, HomeRounded, HomeOutlined, LibraryBooksRounded, LibraryBooksOutlined, EmojiEventsRounded, EmojiEventsOutlined } from "@mui/icons-material";
 import useWindowSize from "@/hooks/useWndowSize";
 
 
@@ -26,6 +26,7 @@ const Sidebar: React.FC = () => {
       label: "Events"
     },
     { key: "cookbook", path: "/cookbook", inactiveIcon: <LibraryBooksOutlined style={{ fontSize: 22 }} />, activeIcon: <LibraryBooksRounded style={{ fontSize: 22 }} />, label: "Library" },
+    { key: "leaderboard", path: "/leaderboard", inactiveIcon: <EmojiEventsOutlined style={{ fontSize: 22 }} />, activeIcon: <EmojiEventsRounded style={{ fontSize: 22 }} />, label: "Leaderboard" },
   ];
 
   const activeIndex = Math.max(
