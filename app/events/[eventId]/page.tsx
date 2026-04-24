@@ -7,15 +7,39 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 import Sidebar, { UserAvatar, Header } from "@/components/appLayout";
 import { Spin } from "antd";
 import { Button, ButtonGroup, Avatar, AvatarGroup, Chip, Tooltip } from "@mui/material";
+import EventIcon from "@mui/icons-material/Event";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import GroupsIcon from "@mui/icons-material/Groups";
+import RestaurantIcon from "@mui/icons-material/Restaurant";
+import LockIcon from "@mui/icons-material/Lock";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import CloseIcon from "@mui/icons-material/Close";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import PlayCircleIcon from "@mui/icons-material/PlayCircle";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import RadioButtonCheckedIcon from "@mui/icons-material/RadioButtonChecked";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 // ---------------------------------------------------------------------------
 // ICON COMPONENT
 // ---------------------------------------------------------------------------
-const Icon = ({ name, size = 18 }: { name: string; size?: number }) => (
-  <span className="material-symbols-rounded" style={{ fontSize: size, color: "#4a7c59", display: "flex", alignItems: "center" }}>
-    {name}
-  </span>
-);
+const Icon = ({ name, size = 18 }: { name: string; size?: number }) => {
+  const iconProps = { sx: { fontSize: size, color: "#4a7c59" } };
+  switch (name) {
+    case "event":
+      return <EventIcon {...iconProps} />;
+    case "schedule":
+      return <ScheduleIcon {...iconProps} />;
+    case "groups":
+      return <GroupsIcon {...iconProps} />;
+    case "restaurant":
+      return <RestaurantIcon {...iconProps} />;
+    case "lock":
+      return <LockIcon {...iconProps} />;
+    default:
+      return null;
+  }
+};
 
 // ---------------------------------------------------------------------------
 // TYPES
@@ -221,14 +245,14 @@ const NotFoundScreen = ({ onBack }: { onBack: () => void }) => (
 
 const StatusBadge = ({ state }: { state: CookingEvent["state"] }) => {
   const config = state === "ONGOING"
-    ? { label: "Live now", color: "#2e7d32", bg: "#e8f5e9", border: "#a5d6aa7", icon: "radio_button_checked"}
+    ? { label: "Live now", color: "#2e7d32", bg: "#e8f5e9", border: "#a5d6aa7", icon: <RadioButtonCheckedIcon sx={{ fontSize: 16, color: "#2e7d32" }} /> }
     : state === "FINISHED"
-    ? { label: "Ended", color: "#555", bg: "#f5f5f5", border: "#ccc", icon: "check_circle" }
-    : { label: "Upcoming", color: "#1565c0", bg: "#e3f2fd", border: "#90caf9", icon: "schedule" };
+    ? { label: "Ended", color: "#555", bg: "#f5f5f5", border: "#ccc", icon: <CheckCircleIcon sx={{ fontSize: 16, color: "#555" }} /> }
+    : { label: "Upcoming", color: "#1565c0", bg: "#e3f2fd", border: "#90caf9", icon: <ScheduleIcon sx={{ fontSize: 16, color: "#1565c0" }} /> };
 
   return (
     <Chip
-      icon={<span className="material-symbols-rounded" style={{ fontSize: 16, color: config.color }}>{config.icon}</span>}
+      icon={config.icon}
       label={config.label}
       variant="outlined"
       sx={{
@@ -409,7 +433,7 @@ const EventDetailPage: React.FC = () => {
               {/* Split Button: Register + Cancel */}
               <ButtonGroup variant="contained" disableElevation style={{ borderRadius: 22, overflow: "hidden" }}>
                 <Button
-                  startIcon={<span className="material-symbols-rounded" style={{ fontSize: 18 }}>person_add</span>}
+                  startIcon={<PersonAddIcon sx={{ fontSize: 18 }} />}
                   onClick={handleRegister}
                   disabled={isRegistered || registering}
                   style={{
@@ -435,16 +459,14 @@ const EventDetailPage: React.FC = () => {
                     borderLeft: "1px solid rgba(255,255,255,0.3)",
                   }}
                 >
-                  <span className="material-symbols-rounded" style={{ fontSize: 18 }}>
-                    {isRegistered ? "close" : "expand_more"}
-                  </span>
+                  {isRegistered ? <CloseIcon sx={{ fontSize: 18 }} /> : <ExpandMoreIcon sx={{ fontSize: 18 }} />}
                 </Button>
               </ButtonGroup>
 
               {/* Participate (disabled when UPCOMING) */}
               <Button
                 variant="contained"
-                startIcon={<span className="material-symbols-rounded" style={{ fontSize: 18 }}>play_circle</span>}
+                startIcon={<PlayCircleIcon sx={{ fontSize: 18 }} />}
                 disabled={true}
                 style={{
                   backgroundColor: "#ccc",
@@ -478,7 +500,7 @@ const EventDetailPage: React.FC = () => {
                   <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: 100}}>
                     <Button
                       variant="contained"
-                      startIcon={<span className="material-symbols-rounded" style={{ fontSize: 18 }}>play_circle</span>}
+                      startIcon={<PlayCircleIcon sx={{ fontSize: 18 }} />}
                       onClick={handleParticipate}
                       style={{
                         backgroundColor: "#4a7c59",
@@ -513,7 +535,7 @@ const EventDetailPage: React.FC = () => {
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 40, paddingRight: 100}}>
               <Button
                 variant="contained"
-                startIcon={<span className="material-symbols-rounded" style={{ fontSize: 18 }}>emoji_events</span>}
+                startIcon={<EmojiEventsIcon sx={{ fontSize: 18 }} />}
                 onClick={() => router.push(`/events/${eventId}/cook`)}
                 style={{
                   backgroundColor: "#4a7c59",

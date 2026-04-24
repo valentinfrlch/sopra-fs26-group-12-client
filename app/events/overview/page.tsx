@@ -4,6 +4,11 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import TimerIcon from "@mui/icons-material/Timer";
+import GroupIcon from "@mui/icons-material/Group";
+import EventBusyIcon from "@mui/icons-material/EventBusy";
 import { Card } from "antd";
 import Sidebar, { Header, UserAvatar } from "@/components/appLayout";
 import { useApi } from "@/hooks/useApi";
@@ -99,17 +104,17 @@ const EventsPage: React.FC = () => {
                                     </div>
 
                                     <div style={{ color: "#666", fontSize: 13, marginTop: 4 }}>
-                                        <span className="material-symbols-rounded" style={{ fontSize: 16, verticalAlign: "middle", marginRight: 6 }}>calendar_today</span>
+                                        <CalendarTodayIcon sx={{ fontSize: 16, verticalAlign: "middle", mr: "6px" }} />
                                         {new Date(event.startDatetime).toLocaleDateString()} · {new Date(event.startDatetime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                     </div>
 
                                     <div style={{ color: "#666", fontSize: 13, marginTop: 4 }}>
-                                        <span className="material-symbols-rounded" style={{ fontSize: 16, verticalAlign: "middle", marginRight: 6 }}>timer</span>
+                                        <TimerIcon sx={{ fontSize: 16, verticalAlign: "middle", mr: "6px" }} />
                                         {Math.round((new Date(event.endDatetime).getTime() - new Date(event.startDatetime).getTime()) / 60000)} min
                                     </div>
 
                                     <div style={{ color: "#666", fontSize: 13, marginTop: 4 }}>
-                                        <span className="material-symbols-rounded" style={{ fontSize: 16, verticalAlign: "middle", marginRight: 6 }}>group</span>
+                                        <GroupIcon sx={{ fontSize: 16, verticalAlign: "middle", mr: "6px" }} />
                                         {event.participants?.length ?? 0} joined
                                     </div>
                                 </div>
@@ -118,7 +123,7 @@ const EventsPage: React.FC = () => {
                     </div>
                     {upcomingEvents.length === 0 && (
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "60px 24px", gap: 12 }}>
-                            <span className="material-symbols-rounded" style={{ fontSize: 48, color: "#ccc" }}>event_busy</span>
+                            <EventBusyIcon sx={{ fontSize: 48, color: "#ccc" }} />
                             <p style={{ color: "#999", fontSize: 15 }}>No upcoming events. Create the first one!</p>
                         </div>
                     )}
@@ -129,11 +134,7 @@ const EventsPage: React.FC = () => {
             <Button
                 type="button"
                 variant="contained"
-                startIcon={
-                    <span className="material-symbols-rounded"
-                        style={{ fontSize: 20, display: "flex", alignItems: "center", lineHeight: 1 }}>
-                        add
-                    </span>}
+                startIcon={<AddIcon sx={{ fontSize: 20 }} />}
                 onClick={() => router.push("/events/create")}
                 style={{
                     position: "fixed",

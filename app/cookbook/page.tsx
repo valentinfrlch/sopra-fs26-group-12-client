@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Card, Tag, Dropdown, MenuProps, ConfigProvider } from "antd";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import AddIcon from "@mui/icons-material/Add";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import Sidebar, { UserAvatar, Header } from "@/components/appLayout";
 
 import { useApi } from "@/hooks/useApi"; 
@@ -84,10 +86,8 @@ const RecipeCard: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
              >
           <button
             type="button"
-            className="material-symbols-rounded"
             onClick={(e) => e.stopPropagation()}
             style={{
-              fontSize: 20,
               color: "#888",
               cursor: "pointer",
               display: "flex",
@@ -98,7 +98,7 @@ const RecipeCard: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
             }}
             
           >
-            more_vert
+            <MoreVertIcon sx={{ fontSize: 20, color: "#888" }} />
           </button>
         </Dropdown>
         </ConfigProvider>
@@ -274,11 +274,7 @@ useEffect(() => {
       <Button 
         type="button"
         variant="contained"
-        startIcon={
-        <span className="material-symbols-rounded" 
-            style={{ fontSize: 20, display: "flex", alignItems: "center", lineHeight: 1 }}>
-          add
-          </span>} 
+        startIcon={<AddIcon sx={{ fontSize: 20 }} />} 
         onClick={() => router.push("/recipe/create")}
         style={{
            position: "fixed",
