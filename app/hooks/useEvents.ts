@@ -9,6 +9,7 @@ type Event = {
   participants?: { id: number }[];
 };
 
+const REFRESH_MS = 15_000;
 
 export const useEvents = () => {
   const api = useApi();
@@ -24,27 +25,28 @@ export const useEvents = () => {
 
   useEffect(() => {
     if (!token) return;
+    let cancelled = false;
 
     const fetchEvents = async () => {
       try {
-        console.log("TOKEN USED FOR EVENTS:", token);
-
         const response = await api.get("/events", {
-          
-            Authorization: `Bearer ${token}`,
-          
+          Authorization: `Bearer ${token}`,
         });
-
-        console.log("EVENTS RESPONSE:", response);
-
-        setEvents(Array.isArray(response) ? response : []);
+        if (!cancelled) {
+          setEvents(Array.isArray(response) ? response : []);
+        }
       } catch (error) {
         console.error("Failed to fetch events", error);
-        setEvents([]);
+        if (!cancelled) setEvents([]);
       }
     };
 
     fetchEvents();
+    const interval = setInterval(fetchEvents, REFRESH_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, [api, token]);
 
   return events;
