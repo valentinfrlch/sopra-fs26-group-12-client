@@ -432,7 +432,7 @@ export default function CookPage() {
             {!uploadActive && (
               <>
                 <p style={{ color: "#666" }}>
-                  ⚫ Upload closed: Keep cooking!
+                  ⚫ Upload closed
                 </p>
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 16, marginTop: 12 }}>
