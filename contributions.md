@@ -117,8 +117,9 @@ reason).
 |                    | [22.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/3a77abe76ed8a000599a148175d2b3d6d5c7656c] | [#28 Frontend implementation of the winner] | [The users need to see who is winning the event game] |
 
 
-| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@BestAchilles]** | [24.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/d75d2b908ae6b37a988b93c14cf300e99d4f9c79] | [Added badge system on the backend (BadgeTier, BadgeService, endpoints for badges and leaderboard) (#18, #78)] | [Users can earn badges based on event wins and see a leaderboard] |
+|                    | [24.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/c141c90f73c2b77d794aac051f16ae2f29b2bfe8] | [Wrote unit tests for the badge system (BadgeTier, BadgeService, BadgeController) (#18, #78)] | [Make sure the badge logic and endpoints work correctly] |
+|                    | [24.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/fcc8a4096626ad072cbc910a9cc9af98760e0227] | [Added badge UI on profile page, leaderboard page, and auto-refresh for events and leaderboard (#9, #11, #12)] | [Users see badges, the leaderboard and new events without reloading] |
 
 ---
 
