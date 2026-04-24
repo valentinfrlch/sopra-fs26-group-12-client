@@ -34,18 +34,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
+      <head />
 
-        {/* loads Google Material Icons */}
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=optional" rel="stylesheet" />
-
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded&display=optional"
-          rel="stylesheet"
-        />
-
-      </head>
-      
       <body className={`${geistSans.variable} ${geistMono.variable} ${roboto.variable}`}>
         <AntdRegistry>
           <ConfigProvider
