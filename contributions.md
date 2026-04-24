@@ -110,11 +110,12 @@ reason).
 |                    | 17.04.26   | https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/c1ed1e83698fd08a9ffcb715d6077e2a9773e4df | Implement endpoints for PATCH requests  | So the user can change their information #22 |
 | **[@sushmstr]** | [18.04.26]   | https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/106/commits/9984cd8cff633a7a9b4b4c3a86f43e5d1c54126f | Store userId and username on login/signup, fix avatar initialization, and integrate reusable header (#102,#103) | Enables consistent UI across pages and improves user experience |
 |                 | [18.04.26]   | https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/106/commits/1efe5f648a3592ae880ca9af153cdfd7980e7493 | Implemented event cards for registered and partcipated events pages | User able to view complete details of participated and registered upcoming events, access individual event page |
-| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-
+| **[@jp-schl]** | [20.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/40017faa4d65e4c3d1bbe55d1bbba295e4ef33ff] | [#47 Backend implementation of voting for event game] | [It is important to get a voting and awinner of the event game] |
+|                    | [22.04.26]   | [(https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/28d2bc516d85f4d5c0d0cad3532c8ecab4831f07)] | [#113 Frontend implementation of voting for event game] | [It is important to show the voting of the event game] |
+|                    | [22.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/3a77abe76ed8a000599a148175d2b3d6d5c7656c] | [#28 Frontend implementation of the winner] | [The users need to see who is winning the event game] |
+| **[@BestAchilles]** | [24.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/d75d2b908ae6b37a988b93c14cf300e99d4f9c79] | [Added badge system on the backend (BadgeTier, BadgeService, endpoints for badges and leaderboard) (#18, #78)] | [Users can earn badges based on event wins and see a leaderboard] |
+|                    | [24.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/c141c90f73c2b77d794aac051f16ae2f29b2bfe8] | [Wrote unit tests for the badge system (BadgeTier, BadgeService, BadgeController) (#18, #78)] | [Make sure the badge logic and endpoints work correctly] |
+|                    | [24.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/fcc8a4096626ad072cbc910a9cc9af98760e0227] | [Added badge UI on profile page, leaderboard page, and auto-refresh for events and leaderboard (#9, #11, #12)] | [Users see badges, the leaderboard and new events without reloading] |
 ---
 
 ## Contributions Week 6 - [Begin Date] to [End Date]

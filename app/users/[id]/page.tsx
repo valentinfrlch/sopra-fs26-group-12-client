@@ -3,9 +3,12 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import { User } from "@/types/user";
+import { Badge } from "@/types/badge";
+import { BadgeChip, BadgeShowcase } from "@/components/Badge";
 import { getInitials as computeInitials } from "@/utils/getInitials";
-import { Avatar, Box, Button, Card, CircularProgress, Stack, TextField, Dialog, DialogTitle, DialogContent, DialogActions, IconButton } from "@mui/material";
+import { Avatar, Box, Button, Card, CircularProgress, Divider, Stack, TextField, Dialog, DialogTitle, DialogContent, DialogActions, IconButton } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Form, message } from "antd";
 
 const Profile: React.FC = () => {
@@ -15,12 +18,17 @@ const Profile: React.FC = () => {
 
   const apiService = useApi();
   const [user, setUser] = useState<User | null>(null);
+  const [badges, setBadges] = useState<Badge[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [nameInput, setNameInput] = useState<string>("");
   const [usernameInput, setUsernameInput] = useState<string>("");
   const [form] = Form.useForm();
+  const ownProfile = typeof window !== "undefined"
+    && userId !== undefined
+    && localStorage.getItem("userId") === userId;
+  const dominantBadge = badges.find((b) => b.current);
 
   type PasswordForm = {
     currentPassword: string;
@@ -39,15 +47,21 @@ const Profile: React.FC = () => {
 
     const fetchUser = async () => {
       try {
-        const storedToken =
-          typeof window !== "undefined" && localStorage.getItem("token")
-            ? JSON.parse(localStorage.getItem("token") || '""')
-            : "";
+        const storedToken = localStorage.getItem("token") ?? "";
         const headers = { Authorization: `Bearer ${storedToken}` };
         const fetched = await apiService.get<User>(`/users/${userId}`, headers);
         setUser(fetched);
         setNameInput(fetched?.name ?? "");
         setUsernameInput(fetched?.username ?? "");
+
+        // badges are public so we fetch them for any profile we can view
+        try {
+          const fetchedBadges = await apiService.get<Badge[]>(`/users/${userId}/badges`, headers);
+          setBadges(fetchedBadges ?? []);
+        } catch (badgeErr) {
+          console.error("Failed to fetch badges", badgeErr);
+          setBadges([]);
+        }
       } catch (err: unknown) {
         // check for 401 and redirect to previous page
         const e = err as ApiError;
@@ -80,10 +94,7 @@ const Profile: React.FC = () => {
     if (!userId) return;
     const { currentPassword, newPassword } = values;
     try {
-      const storedToken =
-        typeof window !== "undefined" && localStorage.getItem("token")
-          ? JSON.parse(localStorage.getItem("token") || '""')
-          : "";
+      const storedToken = localStorage.getItem("token") ?? "";
       const headers = { Authorization: `Bearer ${storedToken}` };
 
       await apiService.patch(`/users/${userId}`, { oldPassword: currentPassword, newPassword }, headers);
@@ -102,10 +113,7 @@ const Profile: React.FC = () => {
   const handleLogout = async () => {
     if (!userId) return;
     try {
-      const storedToken =
-        typeof window !== "undefined" && localStorage.getItem("token")
-          ? JSON.parse(localStorage.getItem("token") || '""')
-          : "";
+      const storedToken = localStorage.getItem("token") ?? "";
       const headers = { Authorization: `Bearer ${storedToken}` };
 
       // Call logout endpoint
@@ -136,10 +144,7 @@ const Profile: React.FC = () => {
     }
 
     try {
-      const storedToken =
-        typeof window !== "undefined" && localStorage.getItem("token")
-          ? JSON.parse(localStorage.getItem("token") || '""')
-          : "";
+      const storedToken = localStorage.getItem("token") ?? "";
       const headers = { Authorization: `Bearer ${storedToken}` };
 
       const updated = await apiService.patch<User>(`/users/${userId}`, payload, headers);
@@ -166,6 +171,11 @@ const Profile: React.FC = () => {
   return (
     <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
       <Card sx={{ width: 520, p: 4, boxShadow: "none", borderRadius: "20px" }}>
+        <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 1 }}>
+          <IconButton aria-label="back" onClick={() => router.back()} sx={{ color: "#4b6624" }}>
+            <ArrowBackIcon />
+          </IconButton>
+        </Box>
         <Stack spacing={2} sx={{ width: "100%" }}>
           <Stack
             direction={{ xs: "column", sm: "row" }}
@@ -180,40 +190,62 @@ const Profile: React.FC = () => {
             </Box>
 
             <Box sx={{ display: "flex", flexDirection: "column", alignItems: { xs: "center", sm: "flex-start" }, flexGrow: 1 }}>
-              <h2 style={{ margin: 0 }}>{user?.name || "Unknown user"}</h2>
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: "wrap" }}>
+                <h2 style={{ margin: 0 }}>{user?.name || "Unknown user"}</h2>
+                {dominantBadge && (
+                  <BadgeChip
+                    emoji={dominantBadge.emoji}
+                    name={dominantBadge.displayName}
+                    description={ownProfile ? dominantBadge.description : undefined}
+                    current
+                  />
+                )}
+              </Stack>
               <span style={{ marginTop: 4 }}>@{user?.username || "-"}</span>
             </Box>
 
-            <Box sx={{ display: "flex", justifyContent: { xs: "center", sm: "flex-end" } }}>
-              <IconButton aria-label="edit" onClick={() => setIsEditModalOpen(true)} sx={{ color: "#4b6624" }}>
-                <EditIcon />
-              </IconButton>
-            </Box>
+            {ownProfile && (
+              <Box sx={{ display: "flex", justifyContent: { xs: "center", sm: "flex-end" } }}>
+                <IconButton aria-label="edit" onClick={() => setIsEditModalOpen(true)} sx={{ color: "#4b6624" }}>
+                  <EditIcon />
+                </IconButton>
+              </Box>
+            )}
           </Stack>
         </Stack>
-        <Box sx={{ width: "100%", mt: 2 }}>
-          <Stack direction="row" spacing={2} justifyContent="flex-end" style={{ marginTop: 24 }}>
-            <Button
-              variant="text"
-              onClick={handleLogout}
-              sx={{
-                color: "red",
-                borderRadius: "999px",
-              }}>
-              Logout
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={() => setIsModalOpen(true)}
-              sx={{
-                borderColor: "#4b6624",
-                color: "#4b6624",
-                borderRadius: "999px",
-              }}>
-              Change password
-            </Button>
-          </Stack>
+
+        <Divider sx={{ my: 3 }} />
+
+        <Box sx={{ width: "100%" }}>
+          <h3 style={{ margin: "0 0 12px 0", color: "#485F23" }}>Badges</h3>
+          <BadgeShowcase badges={badges} showDescriptions={ownProfile} />
         </Box>
+
+        {ownProfile && (
+          <Box sx={{ width: "100%", mt: 2 }}>
+            <Stack direction="row" spacing={2} justifyContent="flex-end" style={{ marginTop: 24 }}>
+              <Button
+                variant="text"
+                onClick={handleLogout}
+                sx={{
+                  color: "red",
+                  borderRadius: "999px",
+                }}>
+                Logout
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => setIsModalOpen(true)}
+                sx={{
+                  borderColor: "#4b6624",
+                  color: "#4b6624",
+                  borderRadius: "999px",
+                }}>
+                Change password
+              </Button>
+            </Stack>
+          </Box>
+        )}
 
         <Dialog
           open={isEditModalOpen}
