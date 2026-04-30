@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Form, Row, Col, App, Avatar } from "antd";
 import { TextField, Button as MuiButton, Chip, List, ListItemButton, ListItemText, Paper, LinearProgress } from "@mui/material";
+import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
 import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import Sidebar, { Header, UserAvatar } from "@/components/appLayout";
@@ -29,10 +30,14 @@ interface MealDetail {
 
 interface CreateRecipeFormValues {
   title: string;
-  types: string[];
-  diet: string[];
+  labels: string[];
   ingredients: RecipeIngredient[];
   preparation: string;
+}
+
+interface LabelResponse {
+  name?: string;
+  label?: string;
 }
 
 interface ApiError {
@@ -43,9 +48,6 @@ interface ApiError {
   };
   message: string;
 }
-
-const RECIPE_TYPES = ["Breakfast", "Lunch", "Dinner"];
-const DIET_TYPES = ["Vegetarian", "Vegan", "High Protein", "Low Carb"];
 
 const fetchMealImageFile = async (imageUrl: string, mealName: string): Promise<File> => {
   /* Handles downloading the image file from mealDB API */
@@ -71,10 +73,21 @@ const getInitials = (name: string): string => {
     .slice(0, 2);
 };
 
+const LABEL_ADD_PREFIX = "Add new label \"";
+const LABEL_ADD_SUFFIX = "\"";
+
+const labelFilter = createFilterOptions<string>();
+
+const parseLabelOption = (value: string): string => {
+  if (value.startsWith(LABEL_ADD_PREFIX) && value.endsWith(LABEL_ADD_SUFFIX)) {
+    return value.slice(LABEL_ADD_PREFIX.length, -LABEL_ADD_SUFFIX.length);
+  }
+  return value;
+};
+
 const CreateRecipePage: React.FC = () => {
   const [form] = Form.useForm();
-  const selectedTypes = Form.useWatch("types", form) || [];
-  const selectedDiet = Form.useWatch("diet", form) || [];
+  const selectedLabels = Form.useWatch("labels", form) || [];
 
   const router = useRouter();
   const apiService = useApi();
@@ -93,6 +106,7 @@ const CreateRecipePage: React.FC = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [shouldFetchSuggestions, setShouldFetchSuggestions] = useState(true);
   const [isFetchingSuggestions, setIsFetchingSuggestions] = useState(false);
+  const [labels, setLabels] = useState<string[]>([]);
 
   const preparationValue = Form.useWatch("preparation", form) || "";
 
@@ -225,6 +239,66 @@ const CreateRecipePage: React.FC = () => {
     fetchRecipes();
   }, [debouncedRecipeName]);
 
+  useEffect(() => {
+    const fetchLabels = async () => {
+      try {
+        const token = localStorage.getItem("token")?.replace(/"/g, "");
+        if (!token) {
+          throw new Error("No auth token found.");
+        }
+
+        const response = await apiService.get<Array<string | LabelResponse>>(
+          "/labels",
+          {
+            Authorization: `Bearer ${token}`,
+          },
+        );
+
+        const normalized = (response || [])
+          .map((label) => (typeof label === "string" ? label : label.name || label.label || ""))
+          .filter((label) => label.trim().length > 0);
+
+        setLabels(normalized);
+      } catch (error: unknown) {
+        console.error("Failed to fetch labels:", error);
+        message.error(
+          error instanceof Error ? error.message : "Failed to load labels.",
+        );
+      }
+    };
+
+    fetchLabels();
+  }, [apiService, message]);
+
+  const createLabel = async (labelName: string): Promise<string | null> => {
+    const trimmed = labelName.trim();
+    if (!trimmed) return null;
+
+    try {
+      const token = localStorage.getItem("token")?.replace(/"/g, "");
+      if (!token) {
+        throw new Error("No auth token found.");
+      }
+
+      const formData = new FormData();
+      formData.append("name", trimmed);
+
+      const created = await apiService.post<LabelResponse>("/labels", formData, {
+        Authorization: `Bearer ${token}`,
+      });
+
+      const normalized = created?.name || created?.label || trimmed;
+      setLabels((prev) => (prev.includes(normalized) ? prev : [...prev, normalized]));
+      return normalized;
+    } catch (error: unknown) {
+      console.error("Failed to create label:", error);
+      message.error(
+        error instanceof Error ? error.message : "Failed to create label.",
+      );
+      return null;
+    }
+  };
+
   const handleCreateRecipe = async (values: CreateRecipeFormValues) => {
     try {
       const formattedIngredients = values.ingredients.map((ing: RecipeIngredient) => [
@@ -239,7 +313,7 @@ const CreateRecipePage: React.FC = () => {
       formData.append("ingredients", JSON.stringify(formattedIngredients));
       formData.append(
         "labels",
-        JSON.stringify([...(values.types || []), ...(values.diet || [])])
+        JSON.stringify(values.labels || [])
       );
 
       if (imageFile) {
@@ -439,71 +513,87 @@ const CreateRecipePage: React.FC = () => {
                   </div>
                 </Form.Item>
 
-                <Form.Item name="types">
-                  <Row><span style={{ color: "black", fontWeight: 500, marginBottom: 10, marginTop: 8 }}>Recipe Type</span></Row>
+                <Form.Item name="labels">
+                  <Row><span style={{ color: "black", fontWeight: 500, marginBottom: 10, marginTop: 8 }}>Labels</span></Row>
+                  <Autocomplete
+                    multiple
+                    freeSolo
+                    options={labels}
+                    filterOptions={(options, params) => {
+                      const selectedSet = new Set(
+                        selectedLabels.map((label) => label.toLowerCase()),
+                      );
+                      const availableOptions = options.filter(
+                        (option) => !selectedSet.has(option.toLowerCase()),
+                      );
+                      const filtered = labelFilter(availableOptions, params);
+                      const inputValue = params.inputValue.trim();
+                      const isExisting = availableOptions.some(
+                        (option) => option.toLowerCase() === inputValue.toLowerCase(),
+                      );
 
-                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                    {RECIPE_TYPES.map((type) => {
-                      const isSelected = selectedTypes.includes(type);
+                      if (inputValue !== "" && !isExisting) {
+                        filtered.push(`${LABEL_ADD_PREFIX}${inputValue}${LABEL_ADD_SUFFIX}`);
+                      }
 
-                      return (
+                      return filtered;
+                    }}
+                    value={selectedLabels}
+                    onChange={async (_, newValue) => {
+                      const nextLabels: string[] = [];
+
+                      for (const entry of newValue) {
+                        const parsed = parseLabelOption(entry);
+                        const isExisting = labels.some(
+                          (label) => label.toLowerCase() === parsed.toLowerCase(),
+                        );
+
+                        if (isExisting) {
+                          nextLabels.push(parsed);
+                          continue;
+                        }
+
+                        const created = await createLabel(parsed);
+                        if (created) nextLabels.push(created);
+                      }
+
+                      form.setFieldsValue({ labels: nextLabels });
+                    }}
+                    renderTags={(value, getTagProps) =>
+                      value.map((option, index) => (
                         <Chip
-                          key={type}
-                          label={type}
-                          clickable
-                          variant={isSelected ? "filled" : "outlined"}
-                          onClick={() => {
-                            const updated = isSelected
-                              ? selectedTypes.filter((t: string) => t !== type)
-                              : [...selectedTypes, type];
-
-                            form.setFieldsValue({ types: updated });
-                          }}
+                          {...getTagProps({ index })}
+                          key={option}
+                          label={option}
                           sx={{
-                            backgroundColor: isSelected ? "rgba(75, 102, 36, 1)" : "rgba(75, 102, 36, 0.07)",
-                            borderColor: "transparent",
-                            color: isSelected ? "#fff" : "#4b6624",
-                            "&:hover": {
-                              backgroundColor: isSelected ? "#3d541d" : "#ebebeb",
+                            backgroundColor: "rgba(75, 102, 36, 1)",
+                            color: "#fff",
+                            "& .MuiChip-deleteIcon": {
+                              color: "rgba(255, 255, 255, 0.7)",
                             },
                           }}
                         />
-                      );
-                    })}
-                  </div>
-                </Form.Item>
-
-                <Form.Item name="diet">
-                  <Row><span style={{ color: "black", fontWeight: 500, marginBottom: 10, marginTop: 8 }}>Dietary Type</span></Row>
-                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                    {DIET_TYPES.map((type) => {
-                      const isSelected = selectedDiet.includes(type);
-
-                      return (
-                        <Chip
-                          key={type}
-                          label={type}
-                          clickable
-                          variant={isSelected ? "filled" : "outlined"}
-                          onClick={() => {
-                            const updated = isSelected
-                              ? selectedDiet.filter((t: string) => t !== type)
-                              : [...selectedDiet, type];
-
-                            form.setFieldsValue({ diet: updated });
-                          }}
-                          sx={{
-                            backgroundColor: isSelected ? "rgba(75, 102, 36, 1)" : "rgba(75, 102, 36, 0.07)",
-                            borderColor: "transparent",
-                            color: isSelected ? "#fff" : "#4b6624",
-                            "&:hover": {
-                              backgroundColor: isSelected ? "#3d541d" : "#ebebeb",
+                      ))
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Labels"
+                        placeholder="Add labels"
+                        InputLabelProps={{ style: { color: "grey" } }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#4b6624",
                             },
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#4b6624",
+                            },
+                          },
+                        }}
+                      />
+                    )}
+                  />
                 </Form.Item>
 
                 <Form.Item>
