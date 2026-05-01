@@ -323,8 +323,16 @@ const CookbookPage: React.FC = () => {
             <Card
               style={{ background: "#fff", border: "none", borderRadius: 12 }}
               styles={{ body: { padding: 16 } }}>
-              <div style={{ color: "#504e4e", fontSize: 13, marginBottom: 12, cursor: "pointer", }}
+              <div style={{ color: "#504e4e", fontSize: 13, marginBottom: 12, cursor: "pointer"}}
+              role="button"
+              tabIndex={0}
               onClick={() => router.push("/events/participated")}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  router.push("/events/participated");
+                }
+              
+              }}
               >Participated Events ›</div>
               <div style={{
                 height: 140,
@@ -361,10 +369,17 @@ const CookbookPage: React.FC = () => {
                 ) : (
                 latestEvents.map((event) => (
                   <div
+                    role="button"
+                    tabIndex={0}
                     key={event.id}
                     onClick={(e) => {
                       e.stopPropagation();
                       router.push(`/events/${event.id}`);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        router.push(`/events/${event.id}`);
+                      }
                     }}
                     style={{
                       minWidth: 200,
