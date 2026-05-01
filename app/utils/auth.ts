@@ -4,6 +4,10 @@ type AuthResponse = {
   username?: string | null;
 };
 
+export const isAuthenticated = () => {
+    return !!localStorage.getItem("token");
+};
+
 export const storeUserSession = (response: AuthResponse) => {
   if (response.token) {
     localStorage.setItem("token", response.token);
