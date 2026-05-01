@@ -350,6 +350,20 @@ const CookbookPage: React.FC = () => {
                 }}
               >
                 {
+                  upcomingEvents.length === 0 ? (
+                  <div
+                    style={{
+                      height: 120,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#888",
+                      fontSize: 13,
+                    }}
+                  >
+                    No upcoming events yet
+                  </div>
+                ) : (
                 upcomingEvents.map((event) => (
                   <div
                     role="button"
@@ -402,7 +416,7 @@ const CookbookPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                ))}
+                )))}
               </div>
               </div>
             </Card>
