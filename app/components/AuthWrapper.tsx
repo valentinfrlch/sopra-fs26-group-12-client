@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { isAuthenticated } from "@/utils/auth";
 
-const PUBLIC_ROUTES = ["/login", "/signup"];
+import { PUBLIC_ROUTES } from "@/utils/routes";
 
 export default function AuthWrapper({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -21,6 +21,10 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
       return;
     }
     
+    if (isAuth && isPublic) {
+    router.push("/cookbook");
+    return;
+    }
 
     setLoading(false);
   }, [pathname]);
