@@ -123,8 +123,8 @@ reason).
 ## Contributions Week 6 - [Begin Date] to [End Date]
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
-| **[@githubUser1]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@sushmstr]** | [01.05.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/183/commits/3613df0f94d841b82423b54b873ddd0f1a729543] | [Implemented participated events preview in cookbook page with horizontal layout] | [Improves user experience by providing quick access to recent participated events] |
+|                    | [01.05.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/183/commits/68ae1a622e9e4d0f4e7af28fa1da4c06df93f3d6] | [added message/ placeholder for empty state] | [Ensures proper feedback when no events exist] |
 | **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
