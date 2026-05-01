@@ -3,12 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, Tag, Dropdown, MenuProps, ConfigProvider } from "antd";
-import EventAvailableIcon from "@mui/icons-material/EventAvailable";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+
 import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import Sidebar, { UserAvatar, Header } from "@/components/appLayout";
-
+import EventPreviewCard from "@/components/EventPreviewCard";
 import { useApi } from "@/hooks/useApi";
 import { getApiDomain } from "@/utils/domain";
 import useWindowSize from "@/hooks/useWndowSize";
@@ -316,219 +315,28 @@ const CookbookPage: React.FC = () => {
 
             {/* Registered Event Card */}
 
-            <Card
-              style={{ background: "#fff", border: "none", borderRadius: 12 }}
-              styles={{ body: { padding: 16 } }}>
-              <div style={{ color: "#504e4e", fontSize: 13, marginBottom: 12, cursor: "pointer"}}
-              role="button"
-              tabIndex={0}
-              onClick={() => router.push("/events/registered")}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  router.push("/events/registered");
-                }
-              
-              }}
-              >Registered Events ›</div>
-              <div style={{
-                height: 140,
-                background: "#f0f0f0",
-                borderRadius: 8,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-              }}>
-              <div
-                style={{
-                  height: 140,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  overflowX: "auto",
-                }}
-              >
-                {
-                  upcomingEvents.length === 0 ? (
-                  <div
-                    style={{
-                      height: 120,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#888",
-                      fontSize: 13,
-                    }}
-                  >
-                    No upcoming events yet
-                  </div>
-                ) : (
-                upcomingEvents.map((event) => (
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    key={event.id}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      router.push(`/events/${event.id}`);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        router.push(`/events/${event.id}`);
-                      }
-                    }}
-                    style={{
-                      minWidth: 200,
-                      height: 120,
-                      borderRadius: 12,
-                      background: "#fff",
-                      border: "1px solid #e8e8e8",
-                      padding: 12,
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <div style={{ fontSize: 20 }}>
-                      {event.emojis || "🍳"}
-                    </div>
-
-                    {/* Divider */}
-                    <div
-                      style={{
-                        width: "90%",           
-                        height: 1,
-                        background: "#000",     
-                        margin: "2px 0 4px 0",  
-                        opacity: 0.6,           
-                      }}
-                    />
-                    <div style = {{width: "100%",  marginTop: 6}}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#020202"  }}>
-                        Title: {event.title}
-                      </div>
-
-                      <div style={{ fontSize: 11, color: "#080808", marginTop: 10 }}>
-                        End Date: {new Date(event.endDatetime).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                )))}
-              </div>
-              </div>
-            </Card>
+            <EventPreviewCard
+              title="Registered Events"
+              events={nextEvents}
+              emptyMessage="No upcoming events yet"
+              onHeaderClick={() => router.push("/events/registered")}
+              dateType="start"
+            />
+    
             
 
 
             {/* Participated Events */}
-            <Card
-              style={{ background: "#fff", border: "none", borderRadius: 12 }}
-              styles={{ body: { padding: 16 } }}>
-              <div style={{ color: "#504e4e", fontSize: 13, marginBottom: 12, cursor: "pointer"}}
-              role="button"
-              tabIndex={0}
-              onClick={() => router.push("/events/participated")}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  router.push("/events/participated");
-                }
-              
-              }}
-              >Participated Events ›</div>
-              <div style={{
-                height: 140,
-                background: "#f0f0f0",
-                borderRadius: 8,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-              }}>
-              <div
-                style={{
-                  height: 140,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  overflowX: "auto",
-                }}
-              >
-                {latestEvents.length === 0 ? (
-                  <div
-                    style={{
-                      height: 120,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#888",
-                      fontSize: 13,
-                    }}
-                  >
-                    No participated events yet
-                  </div>
-                ) : (
-                latestEvents.map((event) => (
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    key={event.id}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      router.push(`/events/${event.id}`);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        router.push(`/events/${event.id}`);
-                      }
-                    }}
-                    style={{
-                      minWidth: 200,
-                      height: 120,
-                      borderRadius: 12,
-                      background: "#fff",
-                      border: "1px solid #e8e8e8",
-                      padding: 12,
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <div style={{ fontSize: 20 }}>
-                      {event.emojis || "🍳"}
-                    </div>
 
-                    {/* Divider */}
-                    <div
-                      style={{
-                        width: "90%",           
-                        height: 1,
-                        background: "#000",     
-                        margin: "2px 0 4px 0",  
-                        opacity: 0.6,           
-                      }}
-                    />
-                    <div style = {{width: "100%",  marginTop: 6}}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#020202"  }}>
-                        Title: {event.title}
-                      </div>
-
-                      <div style={{ fontSize: 11, color: "#080808", marginTop: 10 }}>
-                        End Date: {new Date(event.endDatetime).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                )))}
-              </div>
-              </div>
-            </Card>
-          </div>
-
+            <EventPreviewCard
+              title="Participated Events"
+              events={latestEvents}
+              emptyMessage="No participated events yet"
+              onHeaderClick={() => router.push("/events/participated")}
+              dateType="end"
+            />
+    </div>
+           
           <h2 style={{ color: "#1a1a1a", fontSize: 18, fontWeight: 600, marginBottom: 12 }}>
             Your Recipes
           </h2>
