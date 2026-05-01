@@ -345,7 +345,21 @@ const CookbookPage: React.FC = () => {
                   overflowX: "auto",
                 }}
               >
-                {latestEvents.map((event) => (
+                {latestEvents.length === 0 ? (
+                  <div
+                    style={{
+                      height: 120,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#888",
+                      fontSize: 13,
+                    }}
+                  >
+                    No participated events yet
+                  </div>
+                ) : (
+                latestEvents.map((event) => (
                   <div
                     key={event.id}
                     onClick={(e) => {
@@ -390,7 +404,7 @@ const CookbookPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                ))}
+                )))}
               </div>
               </div>
             </Card>
