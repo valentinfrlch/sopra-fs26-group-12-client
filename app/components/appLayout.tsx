@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Avatar as AntAvatar } from "antd";
 import { Drawer, Box, ListItemButton, ListItemIcon, BottomNavigation, BottomNavigationAction } from "@mui/material";
-import { RestaurantMenuRounded, HomeRounded, HomeOutlined, LibraryBooksRounded, LibraryBooksOutlined, EmojiEventsRounded, EmojiEventsOutlined } from "@mui/icons-material";
+import { RestaurantMenuRounded, HomeRounded, HomeOutlined, LibraryBooksRounded, LibraryBooksOutlined, EmojiEventsRounded, EmojiEventsOutlined, Key } from "@mui/icons-material";
 import useWindowSize from "@/hooks/useWndowSize";
 
 
@@ -15,24 +15,58 @@ const Sidebar: React.FC = () => {
   const pathname = usePathname() ?? "/";
   const { isMobile } = useWindowSize();
 
-  const isActive = (path: string) => pathname.startsWith(path);
+  const [lastActiveKey, setLastActiveKey] = useState<string>("events");
 
   const navItems = [
     {
       key: "events",
       path: "/events/overview",
+      matchPaths: ["/events"],
       inactiveIcon: <HomeOutlined style={{ fontSize: 22 }} />,
       activeIcon: <HomeRounded style={{ fontSize: 22 }} />,
       label: "Events"
     },
-    { key: "cookbook", path: "/cookbook", inactiveIcon: <LibraryBooksOutlined style={{ fontSize: 22 }} />, activeIcon: <LibraryBooksRounded style={{ fontSize: 22 }} />, label: "Library" },
-    { key: "leaderboard", path: "/leaderboard", inactiveIcon: <EmojiEventsOutlined style={{ fontSize: 22 }} />, activeIcon: <EmojiEventsRounded style={{ fontSize: 22 }} />, label: "Leaderboard" },
+    { 
+      key: "cookbook", 
+      path: "/cookbook", 
+      matchPaths: ["/cookbook", "/recipe", "/events/participated", "/events/registered"],
+      inactiveIcon: <LibraryBooksOutlined style={{ fontSize: 22 }} />, 
+      activeIcon: <LibraryBooksRounded style={{ fontSize: 22 }} />, 
+      label: "Library" },
+    { 
+      key: "leaderboard", 
+      path: "/leaderboard", 
+      matchPaths: ["/leaderboard"],
+      inactiveIcon: <EmojiEventsOutlined style={{ fontSize: 22 }} />, 
+      activeIcon: <EmojiEventsRounded style={{ fontSize: 22 }} />, 
+      label: "Leaderboard" },
   ];
 
+  const matchedItem = navItems.reduce<{ item: typeof navItems[number]; length: number } | null>((best, item) => {
+    const longestMatch = (item.matchPaths ?? [])
+      .filter((prefix) => pathname.startsWith(prefix))
+      .reduce((max, prefix) => Math.max(max, prefix.length), 0);
+    if (longestMatch > 0 && (!best || longestMatch > best.length)) {
+      return { item, length: longestMatch };
+    }
+    return best;
+  }, null)?.item ?? null;
+
+
+  useEffect(() => {
+    if (matchedItem) {
+      setLastActiveKey(matchedItem.key);
+    }
+  }, [pathname, matchedItem]);
+
+  const activeKey = matchedItem ? matchedItem.key : lastActiveKey;
+
   const activeIndex = Math.max(
-    navItems.findIndex((item) => isActive(item.path)),
+    navItems.findIndex((item) => item.key === activeKey),
     0,
   );
+
+  const isActive = (key: string) => key === activeKey;
 
   if (isMobile) {
     return (
@@ -96,7 +130,7 @@ const Sidebar: React.FC = () => {
       </Box>
       <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", pt: 2, gap: 1.5 }}>
         {navItems.map((item) => {
-          const active = isActive(item.path);
+          const active = isActive(item.key);
 
           return (
             <ListItemButton
