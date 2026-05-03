@@ -125,8 +125,9 @@ reason).
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
 | **[@sushmstr]** | [01.05.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/183/commits/3613df0f94d841b82423b54b873ddd0f1a729543] | [Implemented participated events preview in cookbook page with horizontal layout] | [Improves user experience by providing quick access to recent participated events] |
 |                    | [01.05.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/183/commits/68ae1a622e9e4d0f4e7af28fa1da4c06df93f3d6] | [added message/ placeholder for empty state] | [Ensures proper feedback when no events exist] |
-| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@jp-schl]** | [02.05.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/5322c08131878f6c9733b6634a04b04b04f796ac] | [When the event finishes,there is a last prompt needed to have a fair voting] | [Because the last photo submission should be mandatory, it should be something to set manually while creating an event but should be a standard setting] |
+|                    | [03.05.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/ef54d3e420134da8afbe0308a6967d1493f10f7d] | [Tests for the user business] | [Tests are important to see the correct or not correct work] |
+|                    | [03.05.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/003037d07809b20155a7ae0e7bbf5607f133d316] | [Tests for the event business] | [Tests are important to see the correct or not correct working] |
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
