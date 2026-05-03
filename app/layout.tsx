@@ -3,7 +3,9 @@ import { Geist, Geist_Mono, Roboto } from "next/font/google";
 import { App as AntdApp, ConfigProvider, theme } from "antd";
 // import MuiProvider from "./providers/MuiProvider";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
-import "@/styles/globals.css";
+import AuthWrapper from "@/components/AuthWrapper";
+// import "../styles/globals.css";
+import "./styles/globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -71,7 +73,11 @@ export default function RootLayout({
               },
             }}
           >
-            <AntdApp>{children}</AntdApp>
+            <AntdApp>
+              <AuthWrapper>
+                {children}
+              </AuthWrapper>
+            </AntdApp>
           </ConfigProvider>
         </AntdRegistry>
       </body>
