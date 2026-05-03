@@ -13,6 +13,7 @@ import { useApi } from "@/hooks/useApi";
 import { getApiDomain } from "@/utils/domain";
 import useWindowSize from "@/hooks/useWndowSize";
 import { Button } from "@mui/material";
+import ShuffleIcon from "@mui/icons-material/Shuffle";
 
 interface Recipe {
   id: number;
@@ -22,8 +23,15 @@ interface Recipe {
   userId?: number;
 }
 
-const ALL_LABELS = ["Breakfast", "Lunch", "Dinner", "Vegetarian", "Vegan", "High Protein", "Low Carbs"];
+interface RecipeDetail {
+  idMeal: string;
+  strMeal: string;
+  strInstructions?: string;
+  strMealThumb?: string;
+  [key: string]: string | undefined;
+}
 
+const ALL_LABELS = ["Breakfast", "Lunch", "Dinner", "Vegetarian", "Vegan", "High Protein", "Low Carbs"];
 
 
 const RecipeCard: React.FC<{ recipe: Recipe; onDelete: (recipeId: number) => void; token: string | null }> = ({ recipe, onDelete, token }) => {
@@ -161,6 +169,7 @@ const CookbookPage: React.FC = () => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [token, setToken] = useState<string | null>(null);
   const [activeLabels, setActiveLabels] = useState<string[]>([]);
+  const [isFetchingRandomRecipe, setIsFetchingRandomRecipe] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("username") ?? "U";
@@ -206,6 +215,29 @@ const CookbookPage: React.FC = () => {
     } catch (err) {
       console.error("DELETE ERROR:", err);
       alert("Failed to delete recipe.");
+    }
+  };
+
+  const handleRandomRecipe = async () => {
+    try {
+      setIsFetchingRandomRecipe(true);
+
+      const res = await fetch("https://www.themealdb.com/api/json/v1/1/random.php");
+      const data = await res.json();
+      const meal: RecipeDetail | undefined = data?.meals?.[0];
+
+      if (!meal) {
+        alert("Could not fetch a random recipe.");
+        return;
+      }
+
+      sessionStorage.setItem("randomMealRecipe", JSON.stringify(meal));
+      router.push("/recipe/create?source=random");
+    } catch (error) {
+      console.error("RANDOM MEALDB ERROR:", error);
+      alert("Failed to fetch random recipe.");
+    } finally {
+      setIsFetchingRandomRecipe(false);
     }
   };
 
@@ -309,7 +341,33 @@ const CookbookPage: React.FC = () => {
           </div>
         </div>
       </div>
-
+      
+      {/* 
+      Floating button
+      */}
+      <Button
+        type="button"
+        variant="contained"
+        startIcon={<ShuffleIcon sx={{ fontSize: 20 }} />}
+        onClick={handleRandomRecipe}
+        disabled={isFetchingRandomRecipe}
+        style={{
+          position: "fixed",
+          bottom: isMobile ? 132 : 84,
+          right: isMobile ? 16 : 32,
+          borderRadius: 24,
+          height: 44,
+          paddingLeft: 20,
+          paddingRight: 20,
+          fontWeight: 600,
+          background: "#4a6741",
+          border: "none",
+          textTransform: "none",
+          zIndex: 1400,
+        }}
+      >
+        {isFetchingRandomRecipe ? "Loading..." : "Random Recipe"}
+      </Button>
 
       {/* 
       Floating button
