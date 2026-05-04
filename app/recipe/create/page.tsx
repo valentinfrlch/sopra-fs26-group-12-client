@@ -87,7 +87,7 @@ const parseLabelOption = (value: string): string => {
 
 const CreateRecipePage: React.FC = () => {
   const [form] = Form.useForm();
-  const selectedLabels = Form.useWatch("labels", form) || [];
+  const selectedLabels = Form.useWatch<string[]>("labels", form) ?? [];
 
   const router = useRouter();
   const apiService = useApi();
