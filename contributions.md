@@ -123,8 +123,8 @@ reason).
 ## Contributions Week 6 - [Begin Date] to [End Date]
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
-| **[@githubUser1]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| @valentinfrlch | 30.04.2026   | https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/92f0d10c04d1caa3bbf864be4f35ba63332baeb5 | Implement label endpoints to create, update, and delete labels | Let the user create custom labels and use them to tag recipes (#155, #156, #183) |
+|                    | 30.04.2026   | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/cdd1ca12ff01309d11f5058e36cb9cac60fb6dc0 | Update label dropdown to use custom labels | Lets the user select custom labels they created. Before they were hard-coded. (#133) |
 | **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
