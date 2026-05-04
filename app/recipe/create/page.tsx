@@ -113,6 +113,47 @@ const CreateRecipePage: React.FC = () => {
   // store suggestions from API
   const [suggestions, setSuggestions] = useState<MealSuggestion[]>([]);
 
+  const populateMealDetails = async (meal: MealDetail) => {
+    const ingredients: RecipeIngredient[] = [];
+
+    for (let i = 1; i <= 20; i++) {
+      const ingredient = meal[`strIngredient${i}`]?.trim();
+      const amount = meal[`strMeasure${i}`]?.trim() || "";
+
+      if (ingredient) {
+        ingredients.push({ name: ingredient, amount });
+      }
+    }
+
+    const populatedIngredients =
+      ingredients.length > 0 ? ingredients : [{ name: "", amount: "" }];
+
+    if (meal.strMealThumb) {
+      try {
+        const mealImageFile = await fetchMealImageFile(meal.strMealThumb, meal.strMeal);
+        setImageFile(mealImageFile);
+      } catch {
+        setImageFile(null);
+        console.warn("Failed to fetch image for the selected recipe.");
+      }
+    } else {
+      setImageFile(null);
+    }
+
+    setShouldFetchSuggestions(false);
+    setRecipeName(meal.strMeal);
+    setDebouncedRecipeName("");
+
+    form.setFieldsValue({
+      title: meal.strMeal,
+      preparation: meal.strInstructions || "",
+      ingredients: populatedIngredients,
+    });
+
+    setSuggestions([]);
+    setShowSuggestions(false);
+  };
+
   const handleSuggestionSelect = async (mealId: string) => {
     try {
       const res = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${mealId}`);
@@ -124,49 +165,26 @@ const CreateRecipePage: React.FC = () => {
         return;
       }
 
-      const ingredients: RecipeIngredient[] = [];
-
-      for (let i = 1; i <= 20; i++) {
-        const ingredient = meal[`strIngredient${i}`]?.trim();
-        const amount = meal[`strMeasure${i}`]?.trim() || "";
-
-        if (ingredient) {
-          ingredients.push({ name: ingredient, amount });
-        }
-      }
-
-      const populatedIngredients = ingredients.length > 0 ? ingredients : [{ name: "", amount: "" }];
-
-      console.log("Meal Thumb: ", meal.strMealThumb);
-
-      if (meal.strMealThumb) {
-        try {
-          const mealImageFile = await fetchMealImageFile(meal.strMealThumb, meal.strMeal);
-          setImageFile(mealImageFile);
-          console.log("Fetched image file from API:", mealImageFile);
-        } catch {
-          setImageFile(null);
-          console.warn("Failed to fetch image for the selected recipe, proceeding without it.");
-        }
-      } else {
-        setImageFile(null);
-        console.warn("No image available for the selected recipe.");
-      }
-
-      setShouldFetchSuggestions(false);
-      setRecipeName(meal.strMeal);
-      setDebouncedRecipeName("");
-      form.setFieldsValue({
-        title: meal.strMeal,
-        preparation: meal.strInstructions || "",
-        ingredients: populatedIngredients,
-      });
-      setSuggestions([]);
-      setShowSuggestions(false);
+      await populateMealDetails(meal);
     } catch {
       message.error("Failed to fetch recipe details");
     }
   };
+
+  useEffect(() => {
+    const storedRandomMeal = sessionStorage.getItem("randomMealRecipe");
+
+    if (!storedRandomMeal) return;
+
+    try {
+      const meal: MealDetail = JSON.parse(storedRandomMeal);
+      populateMealDetails(meal);
+      sessionStorage.removeItem("randomMealRecipe");
+    } catch {
+      message.error("Failed to load random recipe");
+      sessionStorage.removeItem("randomMealRecipe");
+    }
+  }, []);
 
   useEffect(() => {
     const stored = localStorage.getItem("username") ?? "U";

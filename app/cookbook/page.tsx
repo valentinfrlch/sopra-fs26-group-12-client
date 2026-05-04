@@ -3,16 +3,16 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, Tag, Dropdown, MenuProps, ConfigProvider } from "antd";
-import EventAvailableIcon from "@mui/icons-material/EventAvailable";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+
 import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import Sidebar, { UserAvatar, Header } from "@/components/appLayout";
-
+import EventPreviewCard from "@/components/EventPreviewCard";
 import { useApi } from "@/hooks/useApi";
 import { getApiDomain } from "@/utils/domain";
 import useWindowSize from "@/hooks/useWndowSize";
 import { Button } from "@mui/material";
+import ShuffleIcon from "@mui/icons-material/Shuffle";
 
 interface Recipe {
   id: number;
@@ -22,8 +22,26 @@ interface Recipe {
   userId?: number;
 }
 
+interface RecipeDetail {
+  idMeal: string;
+  strMeal: string;
+  strInstructions?: string;
+  strMealThumb?: string;
+  [key: string]: string | undefined;
+}
+interface Event {
+  id: number;
+  title: string;
+  startDatetime: string;
+  endDatetime: string;
+  state: string;
+  participants?: { id: number }[];
+  emojis?: string;
+}
+
 const ALL_LABELS = ["Breakfast", "Lunch", "Dinner", "Vegetarian", "Vegan", "High Protein", "Low Carbs"];
 
+const ALL_LABELS = ["Breakfast", "Lunch", "Dinner", "Vegetarian", "Vegan", "High Protein", "Low Carbs"];
 
 
 const RecipeCard: React.FC<{ recipe: Recipe; onDelete: (recipeId: number) => void; token: string | null }> = ({ recipe, onDelete, token }) => {
@@ -161,6 +179,68 @@ const CookbookPage: React.FC = () => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [token, setToken] = useState<string | null>(null);
   const [activeLabels, setActiveLabels] = useState<string[]>([]);
+  const [isFetchingRandomRecipe, setIsFetchingRandomRecipe] = useState(false);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [userId, setUserId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const id = localStorage.getItem("userId");
+    if (id) setUserId(Number(id));
+  }, []);
+
+  useEffect(() => {
+    if (!token) return;
+
+    const fetchEvents = async () => {
+      try {
+        const data = await api.get<Event[]>("/events", {
+          Authorization: `Bearer ${token}`,
+        });
+
+        setEvents(data);
+      } catch (err) {
+        console.error("EVENT FETCH ERROR:", err);
+      }
+    };
+
+    fetchEvents();
+  }, [token]);
+
+  const upcomingEvents = React.useMemo(() => {
+    if (userId === null) return [];
+
+    return events.filter(
+      (e) =>
+        e.state === "UPCOMING" &&
+        e.participants?.some((p) => Number(p.id) === userId)
+    );
+  }, [events, userId]);
+
+  const nextEvents = [...upcomingEvents]
+    .sort(
+      (a, b) =>
+        new Date(a.startDatetime).getTime() -
+        new Date(b.startDatetime).getTime()
+    )
+    .slice(0, 3);
+
+  const participatedEvents = React.useMemo(() => {
+    if (userId === null) return [];
+
+    return events.filter(
+      (e) =>
+        e.state === "FINISHED" &&
+        e.participants?.some((p) => Number(p.id) === userId)
+    );
+  }, [events, userId]);
+
+  const latestEvents = [...participatedEvents]
+    .sort(
+      (a, b) =>
+        new Date(b.startDatetime).getTime() -
+        new Date(a.startDatetime).getTime()
+    )
+    .slice(0, 3);
 
   useEffect(() => {
     const stored = localStorage.getItem("username") ?? "U";
@@ -209,6 +289,29 @@ const CookbookPage: React.FC = () => {
     }
   };
 
+  const handleRandomRecipe = async () => {
+    try {
+      setIsFetchingRandomRecipe(true);
+
+      const res = await fetch("https://www.themealdb.com/api/json/v1/1/random.php");
+      const data = await res.json();
+      const meal: RecipeDetail | undefined = data?.meals?.[0];
+
+      if (!meal) {
+        alert("Could not fetch a random recipe.");
+        return;
+      }
+
+      sessionStorage.setItem("randomMealRecipe", JSON.stringify(meal));
+      router.push("/recipe/create?source=random");
+    } catch (error) {
+      console.error("RANDOM MEALDB ERROR:", error);
+      alert("Failed to fetch random recipe.");
+    } finally {
+      setIsFetchingRandomRecipe(false);
+    }
+  };
+
   // const filteredRecipes = activeLabels.length > 0 ? MOCK_RECIPES.filter((r) => activeLabels.every((active) => r.labels.includes(active))) : MOCK_RECIPES;
   // Filtering logic
   const filteredRecipes =
@@ -244,49 +347,29 @@ const CookbookPage: React.FC = () => {
 
 
             {/* Registered Event Card */}
-            <Card
-              hoverable
-              onClick={() => router.push("/events/registered")}
-              style={{ background: "#fff", border: "none", borderRadius: 12 }}
-              styles={{ body: { padding: 16 } }}>
-              <div style={{ color: "#504e4e", fontSize: 13, marginBottom: 12 }}>Registered Events ›</div>
-              <div style={{
-                height: 140,
-                background: "#f0f0f0",
-                borderRadius: 8,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-              }}>
-                <EventAvailableIcon sx={{ fontSize: 48, color: "#4a6741" }} />
-              </div>
-            </Card>
+
+            <EventPreviewCard
+              title="Registered Events"
+              events={nextEvents}
+              emptyMessage="No upcoming events yet"
+              onHeaderClick={() => router.push("/events/registered")}
+              dateType="start"
+            />
+    
+            
 
 
             {/* Participated Events */}
-            <Card
-              hoverable
-              onClick={() => router.push("/events/participated")}
-              style={{ background: "#fff", border: "none", borderRadius: 12 }}
-              styles={{ body: { padding: 16 } }}>
-              <div style={{ color: "#504e4e", fontSize: 13, marginBottom: 12 }}>Participated Events ›</div>
-              <div style={{
-                height: 140,
-                background: "#f0f0f0",
-                borderRadius: 8,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-              }}>
-                <EmojiEventsIcon sx={{ fontSize: 48, color: "#4a6741" }} />
-              </div>
-            </Card>
-          </div>
 
+            <EventPreviewCard
+              title="Participated Events"
+              events={latestEvents}
+              emptyMessage="No participated events yet"
+              onHeaderClick={() => router.push("/events/participated")}
+              dateType="end"
+            />
+    </div>
+           
           <h2 style={{ color: "#1a1a1a", fontSize: 18, fontWeight: 600, marginBottom: 12 }}>
             Your Recipes
           </h2>
@@ -309,7 +392,33 @@ const CookbookPage: React.FC = () => {
           </div>
         </div>
       </div>
-
+      
+      {/* 
+      Floating button
+      */}
+      <Button
+        type="button"
+        variant="contained"
+        startIcon={<ShuffleIcon sx={{ fontSize: 20 }} />}
+        onClick={handleRandomRecipe}
+        disabled={isFetchingRandomRecipe}
+        style={{
+          position: "fixed",
+          bottom: isMobile ? 132 : 84,
+          right: isMobile ? 16 : 32,
+          borderRadius: 24,
+          height: 44,
+          paddingLeft: 20,
+          paddingRight: 20,
+          fontWeight: 600,
+          background: "#4a6741",
+          border: "none",
+          textTransform: "none",
+          zIndex: 1400,
+        }}
+      >
+        {isFetchingRandomRecipe ? "Loading..." : "Random Recipe"}
+      </Button>
 
       {/* 
       Floating button
