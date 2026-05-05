@@ -9,6 +9,8 @@ import { Button, TextField } from "@mui/material";
 import React, { useState } from "react";
 import { UserGetDTO } from "@/types/api";
 import { storeUserSession } from "@/utils/auth";
+import { useSearchParams } from "next/navigation";
+
 // Optionally, you can import a CSS module or file for additional styling:
 // import styles from "@/styles/page.module.css";
 
@@ -22,6 +24,7 @@ const Login: React.FC = () => {
   const apiService = useApi();
   const [form] = Form.useForm();
   const [currentError, setCurrentError] = useState<string>("");
+  const searchParams = useSearchParams();
   // useLocalStorage hook example use
   // The hook returns an object with the value and two functions
   // Simply choose what you need from the hook:
@@ -38,7 +41,8 @@ const Login: React.FC = () => {
 
       storeUserSession(response);
 
-      router.push("/cookbook");
+      const redirect = searchParams.get("redirect") || "/cookbook";
+      router.push(redirect);
     } catch (error) {
       if (error instanceof Error) {
         // try to parse the string as json
