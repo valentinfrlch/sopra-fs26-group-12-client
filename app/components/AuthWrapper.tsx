@@ -17,13 +17,13 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
 
     // Route Protection
     if (!isAuth && !isPublic) {
-      router.push(`/login?redirect=${pathname}`);
+      router.push("/login");
       return;
     }
     
-    if (isAuth && isPublic) {
-    router.push("/cookbook");
-    return;
+    if (isAuth && isPublic && pathname !== "/") {
+      router.push("/cookbook");
+      return;
     }
 
     setLoading(false);
