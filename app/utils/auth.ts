@@ -19,3 +19,8 @@ export const storeUserSession = (response: AuthResponse) => {
   }
 };
 
+export const clearUserSession = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("userId");
+  localStorage.removeItem("username");
+};
