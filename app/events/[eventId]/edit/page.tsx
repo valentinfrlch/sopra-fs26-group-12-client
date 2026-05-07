@@ -7,6 +7,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import EmojiPicker from "emoji-picker-react";
 import { useParams, useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import Sidebar, { Header, UserAvatar } from "@/components/appLayout";
@@ -17,10 +18,16 @@ interface Ingredient {
 
 interface EditEventFormValues {
     title: string;
+    emojis: string[];
     ingredients: Ingredient[];
     eventPrompts: (string | null)[];
     startDatetime: unknown;
     endDatetime: unknown;
+}
+
+interface EmojiClickData {
+    emoji?: string;
+    unified?: string;
 }
 
 interface CookingEvent {
@@ -61,10 +68,12 @@ const EditEventPage: React.FC = () => {
 
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [openPicker, setOpenPicker] = useState<number | null>(null);
 
     const watchedStart = Form.useWatch("startDatetime", form);
     const watchedEnd = Form.useWatch("endDatetime", form);
     const watchedTitle = Form.useWatch("title", form);
+    const watchedEmojis = Form.useWatch("emojis", form) || ["🥖", "🥑", "🌶️"];
 
     const startDate = watchedStart ? new Date(watchedStart as string) : null;
     const endDate = watchedEnd ? new Date(watchedEnd as string) : null;
@@ -93,13 +102,16 @@ const EditEventPage: React.FC = () => {
                     return;
                 }
 
-                // hide the auto-added final prompt at endDatetime (re-added on save)
                 const userPrompts = schedule.prompts
                     .map((p) => p.promptTime)
                     .filter((t) => t !== event.endDatetime);
 
+                const emojiArr = (event.emojis?.match(/\p{Emoji_Presentation}|\p{Emoji}️/gu) || []).slice(0, 3);
+                while (emojiArr.length < 3) emojiArr.push("😀");
+
                 form.setFieldsValue({
                     title: event.title,
+                    emojis: emojiArr,
                     ingredients: event.ingredients?.length
                         ? event.ingredients.map((name) => ({ name }))
                         : [{ name: "" }],
@@ -126,8 +138,13 @@ const EditEventPage: React.FC = () => {
                 .map((ing) => (ing?.name ?? "").trim())
                 .filter((n) => n.length > 0);
 
+            const emojisArray = (values.emojis || []).slice(0, 3).map((e) => e || "😀");
+            while (emojisArray.length < 3) emojisArray.push("😀");
+            const emojisString = emojisArray.slice(0, 3).join("");
+
             const payload = {
                 title: values.title,
+                emojis: emojisString,
                 ingredients: formattedIngredients,
                 eventPrompts: (values.eventPrompts || [])
                     .filter(Boolean)
@@ -173,9 +190,41 @@ const EditEventPage: React.FC = () => {
 
                 <div style={{ padding: 24, flex: 1 }}>
                     <Form form={form} layout="vertical" size="large" onFinish={handleSave}>
+                        <Form.Item name="emojis" style={{ display: "none" }}>
+                            <input />
+                        </Form.Item>
                         <LocalizationProvider dateAdapter={AdapterDateFns}>
                             <Row>
                                 <Col span={24}>
+                                    <div style={{ marginTop: 8, marginBottom: 24, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                                        <div style={{ fontWeight: 500, color: "black" }}>Pick three emojis</div>
+                                        <div style={{ display: "flex", gap: 12 }}>
+                                            {[0, 1, 2].map((index) => (
+                                                <div
+                                                    key={index}
+                                                    onClick={() => setOpenPicker(index)}
+                                                    style={{
+                                                        width: 56,
+                                                        height: 56,
+                                                        borderRadius: 28,
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        cursor: "pointer",
+                                                        background: "#ffffff",
+                                                        boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
+                                                        fontSize: 24,
+                                                    }}
+                                                    aria-label={`emoji-picker-${index}`}
+                                                    title="Open emoji picker"
+                                                >
+                                                    {(watchedEmojis && watchedEmojis[index]) || "🥖"}
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div style={{ fontSize: 12, color: "#888" }}>Emojis will be used to create grid as event background.</div>
+                                    </div>
+
                                     <Form.Item name="title" rules={[{ required: true, message: "Please enter an event title!" }]}>
                                         <div>
                                             <TextField
@@ -342,6 +391,25 @@ const EditEventPage: React.FC = () => {
                     </Form>
                 </div>
             </div>
+
+            {openPicker !== null && (
+                <div
+                    onClick={() => setOpenPicker(null)}
+                    style={{ position: "fixed", left: 0, top: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.32)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1200 }}
+                >
+                    <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", padding: 8, borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.2)" }}>
+                        <EmojiPicker
+                            onEmojiClick={(data: EmojiClickData) => {
+                                const emoji = data?.emoji || data?.unified || "";
+                                const arr = [...(watchedEmojis || [])];
+                                arr[openPicker as number] = emoji;
+                                form.setFieldsValue({ emojis: arr });
+                                setOpenPicker(null);
+                            }}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
