@@ -2,16 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Card, Tag, Dropdown, MenuProps, ConfigProvider } from "antd";
 
 import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close"
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import Sidebar, { UserAvatar, Header } from "@/components/appLayout";
 import EventPreviewCard from "@/components/EventPreviewCard";
 import { useApi } from "@/hooks/useApi";
 import { getApiDomain } from "@/utils/domain";
 import useWindowSize from "@/hooks/useWndowSize";
-import { Button } from "@mui/material";
+import { Chip, Card, CardMedia, IconButton, Menu, MenuItem, SpeedDial, SpeedDialAction, SpeedDialIcon } from "@mui/material";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 
 interface Recipe {
@@ -39,13 +39,17 @@ interface Event {
   emojis?: string;
 }
 
-const ALL_LABELS = ["Breakfast", "Lunch", "Dinner", "Vegetarian", "Vegan", "High Protein", "Low Carbs"];
-
+interface LabelResponse {
+  name?: string;
+  label?: string;
+}
 
 
 const RecipeCard: React.FC<{ recipe: Recipe; onDelete: (recipeId: number) => void; token: string | null }> = ({ recipe, onDelete, token }) => {
   const router = useRouter();
   const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const menuOpen = Boolean(anchorEl);
 
   useEffect(() => {
     if (!recipe.imageURL || !token) {
@@ -66,7 +70,6 @@ const RecipeCard: React.FC<{ recipe: Recipe; onDelete: (recipeId: number) => voi
           }
         }
       );
-      // if response fails, set null
       if (!response.ok) {
         setImageSrc(null);
         return;
@@ -79,91 +82,80 @@ const RecipeCard: React.FC<{ recipe: Recipe; onDelete: (recipeId: number) => voi
     fetchImage();
   }, [recipe.imageURL, token]);
 
-  const menuItems: MenuProps["items"] = [
-    {
-      key: "edit",
-      label: "Edit Recipe",
-      onClick: ({ domEvent }) => {
-        domEvent.stopPropagation();
-        console.log("Editing recipe:", recipe);
-        router.push(`/recipe/${recipe.id}/edit`);
-      }
-    },
-    {
-      key: "delete",
-      label: "Delete Recipe",
-      danger: true,
-      onClick: ({ domEvent }) => {
-        domEvent.stopPropagation();
-        onDelete(recipe.id);
-        
-      }
-    }
-  ];
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleEdit = () => {
+    handleMenuClose();
+    console.log("Editing recipe:", recipe);
+    router.push(`/recipe/${recipe.id}/edit`);
+  };
+
+  const handleDelete = () => {
+    handleMenuClose();
+    onDelete(recipe.id);
+  };
 
   return (
-
-    <Card hoverable onClick={() => router.push(`/recipe/${recipe.id}`)}
-      style={{ borderRadius: 12, background: "#fff", border: "1px solid #e8e8e8", cursor: "pointer" }}
-      styles={{ body: { padding: 16 } }}>
-
-
-      <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
-
-
-        {/* <UserAvatar username={recipe.title} size= {40} /> */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 600, fontSize: 14, color: "#1a1a1a" }}>{recipe.title}</div>
-          <div style={{ fontSize: 12, color: "#888" }}>{recipe.labels.join(", ")}</div>
-        </div>
-
-        <ConfigProvider
-          theme={{
-            components: {
-              Dropdown: {
-                colorBgElevated: "#ffffff",
-                colorText: "#1a1a1a",
-                controlItemBgHover: "#f5f5f5",
-              },
-            },
-          }}
-        >
-          <Dropdown
-            menu={{
-              items: menuItems
-            }}
-            trigger={["click"]}
-
-          >
-            <button
-              type="button"
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                color: "#888",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                background: "none",
-                border: "none",
-                padding: 0,
-              }}
-
-            >
-              <MoreVertIcon sx={{ fontSize: 20, color: "#888" }} />
-            </button>
-          </Dropdown>
-        </ConfigProvider>
-      </div>
+    <Card
+      onClick={() => router.push(`/recipe/${recipe.id}`)}
+      sx={{
+        borderRadius: 4,
+        border: "1px solid #e8e8e8",
+        cursor: "pointer",
+        boxShadow: 0,
+      }}
+    >
 
       {imageSrc ? (
-        <img
-          src={imageSrc}
+        <CardMedia
+          component="img"
+          image={imageSrc}
           alt={recipe.title}
-          style={{ width: "100%", height: 200, objectFit: "cover", borderRadius: 8 }}
+          sx={{ height: 200, objectFit: "cover" }}
         />
       ) : (
-        <div>No image yet</div>
+        <div style={{ height: 200, display: "flex", alignItems: "center", justifyContent: "center", color: "#888" }}>
+          No image yet
+        </div>
       )}
+      <div style={{ display: "flex", alignItems: "center", padding: 16, gap: 12 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontWeight: 600, fontSize: 16, color: "#1a1a1a" }}>
+            {recipe.title}
+          </div>
+          <div style={{ fontSize: 14, color: "#888" }}>
+            {recipe.labels.join(", ")}
+          </div>
+        </div>
+        <IconButton
+          onClick={handleMenuOpen}
+          size="small"
+          sx={{ color: "#888" }}
+        >
+          <MoreVertIcon sx={{ fontSize: 20 }} />
+        </IconButton>
+      </div>
+
+
+
+      <Menu
+        anchorEl={anchorEl}
+        open={menuOpen}
+        onClose={handleMenuClose}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <MenuItem onClick={handleEdit}>Edit Recipe</MenuItem>
+        <MenuItem onClick={handleDelete} sx={{ color: "error.main" }}>
+          Delete Recipe
+        </MenuItem>
+      </Menu>
     </Card>
   );
 };
@@ -177,6 +169,7 @@ const CookbookPage: React.FC = () => {
   const [username, setUsername] = useState<string>("U");
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [token, setToken] = useState<string | null>(null);
+  const [labels, setLabels] = useState<string[]>([]);
   const [activeLabels, setActiveLabels] = useState<string[]>([]);
   const [isFetchingRandomRecipe, setIsFetchingRandomRecipe] = useState(false);
   const [events, setEvents] = useState<Event[]>([]);
@@ -270,6 +263,31 @@ const CookbookPage: React.FC = () => {
     fetchRecipes();
   }, [token]);
 
+  useEffect(() => {
+    if (!token) return;
+
+    const fetchLabels = async () => {
+      try {
+        const response = await api.get<Array<string | LabelResponse>>(
+          "/labels",
+          {
+            Authorization: `Bearer ${token}`,
+          },
+        );
+
+        const normalized = (response || [])
+          .map((label) => (typeof label === "string" ? label : label.name || label.label || ""))
+          .filter((label) => label.trim().length > 0);
+
+        setLabels(normalized);
+      } catch (error: unknown) {
+        console.error("Failed to fetch labels:", error);
+      }
+    };
+
+    fetchLabels();
+  }, [token]);
+
   const handleDeleteRecipe = async (recipeId: number) => {
     try {
       if (!token) {
@@ -354,8 +372,8 @@ const CookbookPage: React.FC = () => {
               onHeaderClick={() => router.push("/events/registered")}
               dateType="start"
             />
-    
-            
+
+
 
 
             {/* Participated Events */}
@@ -367,85 +385,69 @@ const CookbookPage: React.FC = () => {
               onHeaderClick={() => router.push("/events/participated")}
               dateType="end"
             />
-    </div>
-           
+          </div>
+
           <h2 style={{ color: "#1a1a1a", fontSize: 18, fontWeight: 600, marginBottom: 12 }}>
             Your Recipes
           </h2>
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-            {ALL_LABELS.map((label) => (
-              <Tag key={label} onClick={() => handleLabelToggle(label)}
-                style={{
-                  cursor: "pointer", borderRadius: 20, padding: "2px 12px", fontSize: 13,
-                  background: activeLabels.includes(label) ? "#4a6741" : "#e4e1e1", color: activeLabels.includes(label) ? "#1a1a1a" : "#555", border: "none"
-                }}>
-                {label}
-              </Tag>
+            {labels.map((label) => (
+              <Chip
+                key={label}
+                label={label}
+                onClick={() => handleLabelToggle(label)}
+                sx={{
+                  backgroundColor: activeLabels.includes(label) ? "rgba(75, 102, 36, 1)" : "#e0e0e0",
+                  color: activeLabels.includes(label) ? "#fff" : "#1a1a1a",
+                  cursor: "pointer",
+                  userSelect: "none",
+                  fontWeight: activeLabels.includes(label) ? 600 : 400,
+                }}
+              />
             ))}
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: 1, marginBottom: 48 }}>
             {/*Filtering recipe cards*/}
-            {filteredRecipes.map((recipe) => (<RecipeCard key={recipe.id} recipe={recipe} token={token} onDelete={handleDeleteRecipe}/>))}
+            {filteredRecipes.map((recipe) => (<RecipeCard key={recipe.id} recipe={recipe} token={token} onDelete={handleDeleteRecipe} />))}
           </div>
         </div>
       </div>
-      
-      {/* 
-      Floating button
-      */}
-      <Button
-        type="button"
-        variant="contained"
-        startIcon={<ShuffleIcon sx={{ fontSize: 20 }} />}
-        onClick={handleRandomRecipe}
-        disabled={isFetchingRandomRecipe}
-        style={{
+
+      <SpeedDial
+        ariaLabel="Recipe actions"
+        icon={<SpeedDialIcon icon={<AddIcon />} openIcon={<CloseIcon />} />}
+        direction="up"
+        sx={{
           position: "fixed",
-          bottom: isMobile ? 132 : 84,
+          bottom: isMobile ? 74 : 34,
           right: isMobile ? 16 : 32,
-          borderRadius: 24,
-          height: 44,
-          paddingLeft: 20,
-          paddingRight: 20,
-          fontWeight: 600,
-          background: "#4a6741",
-          border: "none",
-          textTransform: "none",
           zIndex: 1400,
+          "& .MuiFab-primary": {
+            backgroundColor: "#4a6741",
+          },
+          "& .MuiFab-primary:hover": {
+            backgroundColor: "#3f5936",
+          },
         }}
       >
-        {isFetchingRandomRecipe ? "Loading..." : "Random Recipe"}
-      </Button>
-
-      {/* 
-      Floating button
-      */}
-      <Button
-        type="button"
-        variant="contained"
-        startIcon={<AddIcon sx={{ fontSize: 20 }} />}
-        onClick={() => router.push("/recipe/create")}
-        style={{
-          position: "fixed",
-          bottom: isMobile ? 80 : 32,
-          right: isMobile ? 16 : 32,
-          borderRadius: 24,
-          height: 44,
-          paddingLeft: 20,
-          paddingRight: 20,
-          fontWeight: 600,
-          background: "#4a6741",
-          border: "none",
-          textTransform: "none",
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-          zIndex: 1400,
-        }}>
-        Recipe
-      </Button>
+        <SpeedDialAction
+          key="random-recipe"
+          icon={<ShuffleIcon />}
+          tooltipTitle={isFetchingRandomRecipe ? "Loading..." : "Random Recipe"}
+          tooltipOpen
+          onClick={handleRandomRecipe}
+          FabProps={{ disabled: isFetchingRandomRecipe }}
+        />
+        <SpeedDialAction
+          key="create-recipe"
+          icon={<AddIcon />}
+          tooltipTitle="Recipe"
+          tooltipOpen
+          onClick={() => router.push("/recipe/create")}
+        />
+      </SpeedDial>
     </div>
   );
 };
