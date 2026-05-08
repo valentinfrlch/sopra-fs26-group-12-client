@@ -361,7 +361,15 @@ const CookbookPage: React.FC = () => {
       activeLabels.length === 0 ||
       activeLabels.every((label) => recipe.labels.includes(label));
 
-    return matchesLabels;
+    const recipeIngredientNames = getIngredientNames(recipe.ingredients);
+
+    const matchesIngredients =
+      activeIngredients.length === 0 ||
+      activeIngredients.every((ingredient) =>
+        recipeIngredientNames.includes(ingredient)
+      );
+
+    return matchesLabels && matchesIngredients;
   });
 
   const handleLabelToggle = (label: string) => {
