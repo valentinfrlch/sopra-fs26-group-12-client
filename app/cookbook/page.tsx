@@ -11,13 +11,15 @@ import EventPreviewCard from "@/components/EventPreviewCard";
 import { useApi } from "@/hooks/useApi";
 import { getApiDomain } from "@/utils/domain";
 import useWindowSize from "@/hooks/useWndowSize";
-import { Chip, Card, CardMedia, IconButton, Menu, MenuItem, SpeedDial, SpeedDialAction, SpeedDialIcon } from "@mui/material";
+import { Chip, Card, CardMedia, IconButton, Menu, MenuItem, SpeedDial, SpeedDialAction, SpeedDialIcon, TextField, Box } from "@mui/material";
+import Autocomplete from "@mui/material/Autocomplete";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 
 interface Recipe {
   id: number;
   title: string;
   labels: string[];
+  ingredients: string[];
   imageURL?: string;
   userId?: number;
 }
@@ -171,6 +173,7 @@ const CookbookPage: React.FC = () => {
   const [token, setToken] = useState<string | null>(null);
   const [labels, setLabels] = useState<string[]>([]);
   const [activeLabels, setActiveLabels] = useState<string[]>([]);
+  const [activeIngredients, setActiveIngredients] = useState<string[]>([]);
   const [isFetchingRandomRecipe, setIsFetchingRandomRecipe] = useState(false);
   const [events, setEvents] = useState<Event[]>([]);
   const [userId, setUserId] = useState<number | null>(null);
@@ -329,14 +332,45 @@ const CookbookPage: React.FC = () => {
     }
   };
 
-  // const filteredRecipes = activeLabels.length > 0 ? MOCK_RECIPES.filter((r) => activeLabels.every((active) => r.labels.includes(active))) : MOCK_RECIPES;
+  const getIngredientNames = (ingredients: string[] = []) => {
+    const names: string[] = [];
+
+    for (let i = 0; i < ingredients.length; i += 2) {
+      const ingredientName = ingredients[i]?.trim();
+      if (ingredientName) names.push(ingredientName);
+    }
+
+    return names;
+  };
+
+  const ingredientOptions = React.useMemo(() => {
+    const ingredientSet = new Set<string>();
+
+    recipes.forEach((recipe) => {
+      getIngredientNames(recipe.ingredients).forEach((ingredient) => {
+        ingredientSet.add(ingredient);
+      });
+    });
+
+    return Array.from(ingredientSet).sort((a, b) => a.localeCompare(b));
+  }, [recipes]);
+
   // Filtering logic
-  const filteredRecipes =
-    activeLabels.length > 0
-      ? recipes.filter((r) =>
-        activeLabels.every((label) => r.labels.includes(label))
-      )
-      : recipes;
+  const filteredRecipes = recipes.filter((recipe) => {
+    const matchesLabels =
+      activeLabels.length === 0 ||
+      activeLabels.every((label) => recipe.labels.includes(label));
+
+    const recipeIngredientNames = getIngredientNames(recipe.ingredients);
+
+    const matchesIngredients =
+      activeIngredients.length === 0 ||
+      activeIngredients.every((ingredient) =>
+        recipeIngredientNames.includes(ingredient)
+      );
+
+    return matchesLabels && matchesIngredients;
+  });
 
   const handleLabelToggle = (label: string) => {
     setActiveLabels((prev) =>
@@ -373,9 +407,6 @@ const CookbookPage: React.FC = () => {
               dateType="start"
             />
 
-
-
-
             {/* Participated Events */}
 
             <EventPreviewCard
@@ -391,21 +422,133 @@ const CookbookPage: React.FC = () => {
             Your Recipes
           </h2>
 
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-            {labels.map((label) => (
-              <Chip
-                key={label}
-                label={label}
-                onClick={() => handleLabelToggle(label)}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              gap: 16,
+              marginBottom: 16,
+            }}
+          >
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {labels.map((label) => (
+                <Chip
+                  key={label}
+                  label={label}
+                  onClick={() => handleLabelToggle(label)}
+                  sx={{
+                    backgroundColor: activeLabels.includes(label)
+                      ? "rgba(75, 102, 36, 1)"
+                      : "#e0e0e0",
+                    color: activeLabels.includes(label) ? "#fff" : "#1a1a1a",
+                    cursor: "pointer",
+                    userSelect: "none",
+                    fontWeight: activeLabels.includes(label) ? 600 : 400,
+                  }}
+                />
+              ))}
+            </div>
+
+            <Box
+              sx={{
+                width: 360,
+                flexShrink: 0,
+                border: "1px solid rgba(0,0,0,0.23)",
+                borderRadius: 2,
+                backgroundColor: "#fff",
+                position: "relative",
+                "&:hover": { borderColor: "#4b6624" },
+                "&:focus-within": { borderColor: "#4b6624", borderWidth: 2 },
+              }}
+            >
+              <Autocomplete
+                multiple
+                size="small"
+                options={ingredientOptions.filter(
+                  (ingredient) => !activeIngredients.includes(ingredient)
+                )}
+                value={activeIngredients}
+                onChange={(_, newValue) => setActiveIngredients(newValue)}
                 sx={{
-                  backgroundColor: activeLabels.includes(label) ? "rgba(75, 102, 36, 1)" : "#e0e0e0",
-                  color: activeLabels.includes(label) ? "#fff" : "#1a1a1a",
-                  cursor: "pointer",
-                  userSelect: "none",
-                  fontWeight: activeLabels.includes(label) ? 600 : 400,
+                  width: "100%",
+
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "transparent",
+                    borderRadius: 2,
+                    minHeight: 40,
+                    maxHeight: 92,
+                    overflowY: "auto",
+                    alignItems: "flex-start",
+                    paddingTop: "6px",
+                    paddingBottom: "6px",
+                    paddingRight: "72px !important",
+                    
+                    // custom scrollbar
+                    "&::-webkit-scrollbar": {
+                      width: 4,
+                    },
+                    "&::-webkit-scrollbar-track": {
+                      background: "transparent",
+                    },
+                    "&::-webkit-scrollbar-thumb": {
+                      backgroundColor: "rgba(75, 102, 36, 0.4)",
+                      borderRadius: 4,
+                    },
+                    "&::-webkit-scrollbar-thumb:hover": {
+                      backgroundColor: "rgba(75, 102, 36, 0.7)",
+                    },
+
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      border: "none",
+                    },
+                  },
+
+                  "& .MuiAutocomplete-endAdornment": {
+                    position: "absolute",
+                    top: 8,
+                    transform: "none",
+                    right: 9,
+                  },
+
+                  "& .MuiAutocomplete-tag": {
+                    margin: "2px",
+                  },
+
+                  "& .MuiAutocomplete-input": {
+                    minWidth: "140px",
+                    paddingTop: "4px",
+                  },
                 }}
+                renderTags={(value, getTagProps) => (
+                  <>
+                    {value.map((option, index) => (
+                      <Chip
+                        {...getTagProps({ index })}
+                        key={option}
+                        label={option}
+                        size="small"
+                        sx={{
+                          backgroundColor: "rgba(75, 102, 36, 1)",
+                          color: "#fff",
+                          margin: "2px",
+                          "& .MuiChip-deleteIcon": {
+                            color: "rgba(255, 255, 255, 0.7)",
+                          },
+                        }}
+                      />
+                    ))}
+                  </>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    placeholder="Filter by ingredients"
+                  />
+                )}
               />
-            ))}
+            </Box>
+
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: 1, marginBottom: 48 }}>
