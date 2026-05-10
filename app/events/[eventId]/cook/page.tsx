@@ -45,6 +45,11 @@ type EventResponse = {
   participantCount: number;
 };
 
+type EventMetaResponse = {
+  ingredients: string[];
+  title: string;
+};
+
 export default function CookPage() {
   const params = useParams();
   const router = useRouter();
@@ -74,10 +79,29 @@ export default function CookPage() {
 
   const [participantCount, setParticipantCount] = useState<number | null>(null);
 
+  const [ingredients, setIngredients] = useState<string[]>([]);
+
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
   }, []);
+
+  const fetchEventMeta = useCallback(async () => {
+  if (!eventId || !token) return;
+
+  const data = await api.get<EventMetaResponse>(
+    `/events/${eventId}`,
+    { Authorization: `Bearer ${token}` }
+  );
+
+  setIngredients(data.ingredients);
+}, [eventId, token, api]);
+
+useEffect(() => {
+  if (!permissionChecked) return;
+
+  fetchEventMeta();
+}, [fetchEventMeta, permissionChecked]);
 
   const eventEndMs = useMemo(() => {
   if (!schedule || schedule.prompts.length === 0) return null;
@@ -395,6 +419,22 @@ useEffect(() => {
               <p style={{ fontSize: 14, color: "#666", marginBottom: 8 }}>
                 ⏱️ {formatMinutes(eventTimeLeftMs)} remaining
               </p>
+            )}
+
+            {ingredients.length > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>
+                  Ingredients
+                </h3>
+
+                <ul style={{ paddingLeft: 18, margin: 0 }}>
+                  {ingredients.map((ing) => (
+                  <li key={ing} style={{ fontSize: 14, color: "#333", marginBottom: 4 }}>
+                    {ing}
+                  </li>
+                  ))}
+                </ul>
+              </div>
             )}
 
             {eventFinished && (
