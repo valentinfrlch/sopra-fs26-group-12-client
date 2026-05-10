@@ -79,6 +79,22 @@ export default function CookPage() {
     return () => clearInterval(interval);
   }, []);
 
+  const eventEndMs = useMemo(() => {
+  if (!schedule || schedule.prompts.length === 0) return null;
+
+  const last = schedule.prompts[schedule.prompts.length - 1];
+
+  return (
+    new Date(last.promptTime).getTime() +
+    schedule.uploadWindowMinutes * 60 * 1000 -300000
+  );
+}, [schedule]);
+
+const formatMinutes = (ms: number) => {
+  const minutes = Math.ceil(ms / 60000);
+  return `${minutes} min`;
+};
+
   const activePromptIndex = useMemo(() => {
     if (!schedule) return -1;
 
@@ -106,6 +122,11 @@ export default function CookPage() {
 
     return Date.now() > end;
   }, [schedule]);
+
+  const eventTimeLeftMs = useMemo(() => {
+  if (!eventEndMs) return null;
+  return Math.max(0, eventEndMs - now);
+}, [eventEndMs, now]);
 
   const timeLeftMs = useMemo(() => {
     if (!schedule || activePromptIndex === -1) return null;
@@ -369,6 +390,12 @@ useEffect(() => {
             <p style={{ fontSize: 14, color: "#666", marginBottom: 8 }}>
               👥 {participantCount ?? "-"} Player
             </p>
+
+            {eventTimeLeftMs !== null && !eventFinished && (
+              <p style={{ fontSize: 14, color: "#666", marginBottom: 8 }}>
+                ⏱️ {formatMinutes(eventTimeLeftMs)} remaining
+              </p>
+            )}
 
             {eventFinished && (
               <button
