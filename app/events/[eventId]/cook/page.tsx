@@ -43,12 +43,20 @@ type WinnerDTO = {
 
 type EventResponse = {
   participantCount: number;
+  participants: Participant[];
 };
 
 type EventMetaResponse = {
   ingredients: string[];
   title: string;
 };
+
+type Participant = {
+  id: string;
+  username: string;
+};
+
+
 
 export default function CookPage() {
   const params = useParams();
@@ -80,6 +88,8 @@ export default function CookPage() {
   const [participantCount, setParticipantCount] = useState<number | null>(null);
 
   const [ingredients, setIngredients] = useState<string[]>([]);
+
+  const [participants, setParticipants] = useState<Participant[]>([]);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 1000);
@@ -216,6 +226,7 @@ const formatMinutes = (ms: number) => {
   );
 
   setParticipantCount(data.participantCount);
+  setParticipants(data.participants ?? []);
 }, [eventId, token, api]);
 
   useEffect(() => {
@@ -412,8 +423,24 @@ useEffect(() => {
             boxShadow: "0 1px 3px rgba(0,0,0,0.06)"
           }}>
             <p style={{ fontSize: 14, color: "#666", marginBottom: 8 }}>
-              👥 {participantCount ?? "-"} Player
+              👥 {participantCount ?? "-"} Player(s)
             </p>
+
+            {participants.length > 0 && (
+              <div style={{ marginBottom: 12 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>
+                  Participants
+                </h3>
+
+                <ul style={{ paddingLeft: 18, margin: 0 }}>
+                {participants.map((p) => (
+                  <li key={p.id} style={{ fontSize: 14, color: "#333" }}>
+                    {p.username}
+                  </li>
+                ))}
+                </ul>
+              </div>
+            )}
 
             {eventTimeLeftMs !== null && !eventFinished && (
               <p style={{ fontSize: 14, color: "#666", marginBottom: 8 }}>
