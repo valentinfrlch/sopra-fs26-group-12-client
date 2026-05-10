@@ -14,6 +14,8 @@ import useWindowSize from "@/hooks/useWndowSize";
 import { Chip, Card, CardMedia, IconButton, Menu, MenuItem, SpeedDial, SpeedDialAction, SpeedDialIcon, TextField, Box } from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 
 interface Recipe {
   id: number;
@@ -22,6 +24,7 @@ interface Recipe {
   ingredients: string[];
   imageURL?: string;
   userId?: number;
+  favorite?: boolean;
 }
 
 interface RecipeDetail {
@@ -47,7 +50,12 @@ interface LabelResponse {
 }
 
 
-const RecipeCard: React.FC<{ recipe: Recipe; onDelete: (recipeId: number) => void; token: string | null }> = ({ recipe, onDelete, token }) => {
+const RecipeCard: React.FC<{
+  recipe: Recipe;
+  onDelete: (recipeId: number) => void;
+  onToggleFavorite: (recipeId: number, currentlyFavorite: boolean) => void;
+  token: string | null;
+}> = ({ recipe, onDelete, onToggleFavorite, token }) => {
   const router = useRouter();
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -136,6 +144,22 @@ const RecipeCard: React.FC<{ recipe: Recipe; onDelete: (recipeId: number) => voi
             {recipe.labels.join(", ")}
           </div>
         </div>
+
+        <IconButton
+          onClick={(event) => {
+            event.stopPropagation();
+            onToggleFavorite(recipe.id, recipe.favorite ?? false);
+          }}
+          size="small"
+          sx={{ color: recipe.favorite ? "#4b6624" : "#888" }}
+        >
+          {recipe.favorite ? (
+            <FavoriteIcon sx={{ fontSize: 22 }} />
+          ) : (
+            <FavoriteBorderIcon sx={{ fontSize: 22 }} />
+          )}
+        </IconButton>
+
         <IconButton
           onClick={handleMenuOpen}
           size="small"
@@ -257,7 +281,7 @@ const CookbookPage: React.FC = () => {
         });
 
         console.log("RECIPES:", data);
-        setRecipes(data);
+        setRecipes(sortRecipes(data));
       } catch (err) {
         console.error("FETCH ERROR:", err);
       }
@@ -290,6 +314,16 @@ const CookbookPage: React.FC = () => {
 
     fetchLabels();
   }, [token]);
+
+  const sortRecipes = (recipesToSort: Recipe[]) => {
+    return [...recipesToSort].sort((a, b) => {
+      if ((a.favorite ?? false) !== (b.favorite ?? false)) {
+        return (b.favorite ? 1 : 0) - (a.favorite ? 1 : 0);
+      }
+
+      return b.id - a.id;
+    });
+  };
 
   const handleDeleteRecipe = async (recipeId: number) => {
     try {
@@ -329,6 +363,45 @@ const CookbookPage: React.FC = () => {
       alert("Failed to fetch random recipe.");
     } finally {
       setIsFetchingRandomRecipe(false);
+    }
+  };
+
+  const handleToggleFavorite = async (
+    recipeId: number,
+    currentlyFavorite: boolean
+  ) => {
+    try {
+      if (!token) {
+        alert("No token found.");
+        return;
+      }
+
+      if (currentlyFavorite) {
+        await api.delete(`/recipes/${recipeId}/favorite`, {
+          Authorization: `Bearer ${token}`,
+        });
+      } else {
+        await api.post(
+          `/recipes/${recipeId}/favorite`,
+          {},
+          {
+            Authorization: `Bearer ${token}`,
+          }
+        );
+      }
+
+      setRecipes((prev) =>
+        sortRecipes(
+          prev.map((recipe) =>
+            recipe.id === recipeId
+              ? { ...recipe, favorite: !currentlyFavorite }
+              : recipe
+          )
+        )
+      );
+    } catch (err) {
+      console.error("FAVORITE ERROR:", err);
+      alert("Failed to update favorite.");
     }
   };
 
@@ -553,7 +626,15 @@ const CookbookPage: React.FC = () => {
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: 1, marginBottom: 48 }}>
             {/*Filtering recipe cards*/}
-            {filteredRecipes.map((recipe) => (<RecipeCard key={recipe.id} recipe={recipe} token={token} onDelete={handleDeleteRecipe} />))}
+            {filteredRecipes.map((recipe) => (
+              <RecipeCard
+                key={recipe.id}
+                recipe={recipe}
+                token={token}
+                onDelete={handleDeleteRecipe}
+                onToggleFavorite={handleToggleFavorite}
+              />
+            ))}
           </div>
         </div>
       </div>
