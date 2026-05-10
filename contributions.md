@@ -165,8 +165,8 @@ reason).
 ## Contributions Week 9 - [18.05.26] to [24.05.26]
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
-| **[@githubUser1]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@FinnPrivateGit]** | [10.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/58c6621aebfe9086f9ad7725ad4e3967f1a81d32] | [Adding a heart button to the recipe card in the cookbook] | [This is needed to be able to favoritize recipes, such that users see their favoite recipes on top of their cookbook] |
+|                    | [10.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/e338e1e25f5ccd3015e126767489aea7d497b6f3] | [Adding all backend support such that recipes can be favoritized] | [Without the backend support, the heart button in the client would change nothing] |
 | **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
