@@ -41,6 +41,10 @@ type WinnerDTO = {
   voteCount: number;
 };
 
+type EventResponse = {
+  participantCount: number;
+};
+
 export default function CookPage() {
   const params = useParams();
   const router = useRouter();
@@ -67,6 +71,8 @@ export default function CookPage() {
   const [uploadSuccess, setUploadSuccess] = useState(false);
 
   const prevUploadActive = useRef<boolean | null>(null);
+
+  const [participantCount, setParticipantCount] = useState<number | null>(null);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 1000);
@@ -156,6 +162,17 @@ export default function CookPage() {
     }
   }, [eventId, token, api, router]);
 
+    const fetchEvent = useCallback(async () => {
+  if (!eventId || !token) return;
+
+  const data = await api.get<EventResponse>(
+    `/events/${eventId}`,
+    { Authorization: `Bearer ${token}` }
+  );
+
+  setParticipantCount(data.participantCount);
+}, [eventId, token, api]);
+
   useEffect(() => {
     if (!eventId || !token) return;
     checkPermission();
@@ -198,6 +215,16 @@ export default function CookPage() {
     const interval = setInterval(fetchSchedule, 5000);
     return () => clearInterval(interval);
   }, [fetchSchedule, eventId, token, permissionChecked]);
+
+
+useEffect(() => {
+  if (!eventId || !token || !permissionChecked) return;
+
+  fetchEvent();
+  const interval = setInterval(fetchEvent, 5000);
+
+  return () => clearInterval(interval);
+}, [fetchEvent, eventId, token, permissionChecked]);
 
   const fetchSubmissions = useCallback(async () => {
     if (!schedule || !token) return;
@@ -339,6 +366,10 @@ export default function CookPage() {
             padding: 20,
             boxShadow: "0 1px 3px rgba(0,0,0,0.06)"
           }}>
+            <p style={{ fontSize: 14, color: "#666", marginBottom: 8 }}>
+              👥 {participantCount ?? "-"} Player
+            </p>
+
             {eventFinished && (
               <button
                 onClick={() => router.push("/cookbook")}
