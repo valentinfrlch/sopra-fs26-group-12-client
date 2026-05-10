@@ -141,10 +141,12 @@ reason).
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
 | **[@FinnPrivateGit]** | [08.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/718064eae3f91298bfad07fa494391524efbfa65] | [Implement a filter such that logged in users can select ingredients to filter their recipes.] | [This feature is useful, because users can find recipes much faster (especially if they have many).] |
 |                    | [08.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/c643ee6f65faae5b78ccbc3a1f110e6a9ce8f524] | [The ingredient filter should update the shown recipes in the cookbook according to the selected ingredients.] | [Without this small addition users could select ingredients, but it doesn't filter the recipes, so this is crucial for the user story.] |
-| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@jp-schl]** | [10.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/ffd0ab285d94dc769caf5520c19ea70d3677018b] | [The necessary ingredients are shown in the cooking event interface] | [To have all necessary info in one page for the cooking event] |
+|                    | [10.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/5e80dd236d33541be57258531fcb918a0e299d44] | [the amount of players participating is shown in the cooking interface] | [To have all necessary info in one page for the cooking event] |
+
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 ---
