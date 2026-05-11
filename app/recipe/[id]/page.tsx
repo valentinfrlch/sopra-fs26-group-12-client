@@ -105,6 +105,44 @@ const RecipeDetailPage: React.FC = () => {
     return pairs;
   }, [recipe]);
 
+  const handleAddToShoppingList = async () => {
+    const token = localStorage.getItem("token")?.replace(/"/g, "");
+
+    if (!token) {
+      message.error("No auth token found.");
+      return;
+    }
+
+    if (ingredientPairs.length === 0) {
+      message.warning("This recipe has no ingredients.");
+      return;
+    }
+
+    try {
+      await Promise.all(
+        ingredientPairs
+          .filter((ingredient) => ingredient.name.trim())
+          .map((ingredient) =>
+            apiService.post(
+              "/shopping-list/items",
+              {
+                ingredientName: ingredient.name,
+                quantity: ingredient.amount,
+              },
+              {
+                Authorization: token,
+              }
+            )
+          )
+      );
+
+      message.success("Ingredients added to shopping list.");
+    } catch (error) {
+      console.error("Failed to add ingredients to shopping list:", error);
+      message.error("Failed to add ingredients to shopping list.");
+    }
+  };
+
   if (loading) {
     return <div style={{ padding: 24 }}>Loading...</div>;
   }
@@ -323,8 +361,17 @@ const RecipeDetailPage: React.FC = () => {
               justifyContent: "flex-end",
             }}
           >
-            <Button onClick={() => router.push("/cookbook")}>Back</Button>
+            <div style={{ display: "flex", gap: 12 }}>
+              <Button onClick={handleAddToShoppingList}>
+                Add to Shopping List
+              </Button>
+
+              <Button onClick={() => router.push("/cookbook")}>
+                Back
+              </Button>
+            </div>
           </div>
+
         </div>
       </div>
     </div>
