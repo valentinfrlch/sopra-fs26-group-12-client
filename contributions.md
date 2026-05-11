@@ -144,9 +144,11 @@ reason).
 | **[@jp-schl]** | [10.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/ffd0ab285d94dc769caf5520c19ea70d3677018b] | [The necessary ingredients are shown in the cooking event interface] | [To have all necessary info in one page for the cooking event] |
 |                    | [10.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/5e80dd236d33541be57258531fcb918a0e299d44] | [the amount of players participating is shown in the cooking interface] | [To have all necessary info in one page for the cooking event] |
 
-| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-
+| **[@sushmstr]** | [01.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/187/commits/3cc641fefb44aee6ae51839f83e458c0d9702a28] | [Implement route protection for authenticated users] | [Ensured protection applies to all routes including direct URL access] |
+|                    | [01.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/187/commits/5037970725598ddefc429115201e8667bbd06636] | [Define and allow public routes (login & signup)] | [Prevented infinite redirect loops] |
+                     | [01.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/187/commits/c7dcb5e00e4f4c57bf2d3d9aca0c4c738321cdc9] | [Improve authentication UX (redirect + messaging)] | [Prevented logged-in users from accessing login/signup pages] |
+|                    | [01.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/184/commits/a9881bd783f804012e7b9620f94609475e8c5473] | [Implemented upcoming events preview in the cookbook page in a horizontal layout] | [Improves user experience by providing quick access to upcoming events] |
+                     | [01.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/184/commits/2812d6af72c1941ec44a97257aff182edcea53c1] | [Added placeholder when no upcoming events exist] | [Ensures clear feedback when no events are available] |
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 ---

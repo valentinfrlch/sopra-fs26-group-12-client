@@ -10,7 +10,7 @@ import React, { useState } from "react";
 import { UserGetDTO } from "@/types/api";
 import { storeUserSession } from "@/utils/auth";
 import { useSearchParams } from "next/navigation";
-
+import CircularProgress from "@mui/material/CircularProgress";
 // Optionally, you can import a CSS module or file for additional styling:
 // import styles from "@/styles/page.module.css";
 
@@ -24,6 +24,7 @@ const Login: React.FC = () => {
   const apiService = useApi();
   const [form] = Form.useForm();
   const [currentError, setCurrentError] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const searchParams = useSearchParams();
   // useLocalStorage hook example use
   // The hook returns an object with the value and two functions
@@ -36,6 +37,8 @@ const Login: React.FC = () => {
   // if you want to pick a different token, i.e "usertoken", the line above would look as follows: } = useLocalStorage<string>("usertoken", "");
 
   const handleLogin = async (values: FormFieldProps) => {
+    setIsSubmitting(true);
+
     try {
       const response = await apiService.post<UserGetDTO>("/users/login", values);
 
@@ -44,6 +47,9 @@ const Login: React.FC = () => {
       const redirect = searchParams.get("redirect") || "/cookbook";
       router.push(redirect);
     } catch (error) {
+
+      setIsSubmitting(false);
+
       if (error instanceof Error) {
         // try to parse the string as json
         const jsonStart = error.message.indexOf("{");
@@ -95,8 +101,13 @@ const Login: React.FC = () => {
             disableElevation
             sx={{ boxShadow: "none" }}
             type="submit"
+            disabled={isSubmitting}
           >
-            Login
+            {isSubmitting ? (
+              <CircularProgress size={24} sx={{ color: "white" }} />
+            ) : (
+              "Login"
+            )}
           </Button>
           <Form.Item >
             <p className="error-message">{currentError}</p>
