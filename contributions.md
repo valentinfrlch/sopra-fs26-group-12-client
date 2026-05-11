@@ -154,8 +154,8 @@ reason).
 ## Contributions Week 8 - [11.05.26] to [17.05.26]
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
-| **[@githubUser1]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@FinnPrivateGit]** | [11.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/9580dd897e7e201dd39652ba6efcd434d5372349] | [Adding a button "export to shopping list" to the recipe detail view page] | [This button is used to put the ingredients of a recipe into the shopping list such that users can buy them later] |
+|                    | [11.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/9580dd897e7e201dd39652ba6efcd434d5372349] | [Connecting the "export to shopping list" button to the shopping list API] | [This is relevant, because else the button wouldn't do nothing and with the API linking, the ingredients get added to the shopping list] |
 | **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
