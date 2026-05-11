@@ -128,18 +128,6 @@ const CreateRecipePage: React.FC = () => {
     const populatedIngredients =
       ingredients.length > 0 ? ingredients : [{ name: "", amount: "" }];
 
-    if (meal.strMealThumb) {
-      try {
-        const mealImageFile = await fetchMealImageFile(meal.strMealThumb, meal.strMeal);
-        setImageFile(mealImageFile);
-      } catch {
-        setImageFile(null);
-        console.warn("Failed to fetch image for the selected recipe.");
-      }
-    } else {
-      setImageFile(null);
-    }
-
     setShouldFetchSuggestions(false);
     setRecipeName(meal.strMeal);
     setDebouncedRecipeName("");
@@ -152,6 +140,21 @@ const CreateRecipePage: React.FC = () => {
 
     setSuggestions([]);
     setShowSuggestions(false);
+
+    if (meal.strMealThumb) {
+      try {
+        const mealImageFile = await fetchMealImageFile(
+          meal.strMealThumb,
+          meal.strMeal
+        );
+        setImageFile(mealImageFile);
+      } catch {
+        setImageFile(null);
+        console.warn("Failed to fetch image for the selected recipe.");
+      }
+    } else {
+      setImageFile(null);
+    }
   };
 
   const handleSuggestionSelect = async (mealId: string) => {
@@ -172,18 +175,24 @@ const CreateRecipePage: React.FC = () => {
   };
 
   useEffect(() => {
-    const storedRandomMeal = sessionStorage.getItem("randomMealRecipe");
+    const loadRandomMeal = async () => {
+      const storedRandomMeal = sessionStorage.getItem("randomMealRecipe");
 
-    if (!storedRandomMeal) return;
+      if (!storedRandomMeal) return;
 
-    try {
-      const meal: MealDetail = JSON.parse(storedRandomMeal);
-      populateMealDetails(meal);
-      sessionStorage.removeItem("randomMealRecipe");
-    } catch {
-      message.error("Failed to load random recipe");
-      sessionStorage.removeItem("randomMealRecipe");
-    }
+      try {
+        const meal: MealDetail = JSON.parse(storedRandomMeal);
+
+        await populateMealDetails(meal);
+
+        sessionStorage.removeItem("randomMealRecipe");
+      } catch {
+        message.error("Failed to load random recipe");
+        sessionStorage.removeItem("randomMealRecipe");
+      }
+    };
+
+    loadRandomMeal();
   }, []);
 
   useEffect(() => {

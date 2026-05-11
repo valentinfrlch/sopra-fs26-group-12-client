@@ -30,7 +30,7 @@ reason).
 
 ---
 
-## Contributions Week 1 - [Begin Date] to [End Date]
+## Contributions Week 1 - [25.03.26] to [29.03.26]
 
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
@@ -50,7 +50,7 @@ reason).
 |     | [29.03.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/5c13f0efe54840160ca47b7f207e3a4dbaa38fe4] | [Added a UserService test to verify that a completly new token is generated when a user logs in.] | [Important for system security so users get a fresh session token every time they log in.] |
 ---
 
-## Contributions Week 2 - [Begin Date] to [End Date]
+## Contributions Week 2 - [30.03.26] to [05.04.26]
 
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
@@ -67,7 +67,7 @@ reason).
 |                    | 05.04.2026 | https://github.com/valentinfrlch/sopra-fs26-group-12-server/pull/107/commits/21eb2ceaa51cba3f8d35cb5f1a030fd02685aea4 | Implements REST endpoints to create and delete an event | REST endpoints are needed to allow users to create and delete events (#71, #73, #74) |
 ---
 
-## Contributions Week 3 - [Begin Date] to [End Date]
+## Contributions Week 3 - [06.04.26] to [12.04.26]
 
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
@@ -103,7 +103,7 @@ reason).
 |                    | [19.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/bd55b24f85f33ef075a494ec45cd2fab25eacce9] | [Added tests for checkLastManStanding and determineWinner (#51, #52)] | [Tests verify the two winner conditions are correctly enforced at the event of an event] |
 ---
 
-## Contributions Week 5 - [Begin Date] to [End Date]
+## Contributions Week 5 - [20.04.26] to [24.04.26]
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
 | **@valentinfrlch** | 17.04.26   | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/0bf98034da6193d8fa59f025050d56d3949c27ea | Implement frontend to change username, name, and password | So the user can update their personal information #6, #7, #8 |
@@ -120,7 +120,7 @@ reason).
 |                    | [24.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/fcc8a4096626ad072cbc910a9cc9af98760e0227] | [Added badge UI on profile page, leaderboard page, and auto-refresh for events and leaderboard (#9, #11, #12)] | [Users see badges, the leaderboard and new events without reloading] |
 ---
 
-## Contributions Week 6 - [Begin Date] to [End Date]
+## Contributions Week 6 - [27.04.26] to [03.05.26]
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
 | @valentinfrlch | 30.04.2026   | https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/92f0d10c04d1caa3bbf864be4f35ba63332baeb5 | Implement label endpoints to create, update, and delete labels | Let the user create custom labels and use them to tag recipes (#155, #156, #183) |
@@ -134,4 +134,45 @@ reason).
 |                    | [03.05.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/ef0120825bfec7c28638cc5d249777b029f2a705] | [Adding a button to the random recipe suggestion such that a user can save the random recipe to its cookbook.] | [This is important, because the users want to save the recipe to cook later if it pleases them.] |
 | **[@BestAchilles]** | [03.05.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/660d383c76528da37a1e88773aea068aa1985916] | [Added a state variable and matchPaths mapping to track the most recent top-level page (#141)] | [This gives the necessary logic to remember the user's location when navigating to sub-pages] |
 |                    | [03.05.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/660d383c76528da37a1e88773aea068aa1985916] | [Implemented logic to ensure exactly one sidebar page is highlighted as active at all times (#142)] | [Makes sure that there is consistent visual feedback and navigation clarity across the whole application] |
+---
+
+## Contributions Week 7 - [04.05.26] to [10.05.26]
+| **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
+| ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
+| **[@FinnPrivateGit]** | [08.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/718064eae3f91298bfad07fa494391524efbfa65] | [Implement a filter such that logged in users can select ingredients to filter their recipes.] | [This feature is useful, because users can find recipes much faster (especially if they have many).] |
+|                    | [08.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/c643ee6f65faae5b78ccbc3a1f110e6a9ce8f524] | [The ingredient filter should update the shown recipes in the cookbook according to the selected ingredients.] | [Without this small addition users could select ingredients, but it doesn't filter the recipes, so this is crucial for the user story.] |
+| **[@jp-schl]** | [10.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/ffd0ab285d94dc769caf5520c19ea70d3677018b] | [The necessary ingredients are shown in the cooking event interface] | [To have all necessary info in one page for the cooking event] |
+|                    | [10.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/5e80dd236d33541be57258531fcb918a0e299d44] | [the amount of players participating is shown in the cooking interface] | [To have all necessary info in one page for the cooking event] |
+
+| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+
+| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+---
+
+## Contributions Week 8 - [11.05.26] to [17.05.26]
+| **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
+| ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
+| **[@githubUser1]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+---
+
+## Contributions Week 9 - [18.05.26] to [24.05.26]
+| **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
+| ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
+| **[@FinnPrivateGit]** | [10.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/58c6621aebfe9086f9ad7725ad4e3967f1a81d32] | [Adding a heart button to the recipe card in the cookbook] | [This is needed to be able to favoritize recipes, such that users see their favoite recipes on top of their cookbook] |
+|                    | [10.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/e338e1e25f5ccd3015e126767489aea7d497b6f3] | [Adding all backend support such that recipes can be favoritized] | [Without the backend support, the heart button in the client would change nothing] |
+| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 ---

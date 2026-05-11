@@ -1,38 +1,28 @@
 "use client";
 
-import React, { useState } from "react";
-import { Form, Row, Col, App, Avatar } from "antd";
+import React, { useEffect, useState } from "react";
+import { Form, Row, Col, App, Spin } from "antd";
 import { Button, TextField, IconButton } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import EmojiPicker from 'emoji-picker-react';
-import { useRouter } from "next/navigation";
-import { useApi } from "@/hooks/useApi";
-import Sidebar from "@/components/appLayout";
-import { MenuOutlined } from "@ant-design/icons";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import EmojiPicker from "emoji-picker-react";
+import { useParams, useRouter } from "next/navigation";
+import { useApi } from "@/hooks/useApi";
+import Sidebar, { Header, UserAvatar } from "@/components/appLayout";
 
 interface Ingredient {
     name: string;
 }
 
-interface CreateEventFormValues {
+interface EditEventFormValues {
     title: string;
-    ingredients: Ingredient[];
     emojis: string[];
-    eventPrompts: (string | unknown)[];
+    ingredients: Ingredient[];
+    eventPrompts: (string | null)[];
     startDatetime: unknown;
     endDatetime: unknown;
-}
-
-interface ApiError {
-    response?: {
-        data?: {
-            message: string;
-        };
-    };
-    message: string;
 }
 
 interface EmojiClickData {
@@ -40,46 +30,116 @@ interface EmojiClickData {
     unified?: string;
 }
 
-/* Unused
-const getInitials = (name: string): string => {
-    return name
-        .split(" ")
-        .map((w) => w[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2);
-};
-*/
+interface CookingEvent {
+    id: string;
+    title: string;
+    emojis: string;
+    ingredients: string[];
+    startDatetime: string;
+    endDatetime: string;
+    creator: { id: string | number };
+    state: "UPCOMING" | "ONGOING" | "FINISHED";
+}
 
-const CreateEventPage: React.FC = () => {
-    const [form] = Form.useForm();
+interface SchedulePrompt {
+    id: number;
+    promptTime: string;
+}
+
+interface ScheduleResponse {
+    prompts: SchedulePrompt[];
+    uploadWindowMinutes: number;
+    kicked: boolean;
+}
+
+interface ApiError {
+    response?: { data?: { message: string } };
+    message: string;
+    status?: number;
+}
+
+const EditEventPage: React.FC = () => {
+    const params = useParams();
+    const eventId = params?.eventId as string;
     const router = useRouter();
     const apiService = useApi();
     const { message } = App.useApp();
-    const [initialDates] = useState(() => {
-        const start = new Date(Math.ceil(Date.now() / 60000) * 60000);
-        const end = new Date(start.getTime() + 60 * 60 * 1000);
-        return { start: start.toISOString(), end: end.toISOString() };
-    });
+    const [form] = Form.useForm();
 
-    /* Unused
+    const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+    const [openPicker, setOpenPicker] = useState<number | null>(null);
+
+    const watchedStart = Form.useWatch("startDatetime", form);
+    const watchedEnd = Form.useWatch("endDatetime", form);
+    const watchedTitle = Form.useWatch("title", form);
+    const watchedEmojis = Form.useWatch("emojis", form) || ["🥖", "🥑", "🌶️"];
+
+    const startDate = watchedStart ? new Date(watchedStart as string) : null;
+    const endDate = watchedEnd ? new Date(watchedEnd as string) : null;
+    const startInPast = startDate ? startDate.getTime() < Date.now() - 60_000 : false;
+    const endNotAfterStart = startDate && endDate ? endDate.getTime() <= startDate.getTime() : false;
+    const startError = startInPast ? "Start time cannot be in the past" : null;
+    const endError = endNotAfterStart ? "End time must be after start time" : null;
+    const isFormValid = !!watchedTitle && !!watchedStart && !!watchedEnd && !startError && !endError;
+
     useEffect(() => {
-        const stored = localStorage.getItem("username") ?? "U";
-        // no state needed for initials here
-        }, []);
-    */
-    const handleCreateEvent = async (values: CreateEventFormValues) => {
+        if (!eventId) return;
+        const token = localStorage.getItem("token")?.replace(/"/g, "");
+        const userId = localStorage.getItem("userId") ?? "";
+        const auth = { Authorization: `Bearer ${token}` };
+
+        (async () => {
+            try {
+                const [event, schedule] = await Promise.all([
+                    apiService.get<CookingEvent>(`/events/${eventId}`, auth),
+                    apiService.get<ScheduleResponse>(`/events/${eventId}/schedule`, auth),
+                ]);
+
+                if (String(event.creator?.id) !== userId) {
+                    message.error("Only the event owner can edit this event.");
+                    router.replace(`/events/${eventId}`);
+                    return;
+                }
+
+                const userPrompts = schedule.prompts
+                    .map((p) => p.promptTime)
+                    .filter((t) => t !== event.endDatetime);
+
+                const emojiArr = (event.emojis?.match(/\p{Emoji_Presentation}|\p{Emoji}️/gu) || []).slice(0, 3);
+                while (emojiArr.length < 3) emojiArr.push("😀");
+
+                form.setFieldsValue({
+                    title: event.title,
+                    emojis: emojiArr,
+                    ingredients: event.ingredients?.length
+                        ? event.ingredients.map((name) => ({ name }))
+                        : [{ name: "" }],
+                    eventPrompts: userPrompts.length ? userPrompts : [],
+                    startDatetime: event.startDatetime,
+                    endDatetime: event.endDatetime,
+                });
+            } catch (error) {
+                const apiError = error as ApiError;
+                message.error(apiError.message || "Failed to load event");
+                router.replace(`/events/${eventId}`);
+            } finally {
+                setLoading(false);
+            }
+        })();
+    }, [eventId, apiService, form, router, message]);
+
+    const handleSave = async (values: EditEventFormValues) => {
+        setSubmitting(true);
         try {
             const token = localStorage.getItem("token")?.replace(/"/g, "");
 
             const formattedIngredients = (values.ingredients || [])
-                .map((ing: Ingredient) => (ing?.name ?? "").trim())
-                .filter((n: string) => n.length > 0);
+                .map((ing) => (ing?.name ?? "").trim())
+                .filter((n) => n.length > 0);
 
-            const emojisArray = (values.emojis || []).slice(0, 3).map((e: string) => e || "😀");
-            while (emojisArray.length < 3) {
-                emojisArray.push("😀");
-            }
+            const emojisArray = (values.emojis || []).slice(0, 3).map((e) => e || "😀");
+            while (emojisArray.length < 3) emojisArray.push("😀");
             const emojisString = emojisArray.slice(0, 3).join("");
 
             const payload = {
@@ -88,136 +148,99 @@ const CreateEventPage: React.FC = () => {
                 ingredients: formattedIngredients,
                 eventPrompts: (values.eventPrompts || [])
                     .filter(Boolean)
-                    .map((t: string | unknown) => new Date(String(t)).toISOString()),
-                startDatetime: values.startDatetime ? new Date(values.startDatetime as string | Date).toISOString() : null,
-                endDatetime: values.endDatetime ? new Date(values.endDatetime as string | Date).toISOString() : null,
+                    .map((t) => new Date(String(t)).toISOString()),
+                startDatetime: values.startDatetime
+                    ? new Date(values.startDatetime as string | Date).toISOString()
+                    : null,
+                endDatetime: values.endDatetime
+                    ? new Date(values.endDatetime as string | Date).toISOString()
+                    : null,
             };
 
-            await apiService.post("/events", payload, {
+            await apiService.patch(`/events/${eventId}`, payload, {
                 Authorization: `Bearer ${token}`,
             });
 
-            message.success("Event created successfully!");
-            router.push("/events/overview");
-        } catch (error: unknown) {
+            message.success("Event updated");
+            router.push(`/events/${eventId}`);
+        } catch (error) {
             const apiError = error as ApiError;
-            message.error(apiError.response?.data?.message || "Failed to create event");
+            message.error(apiError.message || "Failed to update event");
+        } finally {
+            setSubmitting(false);
         }
     };
 
-    const userId = typeof window !== "undefined" ? localStorage.getItem("userId") : "";
-
-    const [openPicker, setOpenPicker] = useState<number | null>(null);
-
-    const watchedEmojis = Form.useWatch("emojis", form) || ["🥖", "🥑", "🌶️"];
-    const watchedStart = Form.useWatch("startDatetime", form);
-    const watchedEnd = Form.useWatch("endDatetime", form);
-    const watchedTitle = Form.useWatch("title", form);
-
-    const startDate = watchedStart ? new Date(watchedStart) : null;
-    const endDate = watchedEnd ? new Date(watchedEnd) : null;
-    const startInPast = startDate ? startDate.getTime() < Date.now() - 60_000 : false;
-    const endNotAfterStart = startDate && endDate ? endDate.getTime() <= startDate.getTime() : false;
-    const startError = startInPast ? "Start time cannot be in the past" : null;
-    const endError = endNotAfterStart ? "End time must be after start time" : null;
-    const isFormValid = !!watchedTitle && !!watchedStart && !!watchedEnd && !startError && !endError;
-
-    const EmojiPickerButton: React.FC<{ index: number }> = ({ index }) => {
-        const current = (watchedEmojis && watchedEmojis[index]) || "🥖";
-
+    if (loading) {
         return (
-            <div
-                onClick={() => setOpenPicker(index)}
-                style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 28,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    background: "#ffffff",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
-                    fontSize: 24,
-                }}
-                aria-label={`emoji-picker-${index}`}
-                title="Open emoji picker"
-            >
-                {current}
+            <div style={{ display: "flex", minHeight: "100vh" }}>
+                <Sidebar />
+                <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Spin size="large" />
+                </div>
             </div>
         );
-    };
+    }
 
     return (
         <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
             <Sidebar />
-
             <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                <div
-                    style={{
-                        background: "#fff",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        padding: "16px 24px",
-                        borderBottom: "1px solid #2a2d3a",
-                    }}
-                >
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <MenuOutlined style={{ fontSize: 18, color: "#aaa" }} />
-                        <span style={{ fontWeight: 600, fontSize: 16, color: "#1a1a1a" }}>Create Event</span>
-                    </div>
+                <Header title="Edit Event" rightContent={<UserAvatar size={40} />} />
 
-                    <Avatar
-                        size={40}
-                        style={{ background: "#f0f0f0", color: "#1a1a1a", cursor: "pointer", fontWeight: 600 }}
-                        onClick={() => router.push(`/users/${userId}`)}
-                    >
-                        {/* simple placeholder for initials */}
-                        U
-                    </Avatar>
-                </div>
-
-                <div style={{ padding: "24px", flex: 1 }}>
-                    <Form
-                        form={form}
-                        layout="vertical"
-                        size="large"
-                        onFinish={handleCreateEvent}
-                        initialValues={{ title: "", ingredients: [{ name: "" }], eventPrompts: [null], emojis: ["🥖", "🥑", "🌶️"], startDatetime: initialDates.start, endDatetime: initialDates.end }}
-                    >
-                        {/* Register emojis field so Form tracks it and useWatch works */}
+                <div style={{ padding: 24, flex: 1 }}>
+                    <Form form={form} layout="vertical" size="large" onFinish={handleSave}>
                         <Form.Item name="emojis" style={{ display: "none" }}>
                             <input />
                         </Form.Item>
                         <LocalizationProvider dateAdapter={AdapterDateFns}>
                             <Row>
                                 <Col span={24}>
-                                    <div style={{ marginTop: 16, marginBottom: 48 }}>
-                                        <Row>
-                                            <Col span={24}>
-                                                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", gap: 8 }}>
-                                                    <div style={{ fontWeight: 500, color: "black" }}>Pick three emojis</div>
-                                                    <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
-                                                        <EmojiPickerButton index={0} />
-                                                        <EmojiPickerButton index={1} />
-                                                        <EmojiPickerButton index={2} />
-                                                    </div>
-                                                    <div style={{ fontSize: 12, color: "#888", marginTop: 6 }}>Emojis will be used to create grid as event background.</div>
+                                    <div style={{ marginTop: 8, marginBottom: 24, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                                        <div style={{ fontWeight: 500, color: "black" }}>Pick three emojis</div>
+                                        <div style={{ display: "flex", gap: 12 }}>
+                                            {[0, 1, 2].map((index) => (
+                                                <div
+                                                    key={index}
+                                                    onClick={() => setOpenPicker(index)}
+                                                    style={{
+                                                        width: 56,
+                                                        height: 56,
+                                                        borderRadius: 28,
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        cursor: "pointer",
+                                                        background: "#ffffff",
+                                                        boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
+                                                        fontSize: 24,
+                                                    }}
+                                                    aria-label={`emoji-picker-${index}`}
+                                                    title="Open emoji picker"
+                                                >
+                                                    {(watchedEmojis && watchedEmojis[index]) || "🥖"}
                                                 </div>
-                                            </Col>
-                                        </Row>
+                                            ))}
+                                        </div>
+                                        <div style={{ fontSize: 12, color: "#888" }}>Emojis will be used to create grid as event background.</div>
                                     </div>
+
                                     <Form.Item name="title" rules={[{ required: true, message: "Please enter an event title!" }]}>
                                         <div>
-                                            <TextField fullWidth label="Event Title" InputLabelProps={{ style: { color: "grey", fontWeight: 700 } }} InputProps={{ style: { fontWeight: 700 } }} />
-                                            <span style={{ fontSize: 12, color: "#888", marginBottom: 12 }}>Give your event a title that reflects the challenge.</span>
+                                            <TextField
+                                                fullWidth
+                                                label="Event Title"
+                                                value={watchedTitle ?? ""}
+                                                onChange={(e) => form.setFieldsValue({ title: e.target.value })}
+                                                InputLabelProps={{ style: { color: "grey", fontWeight: 700 } }}
+                                                InputProps={{ style: { fontWeight: 700 } }}
+                                            />
                                         </div>
                                     </Form.Item>
 
                                     <Form.Item>
                                         <Row><span style={{ color: "black", fontWeight: 500, marginBottom: 4, marginTop: 8 }}>Ingredients</span></Row>
-                                        <Row><span style={{ fontSize: 12, color: "#888", marginBottom: 10 }}>Add basic ingredients required for this event.</span></Row>
+                                        <Row><span style={{ fontSize: 12, color: "#888", marginBottom: 10 }}>Update the basic ingredients required for this event.</span></Row>
                                         <Form.List name="ingredients">
                                             {(fields, { add, remove }) => (
                                                 <>
@@ -229,7 +252,6 @@ const CreateEventPage: React.FC = () => {
                                                                         <TextField label="Ingredient" fullWidth InputLabelProps={{ style: { color: "grey" } }} />
                                                                     </Form.Item>
                                                                 </div>
-
                                                                 <IconButton
                                                                     size="medium"
                                                                     onClick={() => {
@@ -248,7 +270,6 @@ const CreateEventPage: React.FC = () => {
                                                             </div>
                                                         </Row>
                                                     ))}
-
                                                     <Button style={{ color: "#4b6624" }} onClick={() => add({ name: "" })}>
                                                         + add another ingredient
                                                     </Button>
@@ -259,13 +280,12 @@ const CreateEventPage: React.FC = () => {
 
                                     <div style={{ marginTop: 8 }}>
                                         <Row><span style={{ color: "black", fontWeight: 500, marginBottom: 4, marginTop: 8 }}>Start & End</span></Row>
-                                        <Row><span style={{ fontSize: 12, color: "#888", marginBottom: 10 }}>Set when the event starts and ends.</span></Row>
                                         <Row gutter={8} align="middle" style={{ marginTop: 8 }}>
                                             <Col span={12}>
                                                 <Form.Item name="startDatetime" rules={[{ required: true, message: "Enter start date and time" }]}>
                                                     <div>
                                                         <DateTimePicker
-                                                            value={watchedStart ? new Date(watchedStart) : null}
+                                                            value={watchedStart ? new Date(watchedStart as string) : null}
                                                             label="Start"
                                                             disablePast
                                                             minutesStep={1}
@@ -276,12 +296,11 @@ const CreateEventPage: React.FC = () => {
                                                     </div>
                                                 </Form.Item>
                                             </Col>
-
                                             <Col span={12}>
                                                 <Form.Item name="endDatetime" rules={[{ required: true, message: "Enter end date and time" }]}>
                                                     <div>
                                                         <DateTimePicker
-                                                            value={watchedEnd ? new Date(watchedEnd) : null}
+                                                            value={watchedEnd ? new Date(watchedEnd as string) : null}
                                                             label="End"
                                                             disablePast
                                                             minutesStep={1}
@@ -296,9 +315,9 @@ const CreateEventPage: React.FC = () => {
                                         </Row>
                                     </div>
 
-                                    <Form.Item>
+                                    <Form.Item style={{ marginTop: 16 }}>
                                         <Row><span style={{ color: "black", fontWeight: 500, marginBottom: 4, marginTop: 8 }}>Progress Photos</span></Row>
-                                        <Row><span style={{ fontSize: 12, color: "#888", marginBottom: 10 }}>Specify when you want participants to take progress photos.</span></Row>
+                                        <Row><span style={{ fontSize: 12, color: "#888", marginBottom: 10 }}>Specify when participants should take progress photos.</span></Row>
                                         <Form.List name="eventPrompts">
                                             {(fields, { add, remove }) => (
                                                 <>
@@ -332,7 +351,6 @@ const CreateEventPage: React.FC = () => {
                                                                             </div>
                                                                         </Form.Item>
                                                                     </div>
-
                                                                     <IconButton
                                                                         size="medium"
                                                                         onClick={() => remove(name)}
@@ -346,7 +364,6 @@ const CreateEventPage: React.FC = () => {
                                                             </Row>
                                                         );
                                                     })}
-
                                                     <Button style={{ color: "#4b6624" }} onClick={() => add(null)}>
                                                         + add another time
                                                     </Button>
@@ -359,16 +376,22 @@ const CreateEventPage: React.FC = () => {
                         </LocalizationProvider>
 
                         <div style={{ marginTop: 30, display: "flex", justifyContent: "flex-end", gap: 10 }}>
-                            <Button style={{ color: "#4b6624" }} onClick={() => router.push("/events/overview")}>Cancel</Button>
-
-                            <Button type="submit" variant="contained" disabled={!isFormValid} style={{ background: isFormValid ? "#4b6624" : "#a3a3a3", borderColor: "#4b6624", color: "white" }}>
-                                Create Event
+                            <Button style={{ color: "#4b6624" }} onClick={() => router.push(`/events/${eventId}`)}>
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                disabled={!isFormValid || submitting}
+                                style={{ background: isFormValid && !submitting ? "#4b6624" : "#a3a3a3", borderColor: "#4b6624", color: "white" }}
+                            >
+                                {submitting ? "Saving..." : "Save Changes"}
                             </Button>
                         </div>
                     </Form>
                 </div>
             </div>
-            {/* Emoji picker modal */}
+
             {openPicker !== null && (
                 <div
                     onClick={() => setOpenPicker(null)}
@@ -391,4 +414,4 @@ const CreateEventPage: React.FC = () => {
     );
 };
 
-export default CreateEventPage;
+export default EditEventPage;
