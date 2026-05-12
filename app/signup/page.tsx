@@ -8,6 +8,7 @@ import { Form } from "antd";
 import { Button, TextField } from "@mui/material";
 import React, { useState } from "react";
 import { storeUserSession } from "@/utils/auth";
+import CircularProgress from "@mui/material/CircularProgress";
 // Optionally, you can import a CSS module or file for additional styling:
 // import styles from "@/styles/page.module.css";
 
@@ -21,6 +22,7 @@ const Signup: React.FC = () => {
   const apiService = useApi();
   const [form] = Form.useForm();
   const [currentError, setCurrentError] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // useLocalStorage hook example use
   // The hook returns an object with the value and two functions
   // Simply choose what you need from the hook:
@@ -32,6 +34,8 @@ const Signup: React.FC = () => {
   // if you want to pick a different token, i.e "usertoken", the line above would look as follows: } = useLocalStorage<string>("usertoken", "");
 
   const handleSignup = async (values: FormFieldProps) => {
+    setIsSubmitting(true);
+
     try {
       // Call the API service and let it handle JSON serialization and error handling
       const response = await apiService.post<User>("/users", values);
@@ -43,6 +47,8 @@ const Signup: React.FC = () => {
       // Navigate to the user overview
       router.push("/cookbook");
     } catch (error) {
+      setIsSubmitting(false);
+
       if (error instanceof Error) {
         // try to parse the string as json
         const jsonStart = error.message.indexOf("{");
@@ -100,8 +106,13 @@ const Signup: React.FC = () => {
             disableElevation
             sx={{ boxShadow: "none" }}
             type="submit"
+            disabled={isSubmitting}
           >
-            Create Account
+            {isSubmitting ? (
+              <CircularProgress size={24} sx={{ color: "white" }} />
+            ) : (
+              "Create Account"
+            )}
           </Button>
         </Form.Item>
         <Form.Item >
