@@ -1,18 +1,15 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import { useRouter, useParams } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import { getApiDomain } from "@/utils/domain";
 import Sidebar from "@/components/appLayout";
-import { Form, Row, Col, App, Avatar } from "antd";
-import { TextField, Button as MuiButton, Chip, List, ListItemButton, ListItem, Paper, LinearProgress, Typography, Box } from "@mui/material";
+import { Form, App } from "antd";
+import { Button as MuiButton, Chip, List, ListItem, Typography, Box } from "@mui/material";
 import Edit from "@mui/icons-material/Edit";
-import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
 import { Header, UserAvatar } from "@/components/appLayout";
 import useWindowSize from "@/hooks/useWndowSize";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 type Recipe = {
   id: number;
@@ -39,21 +36,14 @@ const RecipeDetailPage: React.FC = () => {
 
   const [form] = Form.useForm();
 
-  const [isBannerHovered, setIsBannerHovered] = useState(false);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
 
   const [recipeName, setRecipeName] = useState<string>("");
-  const [shouldFetchSuggestions, setShouldFetchSuggestions] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isFetchingSuggestions, setIsFetchingSuggestions] = useState(false);
-  const [suggestions, setSuggestions] = useState<Array<{ idMeal: string; strMeal: string }>>([]);
-
-  const labels: string[] = [];
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
 
   const LABEL_ADD_PREFIX = "Add: ";
   const LABEL_ADD_SUFFIX = "";
-  const labelFilter = createFilterOptions<string>();
 
   const parseLabelOption = (entry: string) => {
     if (typeof entry === "string" && entry.startsWith(LABEL_ADD_PREFIX)) {
@@ -434,7 +424,7 @@ const RecipeDetailPage: React.FC = () => {
                     ))}
                   </List>
                 ) : (
-                    <p>No ingredients listed.</p>
+                  <p>No ingredients listed.</p>
                 )}
                 <MuiButton variant="contained" onClick={handleAddToShoppingList} sx={{ marginTop: 2, backgroundColor: "rgba(75, 102, 36, 1)", "&:hover": { backgroundColor: "rgba(75, 102, 36, 0.85)" }, borderRadius: 20 }}>
                   Add to Shopping List

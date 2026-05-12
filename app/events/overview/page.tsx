@@ -10,7 +10,7 @@ import TimerIcon from "@mui/icons-material/Timer";
 import GroupIcon from "@mui/icons-material/Group";
 import EventBusyIcon from "@mui/icons-material/EventBusy";
 import { Card } from "antd";
-import Sidebar, { Header, UserAvatar } from "@/components/appLayout";
+import { PageLayout } from "@/components/PageLayout";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import useWindowSize from "@/hooks/useWndowSize";
@@ -68,12 +68,11 @@ const EventsPage: React.FC = () => {
 
     if (loading) {
         return (
-            <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
-                <Sidebar />
+            <PageLayout title="Events">
                 <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <CircularProgress size={40} sx={{ color: "#4a6741" }} />
                 </div>
-            </div>
+            </PageLayout>
         );
     }
 
@@ -136,47 +135,33 @@ const EventsPage: React.FC = () => {
     );
 
     return (
-        <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
-            <Sidebar />
+        <PageLayout title="Events">
+            <Tabs
+                value={activeTab}
+                onChange={(_, value) => setActiveTab(value as "upcoming" | "running")}
+                textColor="inherit"
+                TabIndicatorProps={{ style: { backgroundColor: "#4a6741", height: 3 } }}
+                sx={{
+                    borderBottom: "1px solid #e0e0e0",
+                    marginBottom: 2,
+                    "& .MuiTab-root": {
+                        color: "#666",
+                        textTransform: "none",
+                        fontWeight: 600,
+                        fontSize: 14,
+                        minHeight: 44,
+                    },
+                    "& .MuiTab-root.Mui-selected": {
+                        color: "#1a1a1a",
+                    },
+                }}
+            >
+                <Tab value="upcoming" label="Upcoming" />
+                <Tab value="running" label="Running" />
+            </Tabs>
 
-            <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-
-                <Header
-                    title="Events"
-                    rightContent={<UserAvatar />}
-                />
-
-                {/* Content */}
-                <div style={{ padding: 24, flex: 1 }}>
-                    <Tabs
-                        value={activeTab}
-                        onChange={(_, value) => setActiveTab(value as "upcoming" | "running")}
-                        textColor="inherit"
-                        TabIndicatorProps={{ style: { backgroundColor: "#4a6741", height: 3 } }}
-                        sx={{
-                            borderBottom: "1px solid #e0e0e0",
-                            marginBottom: 2,
-                            "& .MuiTab-root": {
-                                color: "#666",
-                                textTransform: "none",
-                                fontWeight: 600,
-                                fontSize: 14,
-                                minHeight: 44,
-                            },
-                            "& .MuiTab-root.Mui-selected": {
-                                color: "#1a1a1a",
-                            },
-                        }}
-                    >
-                        <Tab value="upcoming" label="Upcoming" />
-                        <Tab value="running" label="Running" />
-                    </Tabs>
-
-                    {activeTab === "upcoming" && renderEventGrid(upcomingEvents, "No upcoming events. Create the first one!")}
-                    {activeTab === "running" && renderEventGrid(liveEvents, "No events are running right now.")}
-                </div>
-            </div>
-
+            {activeTab === "upcoming" && renderEventGrid(upcomingEvents, "No upcoming events. Create the first one!")}
+            {activeTab === "running" && renderEventGrid(liveEvents, "No events are running right now.")}
 
             <Button
                 type="button"
@@ -202,7 +187,7 @@ const EventsPage: React.FC = () => {
                 }}>
                 Event
             </Button>
-        </div>
+        </PageLayout>
     );
 };
 

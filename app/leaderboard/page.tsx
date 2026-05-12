@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Card, ConfigProvider, Table } from "antd";
 import type { TableProps } from "antd";
-import Sidebar, { UserAvatar, Header } from "@/components/appLayout";
+import { PageLayout } from "@/components/PageLayout";
 import { useApi } from "@/hooks/useApi";
 import { LeaderboardEntry } from "@/types/badge";
 import { BadgeChip } from "@/components/Badge";
@@ -89,44 +89,38 @@ const LeaderboardPage: React.FC = () => {
   ];
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
-      <Sidebar />
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        <Header title="Leaderboard" rightContent={<UserAvatar />} />
-        <div style={{ padding: 24 }}>
-          {/* ConfigProvider overrides global dark-theme tokens
-              from app/layout.tsx such that table reads as light/white */}
-          <ConfigProvider
-            theme={{
-              token: {
-                colorText: "#1a1a1a",
-                colorBgContainer: "#ffffff",
-              },
-            }}
-          >
-            <Card
-              title="Top cooks"
-              loading={!entries}
-              style={{ borderRadius: 20, border: "1px solid #e8e8e8", background: "#fff" }}
-              styles={{ header: { color: "#1a1a1a" }, body: { background: "#fff" } }}
-            >
-              {entries && (
-                <Table<LeaderboardEntry>
-                  columns={columns}
-                  dataSource={entries}
-                  rowKey="userId"
-                  pagination={false}
-                  onRow={(row) => ({
-                    onClick: () => router.push(`/users/${row.userId}`),
-                    style: { cursor: "pointer" },
-                  })}
-                />
-              )}
-            </Card>
-          </ConfigProvider>
-        </div>
-      </div>
-    </div>
+    <PageLayout title="Leaderboard">
+      {/* ConfigProvider overrides global dark-theme tokens
+          from app/layout.tsx such that table reads as light/white */}
+      <ConfigProvider
+        theme={{
+          token: {
+            colorText: "#1a1a1a",
+            colorBgContainer: "#ffffff",
+          },
+        }}
+      >
+        <Card
+          title="Top cooks"
+          loading={!entries}
+          style={{ borderRadius: 20, border: "1px solid #e8e8e8", background: "#fff" }}
+          styles={{ header: { color: "#1a1a1a" }, body: { background: "#fff" } }}
+        >
+          {entries && (
+            <Table<LeaderboardEntry>
+              columns={columns}
+              dataSource={entries}
+              rowKey="userId"
+              pagination={false}
+              onRow={(row) => ({
+                onClick: () => router.push(`/users/${row.userId}`),
+                style: { cursor: "pointer" },
+              })}
+            />
+          )}
+        </Card>
+      </ConfigProvider>
+    </PageLayout>
   );
 };
 

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close"
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import Sidebar, { UserAvatar, Header } from "@/components/appLayout";
+import { PageLayout } from "@/components/PageLayout";
 import EventPreviewCard from "@/components/EventPreviewCard";
 import { useApi } from "@/hooks/useApi";
 import { getApiDomain } from "@/utils/domain";
@@ -133,7 +133,7 @@ const RecipeCard: React.FC<{
           sx={{ height: "100%", objectFit: "cover" }}
         />
       ) : (
-          <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#888", backgroundColor: "#f5f5f5" }}>
+        <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#888", backgroundColor: "#f5f5f5" }}>
           No image yet
         </div>
       )}
@@ -469,222 +469,226 @@ const CookbookPage: React.FC = () => {
   const displayedLabels = showAllLabels ? labels : labels.slice(0, 5);
 
   return (
+    <>
+      <PageLayout title="Your Library">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 32 }}>
+          {/* Registered Event Card */}
+          <EventPreviewCard
+            title="Registered Events"
+            events={nextEvents}
+            emptyMessage="No upcoming events yet"
+            onHeaderClick={() => router.push("/events/registered")}
+            dateType="start"
+          />
 
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
-      <Sidebar />
+          {/* Participated Events */}
+          <EventPreviewCard
+            title="Participated Events"
+            events={latestEvents}
+            emptyMessage="No participated events yet"
+            onHeaderClick={() => router.push("/events/participated")}
+            dateType="end"
+          />
+        </div>
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+        <h2 style={{ color: "#1a1a1a", fontSize: 18, fontWeight: 600, marginBottom: 12 }}>
+          Your Recipes
+        </h2>
 
-        <Header
-          title="Your Library"
-          rightContent={<UserAvatar />}
-        />
-
-
-        <div style={{ padding: "24px", flex: 1 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 32 }}>
-
-
-            {/* Registered Event Card */}
-
-            <EventPreviewCard
-              title="Registered Events"
-              events={nextEvents}
-              emptyMessage="No upcoming events yet"
-              onHeaderClick={() => router.push("/events/registered")}
-              dateType="start"
-            />
-
-            {/* Participated Events */}
-
-            <EventPreviewCard
-              title="Participated Events"
-              events={latestEvents}
-              emptyMessage="No participated events yet"
-              onHeaderClick={() => router.push("/events/participated")}
-              dateType="end"
-            />
-          </div>
-
-          <h2 style={{ color: "#1a1a1a", fontSize: 18, fontWeight: 600, marginBottom: 12 }}>
-            Your Recipes
-          </h2>
-
+        {recipes.length === 0 ? (
           <div
             style={{
+              minHeight: 320,
               display: "flex",
-              flexDirection: isMobile ? "column" : "row",
-              alignItems: "flex-start",
-              justifyContent: isMobile ? "flex-start" : "space-between",
-              gap: 16,
-              marginBottom: 16,
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#6b6b6b",
+              padding: "32px 16px",
             }}
           >
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {displayedLabels.map((label) => (
-                <Chip
-                  key={label}
-                  label={label}
-                  onClick={() => handleLabelToggle(label)}
-                  sx={{
-                    backgroundColor: activeLabels.includes(label)
-                      ? "rgba(75, 102, 36, 1)"
-                      : "#e0e0e0",
-                    color: activeLabels.includes(label) ? "#fff" : "#1a1a1a",
-                    cursor: "pointer",
-                    userSelect: "none",
-                    fontWeight: activeLabels.includes(label) ? 600 : 400,
-                  }}
-                />
-              ))}
-
-              {labels.length > 5 && !showAllLabels && (
-                <Chip
-                  key="more"
-                  label={`+${labels.length - 5}`}
-                  onClick={() => setShowAllLabels(true)}
-                  sx={{
-                    backgroundColor: "transparent",
-                    color: "#4b6624",
-                    cursor: "pointer",
-                    border: "1px solid rgba(75,102,36,0.15)",
-                    fontWeight: 600,
-                  }}
-                />
-              )}
-
-              {labels.length > 5 && showAllLabels && (
-                <Chip
-                  key="less"
-                  label="Show less"
-                  onClick={() => setShowAllLabels(false)}
-                  sx={{
-                    backgroundColor: "transparent",
-                    color: "#4b6624",
-                    cursor: "pointer",
-                    border: "1px solid rgba(75,102,36,0.15)",
-                    fontWeight: 600,
-                  }}
-                />
-              )}
+            <div style={{ textAlign: "center" }}>
+              <h2>No recipes yet</h2>
+              <p>Create your first recipe to get started.</p>
             </div>
-
-            <Box
-              sx={{
-                width: isMobile ? "100%" : 360,
-                flexShrink: 0,
-                border: "1px solid rgba(0,0,0,0.23)",
-                borderRadius: 2,
-                backgroundColor: "#fff",
-                position: "relative",
-                mt: isMobile ? 1 : 0,
-                "&:hover": { borderColor: "#4b6624" },
-                "&:focus-within": { borderColor: "#4b6624", borderWidth: 2 },
+          </div>
+        ) : (
+          <>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: isMobile ? "column" : "row",
+                alignItems: "flex-start",
+                justifyContent: isMobile ? "flex-start" : "space-between",
+                gap: 16,
+                marginBottom: 16,
               }}
             >
-              <Autocomplete
-                multiple
-                size="small"
-                options={ingredientOptions.filter(
-                  (ingredient) => !activeIngredients.includes(ingredient)
-                )}
-                value={activeIngredients}
-                onChange={(_, newValue) => setActiveIngredients(newValue)}
-                sx={{
-                  width: "100%",
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {displayedLabels.map((label) => (
+                  <Chip
+                    key={label}
+                    label={label}
+                    onClick={() => handleLabelToggle(label)}
+                    sx={{
+                      backgroundColor: activeLabels.includes(label)
+                        ? "rgba(75, 102, 36, 1)"
+                        : "#e0e0e0",
+                      color: activeLabels.includes(label) ? "#fff" : "#1a1a1a",
+                      cursor: "pointer",
+                      userSelect: "none",
+                      fontWeight: activeLabels.includes(label) ? 600 : 400,
+                    }}
+                  />
+                ))}
 
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "transparent",
-                    borderRadius: 2,
-                    minHeight: 40,
-                    maxHeight: 92,
-                    overflowY: "auto",
-                    alignItems: "flex-start",
-                    paddingTop: "6px",
-                    paddingBottom: "6px",
-                    paddingRight: "72px !important",
-                    
-                    // custom scrollbar
-                    "&::-webkit-scrollbar": {
-                      width: 4,
-                    },
-                    "&::-webkit-scrollbar-track": {
-                      background: "transparent",
-                    },
-                    "&::-webkit-scrollbar-thumb": {
-                      backgroundColor: "rgba(75, 102, 36, 0.4)",
-                      borderRadius: 4,
-                    },
-                    "&::-webkit-scrollbar-thumb:hover": {
-                      backgroundColor: "rgba(75, 102, 36, 0.7)",
-                    },
-
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      border: "none",
-                    },
-                  },
-
-                  "& .MuiAutocomplete-endAdornment": {
-                    position: "absolute",
-                    top: 8,
-                    transform: "none",
-                    right: 9,
-                  },
-
-                  "& .MuiAutocomplete-tag": {
-                    margin: "2px",
-                  },
-
-                  "& .MuiAutocomplete-input": {
-                    minWidth: "140px",
-                    paddingTop: "4px",
-                  },
-                }}
-                renderTags={(value, getTagProps) => (
-                  <>
-                    {value.map((option, index) => (
-                      <Chip
-                        {...getTagProps({ index })}
-                        key={option}
-                        label={option}
-                        size="small"
-                        sx={{
-                          backgroundColor: "rgba(75, 102, 36, 1)",
-                          color: "#fff",
-                          margin: "2px",
-                          "& .MuiChip-deleteIcon": {
-                            color: "rgba(255, 255, 255, 0.7)",
-                          },
-                        }}
-                      />
-                    ))}
-                  </>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    placeholder="Filter by ingredients"
+                {labels.length > 5 && !showAllLabels && (
+                  <Chip
+                    key="more"
+                    label={`+${labels.length - 5}`}
+                    onClick={() => setShowAllLabels(true)}
+                    sx={{
+                      backgroundColor: "transparent",
+                      color: "#4b6624",
+                      cursor: "pointer",
+                      border: "1px solid rgba(75,102,36,0.15)",
+                      fontWeight: 600,
+                    }}
                   />
                 )}
-              />
-            </Box>
 
-          </div>
+                {labels.length > 5 && showAllLabels && (
+                  <Chip
+                    key="less"
+                    label="Show less"
+                    onClick={() => setShowAllLabels(false)}
+                    sx={{
+                      backgroundColor: "transparent",
+                      color: "#4b6624",
+                      cursor: "pointer",
+                      border: "1px solid rgba(75,102,36,0.15)",
+                      fontWeight: 600,
+                    }}
+                  />
+                )}
+              </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(auto-fill, minmax(350px, 1fr))", gap: 1, marginBottom: isMobile ? 120 : 32 }}>
-            {/*Filtering recipe cards*/}
-            {filteredRecipes.map((recipe) => (
-              <RecipeCard
-                key={recipe.id}
-                recipe={recipe}
-                token={token}
-                onDelete={handleDeleteRecipe}
-                onToggleFavorite={handleToggleFavorite}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
+              <Box
+                sx={{
+                  width: isMobile ? "100%" : 360,
+                  flexShrink: 0,
+                  border: "1px solid rgba(0,0,0,0.23)",
+                  borderRadius: 20,
+                  backgroundColor: "#fff",
+                  position: "relative",
+                  mt: isMobile ? 1 : 0,
+                  "&:hover": { borderColor: "#4b6624" },
+                  "&:focus-within": { borderColor: "#4b6624", borderWidth: 2 },
+                }}
+              >
+                <Autocomplete
+                  multiple
+                  size="small"
+                  options={ingredientOptions.filter(
+                    (ingredient) => !activeIngredients.includes(ingredient)
+                  )}
+                  value={activeIngredients}
+                  onChange={(_, newValue) => setActiveIngredients(newValue)}
+                  sx={{
+                    width: "100%",
+
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "transparent",
+                      borderRadius: 4,
+                      minHeight: 40,
+                      maxHeight: 92,
+                      overflowY: "auto",
+                      alignItems: "flex-start",
+                      paddingTop: "6px",
+                      paddingBottom: "6px",
+                      paddingRight: "72px !important",
+
+                      // custom scrollbar
+                      "&::-webkit-scrollbar": {
+                        width: 4,
+                      },
+                      "&::-webkit-scrollbar-track": {
+                        background: "transparent",
+                      },
+                      "&::-webkit-scrollbar-thumb": {
+                        backgroundColor: "rgba(75, 102, 36, 0.4)",
+                        borderRadius: 4,
+                      },
+                      "&::-webkit-scrollbar-thumb:hover": {
+                        backgroundColor: "rgba(75, 102, 36, 0.7)",
+                      },
+
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        border: "none",
+                      },
+                    },
+
+                    "& .MuiAutocomplete-endAdornment": {
+                      position: "absolute",
+                      top: 8,
+                      transform: "none",
+                      right: 9,
+                    },
+
+                    "& .MuiAutocomplete-tag": {
+                      margin: "2px",
+                    },
+
+                    "& .MuiAutocomplete-input": {
+                      minWidth: "140px",
+                      paddingTop: "4px",
+                    },
+                  }}
+                  renderTags={(value, getTagProps) => (
+                    <>
+                      {value.map((option, index) => (
+                        <Chip
+                          {...getTagProps({ index })}
+                          key={option}
+                          label={option}
+                          size="small"
+                          sx={{
+                            backgroundColor: "rgba(75, 102, 36, 1)",
+                            color: "#fff",
+                            margin: "2px",
+                            "& .MuiChip-deleteIcon": {
+                              color: "rgba(255, 255, 255, 0.7)",
+                            },
+                          }}
+                        />
+                      ))}
+                    </>
+                  )}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder="Filter by ingredients"
+                    />
+                  )}
+                />
+              </Box>
+
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(auto-fill, minmax(350px, 1fr))", gap: 16 }}>
+              {/*Filtering recipe cards*/}
+              {filteredRecipes.map((recipe) => (
+                <RecipeCard
+                  key={recipe.id}
+                  recipe={recipe}
+                  token={token}
+                  onDelete={handleDeleteRecipe}
+                  onToggleFavorite={handleToggleFavorite}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </PageLayout>
 
       <SpeedDial
         ariaLabel="Recipe actions"
@@ -719,7 +723,7 @@ const CookbookPage: React.FC = () => {
           onClick={() => router.push("/recipe/create")}
         />
       </SpeedDial>
-    </div>
+    </>
   );
 };
 

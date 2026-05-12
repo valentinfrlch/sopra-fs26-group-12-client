@@ -9,8 +9,7 @@ import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import EmojiPicker from 'emoji-picker-react';
 import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
-import Sidebar from "@/components/appLayout";
-import { MenuOutlined } from "@ant-design/icons";
+import { PageLayout } from "@/components/PageLayout";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 interface Ingredient {
@@ -149,36 +148,8 @@ const CreateEventPage: React.FC = () => {
     };
 
     return (
-        <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
-            <Sidebar />
-
-            <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                <div
-                    style={{
-                        background: "#fff",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        padding: "16px 24px",
-                        borderBottom: "1px solid #2a2d3a",
-                    }}
-                >
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <MenuOutlined style={{ fontSize: 18, color: "#aaa" }} />
-                        <span style={{ fontWeight: 600, fontSize: 16, color: "#1a1a1a" }}>Create Event</span>
-                    </div>
-
-                    <Avatar
-                        size={40}
-                        style={{ background: "#f0f0f0", color: "#1a1a1a", cursor: "pointer", fontWeight: 600 }}
-                        onClick={() => router.push(`/users/${userId}`)}
-                    >
-                        {/* simple placeholder for initials */}
-                        U
-                    </Avatar>
-                </div>
-
-                <div style={{ padding: "24px", flex: 1 }}>
+        <>
+            <PageLayout title="Create Event">
                     <Form
                         form={form}
                         layout="vertical"
@@ -366,8 +337,8 @@ const CreateEventPage: React.FC = () => {
                             </Button>
                         </div>
                     </Form>
-                </div>
-            </div>
+            </PageLayout>
+
             {/* Emoji picker modal */}
             {openPicker !== null && (
                 <div
@@ -387,7 +358,7 @@ const CreateEventPage: React.FC = () => {
                     </div>
                 </div>
             )}
-        </div>
+        </>
     );
 };
 

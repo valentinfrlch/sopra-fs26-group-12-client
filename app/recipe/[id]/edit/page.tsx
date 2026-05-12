@@ -1,18 +1,20 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Form, Row, Col, App, Avatar } from "antd";
+import { Form, Row, Col, App } from "antd";
 import {
   TextField,
   Button as MuiButton,
   Chip,
 } from "@mui/material";
+import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
 import { useRouter, useParams } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
-import Sidebar from "@/components/appLayout";
-import { MenuOutlined } from "@ant-design/icons";
+import { PageLayout } from "@/components/PageLayout";
+import useWindowSize from "@/hooks/useWndowSize";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import UploadIcon from "@mui/icons-material/Upload";
+import Save from "@mui/icons-material/Save";
 import { getApiDomain } from "@/utils/domain";
 
 interface RecipeIngredient {
@@ -22,8 +24,7 @@ interface RecipeIngredient {
 
 interface EditRecipeFormValues {
   title: string;
-  types: string[];
-  diet: string[];
+  labels: string[];
   ingredients: RecipeIngredient[];
   preparation: string;
 }
@@ -38,6 +39,11 @@ interface RecipeResponse {
   userId?: number;
 }
 
+interface LabelResponse {
+  name?: string;
+  label?: string;
+}
+
 interface ApiError {
   response?: {
     data?: {
@@ -47,8 +53,18 @@ interface ApiError {
   message: string;
 }
 
-const RECIPE_TYPES = ["Breakfast", "Lunch", "Dinner"];
-const DIET_TYPES = ["Vegetarian", "Vegan", "High Protein", "Low Carb"];
+const LABEL_ADD_PREFIX = 'Add new label "';
+const LABEL_ADD_SUFFIX = '"';
+
+const labelFilter = createFilterOptions<string>();
+
+const parseLabelOption = (value: string): string => {
+  if (value.startsWith(LABEL_ADD_PREFIX) && value.endsWith(LABEL_ADD_SUFFIX)) {
+    return value.slice(LABEL_ADD_PREFIX.length, -LABEL_ADD_SUFFIX.length);
+  }
+
+  return value;
+};
 
 const getInitials = (name: string): string => {
   return name
@@ -75,6 +91,20 @@ const mapFlatIngredientsToForm = (ingredients?: string[]): RecipeIngredient[] =>
   return mapped.length > 0 ? mapped : [{ name: "", amount: "" }];
 };
 
+const normalizeLabels = (values?: Array<string | null | undefined>): string[] => {
+  if (!values || values.length === 0) {
+    return [];
+  }
+
+  return Array.from(
+    new Set(
+      values
+        .map((value) => (typeof value === "string" ? value.trim() : ""))
+        .filter((value) => value.length > 0),
+    ),
+  );
+};
+
 const EditRecipePage: React.FC = () => {
   const [form] = Form.useForm();
   const router = useRouter();
@@ -84,8 +114,7 @@ const EditRecipePage: React.FC = () => {
 
   const recipeId = params?.id;
 
-  const selectedTypes = Form.useWatch("types", form) || [];
-  const selectedDiet = Form.useWatch("diet", form) || [];
+  const selectedLabels = Form.useWatch<string[]>("labels", form) || [];
   const preparationValue = Form.useWatch("preparation", form) || "";
 
   const [username, setUsername] = useState<string>("U");
@@ -96,8 +125,15 @@ const EditRecipePage: React.FC = () => {
   const [existingImageURL, setExistingImageURL] = useState<string | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [isBannerHovered, setIsBannerHovered] = useState(false);
+  const [labels, setLabels] = useState<string[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const SHEET_START_TOP_VH = 33;
+  const SHEET_EXPAND_RANGE_PX = 280;
+  const { isMobile } = useWindowSize();
+  const [sheetTopVh, setSheetTopVh] = useState<number>(SHEET_START_TOP_VH);
+  const sheetScrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("username") ?? "U";
@@ -124,14 +160,40 @@ const EditRecipePage: React.FC = () => {
           title: recipe.title,
           preparation: recipe.preparation,
           ingredients: mapFlatIngredientsToForm(recipe.ingredients),
-          types: recipe.labels.filter((label) => RECIPE_TYPES.includes(label)),
-          diet: recipe.labels.filter((label) => DIET_TYPES.includes(label)),
+          labels: normalizeLabels(recipe.labels),
         });
 
         if (recipe.imageURL) {
-          setExistingImageURL(
-            `${getApiDomain()}${recipe.imageURL.startsWith("/") ? "" : "/"}${recipe.imageURL}`
-          );
+          const imageUrl = recipe.imageURL;
+          const apiDomain = getApiDomain();
+          const endpoint = `${apiDomain}/recipes/${recipe.id}/image`;
+
+          let objectUrl: string | null = null;
+
+          (async () => {
+            const token = typeof window !== "undefined" ? localStorage.getItem("token")?.replace(/"/g, "") : null;
+            try {
+              if (token) {
+                const res = await fetch(endpoint, {
+                  headers: { Authorization: `Bearer ${token}` },
+                });
+
+                if (res.ok) {
+                  const blob = await res.blob();
+                  objectUrl = URL.createObjectURL(blob);
+                  setImagePreviewUrl(objectUrl);
+                  return;
+                }
+              }
+
+              // fallback: construct URL from recipe.imageURL
+              const src = imageUrl.startsWith("http") ? imageUrl : `${apiDomain}${imageUrl}`;
+              setImagePreviewUrl(src);
+            } catch (e) {
+              const src = imageUrl.startsWith("http") ? imageUrl : `${apiDomain}${imageUrl}`;
+              setImagePreviewUrl(src);
+            }
+          })();
         } else {
           setExistingImageURL(null);
         }
@@ -149,6 +211,37 @@ const EditRecipePage: React.FC = () => {
   }, [recipeId, apiService, form, message]);
 
   useEffect(() => {
+    const fetchLabels = async () => {
+      try {
+        const token = localStorage.getItem("token")?.replace(/"/g, "");
+        if (!token) {
+          throw new Error("No auth token found.");
+        }
+
+        const response = await apiService.get<Array<string | LabelResponse>>(
+          "/labels",
+          {
+            Authorization: `Bearer ${token}`,
+          },
+        );
+
+        const normalized = (response || [])
+          .map((label) => (typeof label === "string" ? label : label.name || label.label || ""))
+          .filter((label) => label.trim().length > 0);
+
+        setLabels(normalized);
+      } catch (error: unknown) {
+        console.error("Failed to fetch labels:", error);
+        message.error(
+          error instanceof Error ? error.message : "Failed to load labels.",
+        );
+      }
+    };
+
+    fetchLabels();
+  }, [apiService, message]);
+
+  useEffect(() => {
     if (!imageFile) {
       setImagePreviewUrl(null);
       return;
@@ -162,10 +255,67 @@ const EditRecipePage: React.FC = () => {
     };
   }, [imageFile]);
 
+  const handleSheetWheel: React.WheelEventHandler<HTMLDivElement> = (event) => {
+    const sheetEl = sheetScrollRef.current;
+    if (!sheetEl) return;
+
+    const deltaY = event.deltaY;
+    const isExpanded = sheetTopVh <= 0;
+    const isAtContentTop = sheetEl.scrollTop <= 0;
+
+    // Expand first on downward scroll before allowing inner content scrolling.
+    if (!isExpanded && deltaY > 0) {
+      event.preventDefault();
+      setSheetTopVh((previousTop) => {
+        const deltaVh = (deltaY / SHEET_EXPAND_RANGE_PX) * SHEET_START_TOP_VH;
+        return Math.max(0, previousTop - deltaVh);
+      });
+      return;
+    }
+
+    // Collapse first on upward scroll when content is already at the top.
+    if ((isExpanded || sheetTopVh < SHEET_START_TOP_VH) && deltaY < 0 && isAtContentTop) {
+      event.preventDefault();
+      setSheetTopVh((previousTop) => {
+        const deltaVh = (Math.abs(deltaY) / SHEET_EXPAND_RANGE_PX) * SHEET_START_TOP_VH;
+        return Math.min(SHEET_START_TOP_VH, previousTop + deltaVh);
+      });
+    }
+  };
+
   const displayImageUrl = useMemo(() => {
     if (imagePreviewUrl) return imagePreviewUrl;
     return existingImageURL;
   }, [imagePreviewUrl, existingImageURL]);
+
+  const createLabel = async (labelName: string): Promise<string | null> => {
+    const trimmed = labelName.trim();
+    if (!trimmed) return null;
+
+    try {
+      const token = localStorage.getItem("token")?.replace(/"/g, "");
+      if (!token) {
+        throw new Error("No auth token found.");
+      }
+
+      const formData = new FormData();
+      formData.append("name", trimmed);
+
+      const created = await apiService.post<LabelResponse>("/labels", formData, {
+        Authorization: `Bearer ${token}`,
+      });
+
+      const normalized = created?.name || created?.label || trimmed;
+      setLabels((previous) => (previous.includes(normalized) ? previous : [...previous, normalized]));
+      return normalized;
+    } catch (error: unknown) {
+      console.error("Failed to create label:", error);
+      message.error(
+        error instanceof Error ? error.message : "Failed to create label.",
+      );
+      return null;
+    }
+  };
 
   const handleUpdateRecipe = async (values: EditRecipeFormValues) => {
     try {
@@ -173,15 +323,13 @@ const EditRecipePage: React.FC = () => {
         ing.name,
         ing.amount,
       ]);
+      const sanitizedLabels = normalizeLabels(values.labels);
 
       const formData = new FormData();
       formData.append("title", values.title);
       formData.append("preparation", values.preparation);
       formData.append("ingredients", JSON.stringify(formattedIngredients));
-      formData.append(
-        "labels",
-        JSON.stringify([...(values.types || []), ...(values.diet || [])])
-      );
+      formData.append("labels", JSON.stringify(sanitizedLabels));
 
       if (imageFile) {
         formData.append("image", imageFile);
@@ -211,114 +359,113 @@ const EditRecipePage: React.FC = () => {
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#fff" }}>
-      <Sidebar />
-
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+    <PageLayout
+      title="Edit Recipe"
+      contentStyle={{ padding: 0, background: "transparent", overflow: "hidden", position: "relative" }}
+    >
+      <div
+        style={{
+          position: "relative",
+          height: 320,
+          width: "100%",
+          backgroundImage: displayImageUrl ? `url(${displayImageUrl})` : "none",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
         <div
           style={{
-            background: "#fff",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "16px 24px",
-            borderBottom: "1px solid #2a2d3a",
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.38) 60%, rgba(0,0,0,0.54) 100%)",
+          }}
+        />
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/png, image/jpeg"
+          style={{ display: "none" }}
+          onChange={(e) => {
+            if (e.target.files && e.target.files[0]) {
+              const file = e.target.files[0];
+
+              const isValidType = file.type === "image/png" || file.type === "image/jpeg";
+
+              if (!isValidType) {
+                message.error("Only .PNG and .JPEG files are allowed");
+                return;
+              }
+
+              setImageFile(file);
+            }
+          }}
+        />
+
+        <MuiButton
+          onClick={() => fileInputRef.current?.click()}
+          startIcon={<UploadIcon />}
+          variant="contained"
+          size="small"
+          sx={{
+            position: "absolute",
+            top: 16,
+            right: 16,
+            backgroundColor: "rgba(26, 26, 26, 0.82)",
+            color: "#fff",
+            opacity: isBannerHovered ? 1 : 0,
+            pointerEvents: isBannerHovered ? "auto" : "none",
+            transition: "opacity 160ms ease",
+            boxShadow: "0 8px 20px rgba(0, 0, 0, 0.18)",
+            textTransform: "none",
+            "&:hover": {
+              backgroundColor: "rgba(26, 26, 26, 0.92)",
+            },
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <MenuOutlined style={{ fontSize: 18, color: "#aaa" }} />
-            <span style={{ fontWeight: 600, fontSize: 16, color: "#1a1a1a" }}>
-              Edit Recipe
-            </span>
-          </div>
+          {displayImageUrl ? "Change image" : "Add image"}
+        </MuiButton>
+      </div>
 
-          <Avatar
-            size={40}
-            style={{
-              background: "#f0f0f0",
-              color: "#1a1a1a",
-              cursor: "pointer",
-              fontWeight: 600,
-            }}
-            onClick={() => router.push(`/users/${userId}`)}
-          >
-            {getInitials(username)}
-          </Avatar>
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: `${sheetTopVh}vh`,
+          bottom: 0,
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          background: "#fff",
+          boxShadow: "0 -8px 30px rgba(0,0,0,0.12)",
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <div style={{ height: 24, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: 40, height: 6, borderRadius: 6, background: "rgba(0,0,0,0.12)" }} />
         </div>
 
-        <div style={{ padding: "24px", flex: 1 }}>
-          <div
-            onMouseEnter={() => setIsBannerHovered(true)}
-            onMouseLeave={() => setIsBannerHovered(false)}
-            style={{
-              position: "relative",
-              marginBottom: 24,
-              marginLeft: -24,
-              marginRight: -24,
-              marginTop: -24,
-              height: 250,
-              backgroundColor: "#fff",
-              backgroundImage: displayImageUrl ? `url(${displayImageUrl})` : "none",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
-            }}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/png, image/jpeg"
-              style={{ display: "none" }}
-              onChange={(e) => {
-                if (e.target.files && e.target.files[0]) {
-                  const file = e.target.files[0];
-
-                  const isValidType =
-                    file.type === "image/png" || file.type === "image/jpeg";
-
-                  if (!isValidType) {
-                    message.error("Only .PNG and .JPEG files are allowed");
-                    return;
-                  }
-
-                  setImageFile(file);
-                }
-              }}
-            />
-
-            <MuiButton
-              onClick={() => fileInputRef.current?.click()}
-              startIcon={<UploadIcon />}
-              variant="contained"
-              size="small"
-              sx={{
-                position: "absolute",
-                top: 16,
-                right: 16,
-                backgroundColor: "rgba(26, 26, 26, 0.82)",
-                color: "#fff",
-                opacity: isBannerHovered ? 1 : 0,
-                pointerEvents: isBannerHovered ? "auto" : "none",
-                transition: "opacity 160ms ease",
-                boxShadow: "0 8px 20px rgba(0, 0, 0, 0.18)",
-                textTransform: "none",
-                "&:hover": {
-                  backgroundColor: "rgba(26, 26, 26, 0.92)",
-                },
-              }}
-            >
-              {displayImageUrl ? "Change image" : "Add image"}
-            </MuiButton>
-          </div>
-
+        <div
+          ref={sheetScrollRef}
+          onWheel={handleSheetWheel}
+          style={{
+            overflowY: "auto",
+            padding: 24,
+            flex: 1,
+          }}
+        >
           <Form
+            id="edit-recipe-form"
             form={form}
             layout="vertical"
             size="large"
             onFinish={handleUpdateRecipe}
           >
             <Row gutter={40}>
-              <Col span={10}>
+              <Col span={isMobile ? 24 : 10}>
                 <Form.Item
                   name="title"
                   rules={[{ required: true, message: "Please enter a recipe name!" }]}
@@ -340,80 +487,90 @@ const EditRecipePage: React.FC = () => {
                   />
                 </Form.Item>
 
-                <Form.Item name="types">
+                <Form.Item name="labels">
                   <Row>
                     <span style={{ color: "black", fontWeight: 500, marginBottom: 10, marginTop: 8 }}>
-                      Recipe Type
+                      Labels
                     </span>
                   </Row>
 
-                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                    {RECIPE_TYPES.map((type) => {
-                      const isSelected = selectedTypes.includes(type);
+                  <Autocomplete
+                    multiple
+                    freeSolo
+                    options={labels}
+                    filterOptions={(options, params) => {
+                      const selectedSet = new Set(selectedLabels.map((label) => label.toLowerCase()));
+                      const availableOptions = options.filter(
+                        (option) => !selectedSet.has(option.toLowerCase()),
+                      );
+                      const filtered = labelFilter(availableOptions, params);
+                      const inputValue = params.inputValue.trim();
+                      const isExisting = availableOptions.some(
+                        (option) => option.toLowerCase() === inputValue.toLowerCase(),
+                      );
 
-                      return (
+                      if (inputValue !== "" && !isExisting) {
+                        filtered.push(`${LABEL_ADD_PREFIX}${inputValue}${LABEL_ADD_SUFFIX}`);
+                      }
+
+                      return filtered;
+                    }}
+                    value={selectedLabels}
+                    onChange={async (_, newValue) => {
+                      const nextLabels: string[] = [];
+
+                      for (const entry of newValue) {
+                        const parsed = parseLabelOption(entry);
+                        const isExisting = labels.some(
+                          (label) => label.toLowerCase() === parsed.toLowerCase(),
+                        );
+
+                        if (isExisting) {
+                          nextLabels.push(parsed);
+                          continue;
+                        }
+
+                        const created = await createLabel(parsed);
+                        if (created) nextLabels.push(created);
+                      }
+
+                      form.setFieldsValue({ labels: nextLabels });
+                    }}
+                    renderTags={(value, getTagProps) =>
+                      value.map((option, index) => (
                         <Chip
-                          key={type}
-                          label={type}
-                          clickable
-                          variant={isSelected ? "filled" : "outlined"}
-                          onClick={() => {
-                            const updated = isSelected
-                              ? selectedTypes.filter((t: string) => t !== type)
-                              : [...selectedTypes, type];
-
-                            form.setFieldsValue({ types: updated });
-                          }}
+                          {...getTagProps({ index })}
+                          key={option}
+                          label={option}
                           sx={{
-                            backgroundColor: isSelected ? "rgba(75, 102, 36, 1)" : "rgba(75, 102, 36, 0.07)",
-                            borderColor: "transparent",
-                            color: isSelected ? "#fff" : "#4b6624",
-                            "&:hover": {
-                              backgroundColor: isSelected ? "#3d541d" : "#ebebeb",
+                            backgroundColor: "rgba(75, 102, 36, 1)",
+                            color: "#fff",
+                            "& .MuiChip-deleteIcon": {
+                              color: "rgba(255, 255, 255, 0.7)",
                             },
                           }}
                         />
-                      );
-                    })}
-                  </div>
-                </Form.Item>
-
-                <Form.Item name="diet">
-                  <Row>
-                    <span style={{ color: "black", fontWeight: 500, marginBottom: 10, marginTop: 8 }}>
-                      Dietary Type
-                    </span>
-                  </Row>
-
-                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                    {DIET_TYPES.map((type) => {
-                      const isSelected = selectedDiet.includes(type);
-
-                      return (
-                        <Chip
-                          key={type}
-                          label={type}
-                          clickable
-                          variant={isSelected ? "filled" : "outlined"}
-                          onClick={() => {
-                            const updated = isSelected
-                              ? selectedDiet.filter((t: string) => t !== type)
-                              : [...selectedDiet, type];
-
-                            form.setFieldsValue({ diet: updated });
-                          }}
-                          sx={{
-                            backgroundColor: isSelected ? "rgba(75, 102, 36, 1)" : "rgba(75, 102, 36, 0.07)",
-                            borderColor: "transparent",
-                            color: isSelected ? "#fff" : "#4b6624",
-                            "&:hover": {
-                              backgroundColor: isSelected ? "#3d541d" : "#ebebeb",
+                      ))
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Labels"
+                        placeholder="Add labels"
+                        InputLabelProps={{ style: { color: "grey" } }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#4b6624",
                             },
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#4b6624",
+                            },
+                          },
+                        }}
+                      />
+                    )}
+                  />
                 </Form.Item>
 
                 <Form.Item>
@@ -516,7 +673,7 @@ const EditRecipePage: React.FC = () => {
                 </Form.Item>
               </Col>
 
-              <Col span={14}>
+              <Col span={isMobile ? 24 : 14}>
                 <Form.Item
                   name="preparation"
                   rules={[{ required: true, message: "Enter preparation steps!" }]}
@@ -544,30 +701,19 @@ const EditRecipePage: React.FC = () => {
               </Col>
             </Row>
 
-            <div
-              style={{
-                marginTop: 30,
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: 10,
-              }}
-            >
+            <div style={{ marginTop: 30, display: "flex", justifyContent: "flex-end", gap: 10 }}>
               <MuiButton style={{ color: "#4b6624" }} onClick={() => router.push(`/cookbook`)}>
                 Cancel
               </MuiButton>
 
-              <MuiButton
-                type="submit"
-                variant="contained"
-                style={{ background: "#4b6624", borderColor: "#4b6624", color: "white" }}
-              >
+              <MuiButton type="submit" variant="contained" style={{ background: "#4b6624", borderColor: "#4b6624", color: "white" }}>
                 Save Changes
               </MuiButton>
             </div>
           </Form>
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

@@ -2,10 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Sidebar, {
-  Header,
-  UserAvatar,
-} from "@/components/appLayout";
+import { PageLayout } from "@/components/PageLayout";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
@@ -45,8 +42,8 @@ const ShoppingListPage: React.FC = () => {
     const storedToken = localStorage.getItem("token");
 
     if (!storedToken) {
-        router.push("/login");
-        return;
+      router.push("/login");
+      return;
     }
 
     const cleanedToken = storedToken.replace(/"/g, "");
@@ -54,277 +51,248 @@ const ShoppingListPage: React.FC = () => {
     setToken(cleanedToken);
 
     fetchShoppingList(cleanedToken);
-    }, []);
+  }, []);
 
-    const fetchShoppingList = async (authToken: string) => {
+  const fetchShoppingList = async (authToken: string) => {
     try {
-        const data = await api.get<ShoppingListItem[]>(
+      const data = await api.get<ShoppingListItem[]>(
         "/shopping-list/items",
         {
-            Authorization: authToken
+          Authorization: authToken
         }
-        );
+      );
 
-        setItems(data);
+      setItems(data);
     } catch (error) {
-        console.error(
+      console.error(
         "Failed to fetch shopping list:",
         error
-        );
+      );
 
-        localStorage.clear();
-        router.push("/login");
+      localStorage.clear();
+      router.push("/login");
     }
-    };
+  };
 
-    const handleAddItem = async () => {
+  const handleAddItem = async () => {
     if (!ingredientName.trim() || !token) return;
 
     try {
-        await api.post(
+      await api.post(
         "/shopping-list/items",
         {
-            ingredientName,
-            quantity,
+          ingredientName,
+          quantity,
         },
         {
-            Authorization: token
+          Authorization: token
         }
-        );
+      );
 
-        setIngredientName("");
-        setQuantity("");
+      setIngredientName("");
+      setQuantity("");
 
-        fetchShoppingList(token);
+      fetchShoppingList(token);
     } catch (error) {
-        console.error(
+      console.error(
         "Failed to create shopping list item:",
         error
-        );
+      );
     }
-    };
+  };
 
-    const handleToggleCompleted = async (
-        item: ShoppingListItem
-        ) => {
-        if (!token) return;
+  const handleToggleCompleted = async (
+    item: ShoppingListItem
+  ) => {
+    if (!token) return;
 
-        try {
-            await api.put(
-            `/shopping-list/items/${item.id}`,
-            {
-                completed: !item.completed,
-            },
-            {
-                Authorization: token,
-            }
-            );
-
-            fetchShoppingList(token);
-        } catch (error) {
-            console.error(
-            "Failed to update shopping list item:",
-            error
-            );
+    try {
+      await api.put(
+        `/shopping-list/items/${item.id}`,
+        {
+          completed: !item.completed,
+        },
+        {
+          Authorization: token,
         }
-        };
+      );
 
-        const handleDeleteItem = async (
-            itemId: string
-            ) => {
-            if (!token) return;
+      fetchShoppingList(token);
+    } catch (error) {
+      console.error(
+        "Failed to update shopping list item:",
+        error
+      );
+    }
+  };
 
-            try {
-                await api.delete(
-                `/shopping-list/items/${itemId}`,
-                {
-                    Authorization: token,
-                }
-                );
+  const handleDeleteItem = async (
+    itemId: string
+  ) => {
+    if (!token) return;
 
-                fetchShoppingList(token);
-            } catch (error) {
-                console.error(
-                "Failed to delete shopping list item:",
-                error
-                );
-            }
-            };
+    try {
+      await api.delete(
+        `/shopping-list/items/${itemId}`,
+        {
+          Authorization: token,
+        }
+      );
+
+      fetchShoppingList(token);
+    } catch (error) {
+      console.error(
+        "Failed to delete shopping list item:",
+        error
+      );
+    }
+  };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        minHeight: "100vh",
-        background: "#f5f5f5",
-      }}
-    >
-      <Sidebar />
-
+    <PageLayout title="Shopping List">
       <div
         style={{
-          flex: 1,
           display: "flex",
           flexDirection: "column",
+          gap: 12,
         }}
       >
-        <Header
-          title="Shopping List"
-          rightContent={<UserAvatar />}
-        />
-
-        <div
-          style={{
-            padding: "24px",
-            maxWidth: 800,
-            width: "100%",
-          }}
-        >
+        {items.map((item) => (
           <Card
+            key={item.id}
             sx={{
-              padding: 3,
+              padding: 2,
               borderRadius: 4,
-              marginBottom: 3,
+              boxShadow: "none",
+              opacity: item.completed ? 0.7 : 1,
             }}
           >
             <div
               style={{
                 display: "flex",
-                gap: 16,
-                marginBottom: 16,
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
               }}
             >
-              <TextField
-                fullWidth
-                label="Ingredient"
-                value={ingredientName}
-                onChange={(e) =>
-                  setIngredientName(
-                    e.target.value
-                  )
-                }
-              />
-
-              <TextField
-                fullWidth
-                label="Quantity"
-                value={quantity}
-                onChange={(e) =>
-                  setQuantity(
-                    e.target.value
-                  )
-                }
-              />
-
-              <Button
-                variant="contained"
-                onClick={handleAddItem}
-                sx={{
-                  backgroundColor:
-                    "rgba(75, 102, 36, 1)",
-                  minWidth: 140,
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  flex: 1,
                 }}
               >
-                Add
-              </Button>
+                <IconButton
+                  onClick={() =>
+                    handleToggleCompleted(item)
+                  }
+                >
+                  {item.completed ? (
+                    <CheckCircleIcon
+                      sx={{
+                        color:
+                          "rgba(75, 102, 36, 1)",
+                      }}
+                    />
+                  ) : (
+                    <CheckCircleOutlineIcon />
+                  )}
+                </IconButton>
+
+                <div>
+                  <div
+                    style={{
+                      fontWeight: 600,
+                      fontSize: 16,
+                      textDecoration:
+                        item.completed
+                          ? "line-through"
+                          : "none",
+                      color: item.completed
+                        ? "#777"
+                        : "#1a1a1a",
+                    }}
+                  >
+                    {item.ingredientName}
+                  </div>
+
+                  <div
+                    style={{
+                      color: "#666",
+                      marginTop: 4,
+                      textDecoration:
+                        item.completed
+                          ? "line-through"
+                          : "none",
+                    }}
+                  >
+                    {item.quantity}
+                  </div>
+                </div>
+              </div>
+
+              <IconButton
+                onClick={() =>
+                  handleDeleteItem(item.id)
+                }
+              >
+                <DeleteOutlineIcon />
+              </IconButton>
             </div>
           </Card>
+        ))}
+      </div>
 
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 12,
+      <Card
+        sx={{
+          padding: 3,
+          paddingBottom: 1,
+          borderRadius: 4,
+          marginTop: "auto",
+          marginBottom: 0,
+          boxShadow: "none",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            gap: 16,
+            marginBottom: 16,
+          }}
+        >
+          <TextField
+            fullWidth
+            label="Ingredient"
+            value={ingredientName}
+            onChange={(e) =>
+              setIngredientName(e.target.value)
+            }
+          />
+
+          <TextField
+            fullWidth
+            label="Quantity"
+            value={quantity}
+            onChange={(e) =>
+              setQuantity(e.target.value)
+            }
+          />
+
+          <Button
+            variant="contained"
+            onClick={handleAddItem}
+            sx={{
+              backgroundColor:
+                "rgba(75, 102, 36, 1)",
+              minWidth: 140,
             }}
           >
-            {items.map((item) => (
-                <Card
-                    key={item.id}
-                    sx={{
-                    padding: 2,
-                    borderRadius: 3,
-                    opacity: item.completed ? 0.7 : 1,
-                    }}
-                >
-                    <div
-                    style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 12,
-                    }}
-                    >
-                    <div
-                        style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                        flex: 1,
-                        }}
-                    >
-                        <IconButton
-                        onClick={() =>
-                            handleToggleCompleted(item)
-                        }
-                        >
-                        {item.completed ? (
-                            <CheckCircleIcon
-                            sx={{
-                                color:
-                                "rgba(75, 102, 36, 1)",
-                            }}
-                            />
-                        ) : (
-                            <CheckCircleOutlineIcon />
-                        )}
-                        </IconButton>
-
-                        <div>
-                        <div
-                            style={{
-                            fontWeight: 600,
-                            fontSize: 16,
-                            textDecoration:
-                                item.completed
-                                ? "line-through"
-                                : "none",
-                            color: item.completed
-                                ? "#777"
-                                : "#1a1a1a",
-                            }}
-                        >
-                            {item.ingredientName}
-                        </div>
-
-                        <div
-                            style={{
-                            color: "#666",
-                            marginTop: 4,
-                            textDecoration:
-                                item.completed
-                                ? "line-through"
-                                : "none",
-                            }}
-                        >
-                            {item.quantity}
-                        </div>
-                        </div>
-                    </div>
-
-                    <IconButton
-                        onClick={() =>
-                        handleDeleteItem(item.id)
-                        }
-                    >
-                        <DeleteOutlineIcon />
-                    </IconButton>
-                    </div>
-                </Card>
-                ))}
-          </div>
+            Add
+          </Button>
         </div>
-      </div>
-    </div>
+      </Card>
+    </PageLayout>
   );
 };
 

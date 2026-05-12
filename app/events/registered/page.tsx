@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import Sidebar, { Header, UserAvatar } from "@/components/appLayout";
+import { PageLayout } from "@/components/PageLayout";
 import EventCard from "@/components/EventCard";
 import { useEvents } from "@/hooks/useEvents";
 
@@ -58,41 +58,27 @@ const RegisteredEventsPage: React.FC = () => {
   console.log("REGISTERED EVENTS:", registeredEvents);
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
-      <Sidebar />
-
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        <Header title="Registered Events" rightContent={<UserAvatar />} />
-
+    <PageLayout title="Registered Events">
+      {userId === null ? (
+        <p style={{ color: "#888" }}>Loading...</p>
+      ) : registeredEvents.length === 0 ? (
+        <p style={{ color: "#1a1a1a" }}>
+          No upcoming registered events
+        </p>
+      ) : (
         <div
           style={{
-            flex: 1,
-            overflowY: "auto",
-            padding: 24,
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 16,
           }}
         >
-          {userId === null ? (
-            <p style={{ color: "#888" }}>Loading...</p>
-          ) : registeredEvents.length === 0 ? (
-            <p style={{ color: "#1a1a1a" }}>
-              No upcoming registered events
-            </p>
-          ) : (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: 16,
-              }}
-            >
-              {registeredEvents.map((event) => (
-                <EventCard key={event.id} event={event} />
-              ))}
-            </div>
-          )}
+          {registeredEvents.map((event) => (
+            <EventCard key={event.id} event={event} />
+          ))}
         </div>
-      </div>
-    </div>
+      )}
+    </PageLayout>
   );
 };
 
