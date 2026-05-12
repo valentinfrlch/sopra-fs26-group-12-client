@@ -10,7 +10,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EmojiPicker from "emoji-picker-react";
 import { useParams, useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
-import Sidebar, { Header, UserAvatar } from "@/components/appLayout";
+import { PageLayout } from "@/components/PageLayout";
 
 interface Ingredient {
     name: string;
@@ -173,224 +173,216 @@ const EditEventPage: React.FC = () => {
 
     if (loading) {
         return (
-            <div style={{ display: "flex", minHeight: "100vh" }}>
-                <Sidebar />
-                <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Spin size="large" />
-                </div>
+            <div style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center" }}>
+                <Spin size="large" />
             </div>
         );
     }
 
     return (
-        <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
-            <Sidebar />
-            <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                <Header title="Edit Event" rightContent={<UserAvatar size={40} />} />
-
-                <div style={{ padding: 24, flex: 1 }}>
-                    <Form form={form} layout="vertical" size="large" onFinish={handleSave}>
-                        <Form.Item name="emojis" style={{ display: "none" }}>
-                            <input />
-                        </Form.Item>
-                        <LocalizationProvider dateAdapter={AdapterDateFns}>
-                            <Row>
-                                <Col span={24}>
-                                    <div style={{ marginTop: 8, marginBottom: 24, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-                                        <div style={{ fontWeight: 500, color: "black" }}>Pick three emojis</div>
-                                        <div style={{ display: "flex", gap: 12 }}>
-                                            {[0, 1, 2].map((index) => (
-                                                <div
-                                                    key={index}
-                                                    onClick={() => setOpenPicker(index)}
-                                                    style={{
-                                                        width: 56,
-                                                        height: 56,
-                                                        borderRadius: 28,
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        justifyContent: "center",
-                                                        cursor: "pointer",
-                                                        background: "#ffffff",
-                                                        boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
-                                                        fontSize: 24,
-                                                    }}
-                                                    aria-label={`emoji-picker-${index}`}
-                                                    title="Open emoji picker"
-                                                >
-                                                    {(watchedEmojis && watchedEmojis[index]) || "🥖"}
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <div style={{ fontSize: 12, color: "#888" }}>Emojis will be used to create grid as event background.</div>
+        <>
+            <PageLayout title="Edit Event">
+                <Form form={form} layout="vertical" size="large" onFinish={handleSave}>
+                    <Form.Item name="emojis" style={{ display: "none" }}>
+                        <input />
+                    </Form.Item>
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <Row>
+                            <Col span={24}>
+                                <div style={{ marginTop: 8, marginBottom: 24, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                                    <div style={{ fontWeight: 500, color: "black" }}>Pick three emojis</div>
+                                    <div style={{ display: "flex", gap: 12 }}>
+                                        {[0, 1, 2].map((index) => (
+                                            <div
+                                                key={index}
+                                                onClick={() => setOpenPicker(index)}
+                                                style={{
+                                                    width: 56,
+                                                    height: 56,
+                                                    borderRadius: 28,
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    cursor: "pointer",
+                                                    background: "#ffffff",
+                                                    boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
+                                                    fontSize: 24,
+                                                }}
+                                                aria-label={`emoji-picker-${index}`}
+                                                title="Open emoji picker"
+                                            >
+                                                {(watchedEmojis && watchedEmojis[index]) || "🥖"}
+                                            </div>
+                                        ))}
                                     </div>
+                                    <div style={{ fontSize: 12, color: "#888" }}>Emojis will be used to create grid as event background.</div>
+                                </div>
 
-                                    <Form.Item name="title" rules={[{ required: true, message: "Please enter an event title!" }]}>
-                                        <div>
-                                            <TextField
-                                                fullWidth
-                                                label="Event Title"
-                                                value={watchedTitle ?? ""}
-                                                onChange={(e) => form.setFieldsValue({ title: e.target.value })}
-                                                InputLabelProps={{ style: { color: "grey", fontWeight: 700 } }}
-                                                InputProps={{ style: { fontWeight: 700 } }}
-                                            />
-                                        </div>
-                                    </Form.Item>
+                                <Form.Item name="title" rules={[{ required: true, message: "Please enter an event title!" }]}>
+                                    <div>
+                                        <TextField
+                                            fullWidth
+                                            label="Event Title"
+                                            value={watchedTitle ?? ""}
+                                            onChange={(e) => form.setFieldsValue({ title: e.target.value })}
+                                            InputLabelProps={{ style: { color: "grey", fontWeight: 700 } }}
+                                            InputProps={{ style: { fontWeight: 700 } }}
+                                        />
+                                    </div>
+                                </Form.Item>
 
-                                    <Form.Item>
-                                        <Row><span style={{ color: "black", fontWeight: 500, marginBottom: 4, marginTop: 8 }}>Ingredients</span></Row>
-                                        <Row><span style={{ fontSize: 12, color: "#888", marginBottom: 10 }}>Update the basic ingredients required for this event.</span></Row>
-                                        <Form.List name="ingredients">
-                                            {(fields, { add, remove }) => (
-                                                <>
-                                                    {fields.map(({ key, name, ...restField }) => (
+                                <Form.Item>
+                                    <Row><span style={{ color: "black", fontWeight: 500, marginBottom: 4, marginTop: 8 }}>Ingredients</span></Row>
+                                    <Row><span style={{ fontSize: 12, color: "#888", marginBottom: 10 }}>Update the basic ingredients required for this event.</span></Row>
+                                    <Form.List name="ingredients">
+                                        {(fields, { add, remove }) => (
+                                            <>
+                                                {fields.map(({ key, name, ...restField }) => (
+                                                    <Row key={key} gutter={8} align="middle">
+                                                        <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%" }}>
+                                                            <div style={{ flex: 1 }}>
+                                                                <Form.Item {...restField} name={[name, "name"]} rules={[{ required: true, message: "Enter ingredient name!" }]}>
+                                                                    <TextField label="Ingredient" fullWidth InputLabelProps={{ style: { color: "grey" } }} />
+                                                                </Form.Item>
+                                                            </div>
+                                                            <IconButton
+                                                                size="medium"
+                                                                onClick={() => {
+                                                                    if (fields.length === 1) {
+                                                                        form.setFieldsValue({ ingredients: [{ name: "" }] });
+                                                                    } else {
+                                                                        remove(name);
+                                                                    }
+                                                                }}
+                                                                aria-label="remove ingredient"
+                                                                title="Remove ingredient"
+                                                                style={{ color: "#888", padding: 8, position: "relative", transform: "translateY(-35%)" }}
+                                                            >
+                                                                <DeleteOutlineIcon fontSize="medium" />
+                                                            </IconButton>
+                                                        </div>
+                                                    </Row>
+                                                ))}
+                                                <Button style={{ color: "#4b6624" }} onClick={() => add({ name: "" })}>
+                                                    + add another ingredient
+                                                </Button>
+                                            </>
+                                        )}
+                                    </Form.List>
+                                </Form.Item>
+
+                                <div style={{ marginTop: 8 }}>
+                                    <Row><span style={{ color: "black", fontWeight: 500, marginBottom: 4, marginTop: 8 }}>Start & End</span></Row>
+                                    <Row gutter={8} align="middle" style={{ marginTop: 8 }}>
+                                        <Col span={12}>
+                                            <Form.Item name="startDatetime" rules={[{ required: true, message: "Enter start date and time" }]}>
+                                                <div>
+                                                    <DateTimePicker
+                                                        value={watchedStart ? new Date(watchedStart as string) : null}
+                                                        label="Start"
+                                                        disablePast
+                                                        minutesStep={1}
+                                                        timeSteps={{ hours: 1, minutes: 1 }}
+                                                        onChange={(newVal) => form.setFieldsValue({ startDatetime: newVal ? newVal.toISOString() : null })}
+                                                        slotProps={{ textField: { fullWidth: true, error: !!startError, helperText: startError ?? undefined } }}
+                                                    />
+                                                </div>
+                                            </Form.Item>
+                                        </Col>
+                                        <Col span={12}>
+                                            <Form.Item name="endDatetime" rules={[{ required: true, message: "Enter end date and time" }]}>
+                                                <div>
+                                                    <DateTimePicker
+                                                        value={watchedEnd ? new Date(watchedEnd as string) : null}
+                                                        label="End"
+                                                        disablePast
+                                                        minutesStep={1}
+                                                        timeSteps={{ hours: 1, minutes: 1 }}
+                                                        minDateTime={startDate ?? undefined}
+                                                        onChange={(newVal) => form.setFieldsValue({ endDatetime: newVal ? newVal.toISOString() : null })}
+                                                        slotProps={{ textField: { fullWidth: true, error: !!endError, helperText: endError ?? undefined } }}
+                                                    />
+                                                </div>
+                                            </Form.Item>
+                                        </Col>
+                                    </Row>
+                                </div>
+
+                                <Form.Item style={{ marginTop: 16 }}>
+                                    <Row><span style={{ color: "black", fontWeight: 500, marginBottom: 4, marginTop: 8 }}>Progress Photos</span></Row>
+                                    <Row><span style={{ fontSize: 12, color: "#888", marginBottom: 10 }}>Specify when participants should take progress photos.</span></Row>
+                                    <Form.List name="eventPrompts">
+                                        {(fields, { add, remove }) => (
+                                            <>
+                                                {fields.map(({ key, name, ...restField }) => {
+                                                    const currentValue = form.getFieldValue("eventPrompts")?.[name];
+                                                    return (
                                                         <Row key={key} gutter={8} align="middle">
                                                             <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%" }}>
                                                                 <div style={{ flex: 1 }}>
-                                                                    <Form.Item {...restField} name={[name, "name"]} rules={[{ required: true, message: "Enter ingredient name!" }]}>
-                                                                        <TextField label="Ingredient" fullWidth InputLabelProps={{ style: { color: "grey" } }} />
+                                                                    <Form.Item
+                                                                        {...restField}
+                                                                        name={[name]}
+                                                                        rules={[{ required: true, message: "Enter a date/time" }]}
+                                                                    >
+                                                                        <div>
+                                                                            <DateTimePicker
+                                                                                label={`Photo Time ${name + 1}`}
+                                                                                value={currentValue ? new Date(currentValue) : null}
+                                                                                disablePast
+                                                                                minutesStep={1}
+                                                                                timeSteps={{ hours: 1, minutes: 1 }}
+                                                                                minDateTime={startDate ?? undefined}
+                                                                                maxDateTime={endDate ?? undefined}
+                                                                                onChange={(newVal) => {
+                                                                                    const arr = form.getFieldValue("eventPrompts") || [];
+                                                                                    arr[name] = newVal ? newVal.toISOString() : null;
+                                                                                    form.setFieldsValue({ eventPrompts: arr });
+                                                                                }}
+                                                                                slotProps={{ textField: { fullWidth: true } }}
+                                                                            />
+                                                                        </div>
                                                                     </Form.Item>
                                                                 </div>
                                                                 <IconButton
                                                                     size="medium"
-                                                                    onClick={() => {
-                                                                        if (fields.length === 1) {
-                                                                            form.setFieldsValue({ ingredients: [{ name: "" }] });
-                                                                        } else {
-                                                                            remove(name);
-                                                                        }
-                                                                    }}
-                                                                    aria-label="remove ingredient"
-                                                                    title="Remove ingredient"
+                                                                    onClick={() => remove(name)}
+                                                                    aria-label={`remove photo time ${name + 1}`}
+                                                                    title="Remove photo time"
                                                                     style={{ color: "#888", padding: 8, position: "relative", transform: "translateY(-35%)" }}
                                                                 >
                                                                     <DeleteOutlineIcon fontSize="medium" />
                                                                 </IconButton>
                                                             </div>
                                                         </Row>
-                                                    ))}
-                                                    <Button style={{ color: "#4b6624" }} onClick={() => add({ name: "" })}>
-                                                        + add another ingredient
-                                                    </Button>
-                                                </>
-                                            )}
-                                        </Form.List>
-                                    </Form.Item>
+                                                    );
+                                                })}
+                                                <Button style={{ color: "#4b6624" }} onClick={() => add(null)}>
+                                                    + add another time
+                                                </Button>
+                                            </>
+                                        )}
+                                    </Form.List>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </LocalizationProvider>
 
-                                    <div style={{ marginTop: 8 }}>
-                                        <Row><span style={{ color: "black", fontWeight: 500, marginBottom: 4, marginTop: 8 }}>Start & End</span></Row>
-                                        <Row gutter={8} align="middle" style={{ marginTop: 8 }}>
-                                            <Col span={12}>
-                                                <Form.Item name="startDatetime" rules={[{ required: true, message: "Enter start date and time" }]}>
-                                                    <div>
-                                                        <DateTimePicker
-                                                            value={watchedStart ? new Date(watchedStart as string) : null}
-                                                            label="Start"
-                                                            disablePast
-                                                            minutesStep={1}
-                                                            timeSteps={{ hours: 1, minutes: 1 }}
-                                                            onChange={(newVal) => form.setFieldsValue({ startDatetime: newVal ? newVal.toISOString() : null })}
-                                                            slotProps={{ textField: { fullWidth: true, error: !!startError, helperText: startError ?? undefined } }}
-                                                        />
-                                                    </div>
-                                                </Form.Item>
-                                            </Col>
-                                            <Col span={12}>
-                                                <Form.Item name="endDatetime" rules={[{ required: true, message: "Enter end date and time" }]}>
-                                                    <div>
-                                                        <DateTimePicker
-                                                            value={watchedEnd ? new Date(watchedEnd as string) : null}
-                                                            label="End"
-                                                            disablePast
-                                                            minutesStep={1}
-                                                            timeSteps={{ hours: 1, minutes: 1 }}
-                                                            minDateTime={startDate ?? undefined}
-                                                            onChange={(newVal) => form.setFieldsValue({ endDatetime: newVal ? newVal.toISOString() : null })}
-                                                            slotProps={{ textField: { fullWidth: true, error: !!endError, helperText: endError ?? undefined } }}
-                                                        />
-                                                    </div>
-                                                </Form.Item>
-                                            </Col>
-                                        </Row>
-                                    </div>
-
-                                    <Form.Item style={{ marginTop: 16 }}>
-                                        <Row><span style={{ color: "black", fontWeight: 500, marginBottom: 4, marginTop: 8 }}>Progress Photos</span></Row>
-                                        <Row><span style={{ fontSize: 12, color: "#888", marginBottom: 10 }}>Specify when participants should take progress photos.</span></Row>
-                                        <Form.List name="eventPrompts">
-                                            {(fields, { add, remove }) => (
-                                                <>
-                                                    {fields.map(({ key, name, ...restField }) => {
-                                                        const currentValue = form.getFieldValue("eventPrompts")?.[name];
-                                                        return (
-                                                            <Row key={key} gutter={8} align="middle">
-                                                                <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%" }}>
-                                                                    <div style={{ flex: 1 }}>
-                                                                        <Form.Item
-                                                                            {...restField}
-                                                                            name={[name]}
-                                                                            rules={[{ required: true, message: "Enter a date/time" }]}
-                                                                        >
-                                                                            <div>
-                                                                                <DateTimePicker
-                                                                                    label={`Photo Time ${name + 1}`}
-                                                                                    value={currentValue ? new Date(currentValue) : null}
-                                                                                    disablePast
-                                                                                    minutesStep={1}
-                                                                                    timeSteps={{ hours: 1, minutes: 1 }}
-                                                                                    minDateTime={startDate ?? undefined}
-                                                                                    maxDateTime={endDate ?? undefined}
-                                                                                    onChange={(newVal) => {
-                                                                                        const arr = form.getFieldValue("eventPrompts") || [];
-                                                                                        arr[name] = newVal ? newVal.toISOString() : null;
-                                                                                        form.setFieldsValue({ eventPrompts: arr });
-                                                                                    }}
-                                                                                    slotProps={{ textField: { fullWidth: true } }}
-                                                                                />
-                                                                            </div>
-                                                                        </Form.Item>
-                                                                    </div>
-                                                                    <IconButton
-                                                                        size="medium"
-                                                                        onClick={() => remove(name)}
-                                                                        aria-label={`remove photo time ${name + 1}`}
-                                                                        title="Remove photo time"
-                                                                        style={{ color: "#888", padding: 8, position: "relative", transform: "translateY(-35%)" }}
-                                                                    >
-                                                                        <DeleteOutlineIcon fontSize="medium" />
-                                                                    </IconButton>
-                                                                </div>
-                                                            </Row>
-                                                        );
-                                                    })}
-                                                    <Button style={{ color: "#4b6624" }} onClick={() => add(null)}>
-                                                        + add another time
-                                                    </Button>
-                                                </>
-                                            )}
-                                        </Form.List>
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-                        </LocalizationProvider>
-
-                        <div style={{ marginTop: 30, display: "flex", justifyContent: "flex-end", gap: 10 }}>
-                            <Button style={{ color: "#4b6624" }} onClick={() => router.push(`/events/${eventId}`)}>
-                                Cancel
-                            </Button>
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                disabled={!isFormValid || submitting}
-                                style={{ background: isFormValid && !submitting ? "#4b6624" : "#a3a3a3", borderColor: "#4b6624", color: "white" }}
-                            >
-                                {submitting ? "Saving..." : "Save Changes"}
-                            </Button>
-                        </div>
-                    </Form>
-                </div>
-            </div>
+                    <div style={{ marginTop: 30, display: "flex", justifyContent: "flex-end", gap: 10 }}>
+                        <Button style={{ color: "#4b6624" }} onClick={() => router.push(`/events/${eventId}`)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            disabled={!isFormValid || submitting}
+                            style={{ background: isFormValid && !submitting ? "#4b6624" : "#a3a3a3", borderColor: "#4b6624", color: "white" }}
+                        >
+                            {submitting ? "Saving..." : "Save Changes"}
+                        </Button>
+                    </div>
+                </Form>
+            </PageLayout>
 
             {openPicker !== null && (
                 <div
@@ -410,7 +402,7 @@ const EditEventPage: React.FC = () => {
                     </div>
                 </div>
             )}
-        </div>
+        </>
     );
 };
 

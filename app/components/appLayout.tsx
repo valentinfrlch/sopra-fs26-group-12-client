@@ -128,7 +128,7 @@ const Sidebar: React.FC = () => {
   return (
     <Drawer
       variant="permanent"
-      PaperProps={{ sx: { width: 64, background: "#fff", borderRight: "1px solid #e8e8e8", boxSizing: "border-box" } }}
+      PaperProps={{ sx: { width: 64, background: "#F9FBFC", borderRight: "none", boxSizing: "border-box" } }}
       sx={{ width: 64, flexShrink: 0 }}
     >
       <Box
@@ -260,12 +260,11 @@ export const Header: React.FC<{ title: string; rightContent?: React.ReactNode }>
   return (
     <div
       style={{
-        background: "#fff",
+        background: "#F9FBFC",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
         padding: "16px 24px",
-        borderBottom: "1px solid #e8e8e8",
       }}
     >
       {/* Left */}
