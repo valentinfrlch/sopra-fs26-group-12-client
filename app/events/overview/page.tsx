@@ -3,14 +3,14 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@mui/material";
+import { Button, Tabs, Tab } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import TimerIcon from "@mui/icons-material/Timer";
 import GroupIcon from "@mui/icons-material/Group";
 import EventBusyIcon from "@mui/icons-material/EventBusy";
 import { Card } from "antd";
-import Sidebar, { Header, UserAvatar } from "@/components/appLayout";
+import { PageLayout } from "@/components/PageLayout";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import useWindowSize from "@/hooks/useWndowSize";
@@ -38,6 +38,7 @@ const EventsPage: React.FC = () => {
 
     const [events, setEvents] = useState<CookingEvent[]>([]);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState<"upcoming" | "running">("upcoming");
 
     useEffect(() => {
         if (!token) { setLoading(false); return; }
@@ -67,85 +68,100 @@ const EventsPage: React.FC = () => {
 
     if (loading) {
         return (
-            <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
-                <Sidebar />
+            <PageLayout title="Events">
                 <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <CircularProgress size={40} sx={{ color: "#4a6741" }} />
                 </div>
-            </div>
+            </PageLayout>
         );
     }
 
     const upcomingEvents = events.filter(e => e.state === "UPCOMING");
+    const liveEvents = events.filter(e => e.state === "ONGOING");
+
+    const renderEventGrid = (list: CookingEvent[], emptyMessage: string) => (
+        <>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: 16, marginBottom: 32 }}>
+                {list.map((event) => (
+                    <Card
+                        key={event.id}
+                        hoverable
+                        onClick={() => router.push(`/events/${event.id}`)}
+                        style={{ borderRadius: 16, background: "#fff", border: "none", cursor: "pointer" }}
+                        styles={{ body: { padding: 0 } }}
+                    >
+                        <div style={{
+                            height: 120,
+                            background: "#f0eef6",
+                            borderRadius: "16px 16px 0 0",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: 40,
+                        }}>
+                            {event.emojis}
+                        </div>
+
+                        <div style={{ padding: 16 }}>
+                            <div style={{ fontWeight: 600, fontSize: 15, color: "#1a1a1a" }}>
+                                {event.title}
+                            </div>
+
+                            <div style={{ color: "#666", fontSize: 13, marginTop: 4 }}>
+                                <CalendarTodayIcon sx={{ fontSize: 16, verticalAlign: "middle", mr: "6px" }} />
+                                {new Date(event.startDatetime).toLocaleDateString()} · {new Date(event.startDatetime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            </div>
+
+                            <div style={{ color: "#666", fontSize: 13, marginTop: 4 }}>
+                                <TimerIcon sx={{ fontSize: 16, verticalAlign: "middle", mr: "6px" }} />
+                                {Math.round((new Date(event.endDatetime).getTime() - new Date(event.startDatetime).getTime()) / 60000)} min
+                            </div>
+
+                            <div style={{ color: "#666", fontSize: 13, marginTop: 4 }}>
+                                <GroupIcon sx={{ fontSize: 16, verticalAlign: "middle", mr: "6px" }} />
+                                {event.participants?.length ?? 0} joined
+                            </div>
+                        </div>
+                    </Card>
+                ))}
+            </div>
+            {list.length === 0 && (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "60px 24px", gap: 12 }}>
+                    <EventBusyIcon sx={{ fontSize: 48, color: "#ccc" }} />
+                    <p style={{ color: "#999", fontSize: 15 }}>{emptyMessage}</p>
+                </div>
+            )}
+        </>
+    );
 
     return (
-        <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
-            <Sidebar />
+        <PageLayout title="Events">
+            <Tabs
+                value={activeTab}
+                onChange={(_, value) => setActiveTab(value as "upcoming" | "running")}
+                textColor="inherit"
+                TabIndicatorProps={{ style: { backgroundColor: "#4a6741", height: 3 } }}
+                sx={{
+                    borderBottom: "1px solid #e0e0e0",
+                    marginBottom: 2,
+                    "& .MuiTab-root": {
+                        color: "#666",
+                        textTransform: "none",
+                        fontWeight: 600,
+                        fontSize: 14,
+                        minHeight: 44,
+                    },
+                    "& .MuiTab-root.Mui-selected": {
+                        color: "#1a1a1a",
+                    },
+                }}
+            >
+                <Tab value="upcoming" label="Upcoming" />
+                <Tab value="running" label="Running" />
+            </Tabs>
 
-            <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-
-                <Header
-                    title="Events"
-                    rightContent={<UserAvatar />}
-                />
-
-                {/* Content */}
-                <div style={{ padding: 24, flex: 1 }}>
-
-                    <h2 style={{ color: "#1a1a1a", fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Upcoming Events</h2>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: 16, marginBottom: 32 }}>
-                        {upcomingEvents.map((event) => (
-                            <Card
-                                key={event.id}
-                                hoverable
-                                onClick={() => router.push(`/events/${event.id}`)}
-                                style={{ borderRadius: 16, background: "#fff", border: "none", cursor: "pointer" }}
-                                styles={{ body: { padding: 0 } }}
-                            >
-                                <div style={{
-                                    height: 120,
-                                    background: "#f0eef6",
-                                    borderRadius: "16px 16px 0 0",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    fontSize: 40,
-                                }}>
-                                    {event.emojis}
-                                </div>
-
-                                <div style={{ padding: 16 }}>
-                                    <div style={{ fontWeight: 600, fontSize: 15, color: "#1a1a1a" }}>
-                                        {event.title}
-                                    </div>
-
-                                    <div style={{ color: "#666", fontSize: 13, marginTop: 4 }}>
-                                        <CalendarTodayIcon sx={{ fontSize: 16, verticalAlign: "middle", mr: "6px" }} />
-                                        {new Date(event.startDatetime).toLocaleDateString()} · {new Date(event.startDatetime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                                    </div>
-
-                                    <div style={{ color: "#666", fontSize: 13, marginTop: 4 }}>
-                                        <TimerIcon sx={{ fontSize: 16, verticalAlign: "middle", mr: "6px" }} />
-                                        {Math.round((new Date(event.endDatetime).getTime() - new Date(event.startDatetime).getTime()) / 60000)} min
-                                    </div>
-
-                                    <div style={{ color: "#666", fontSize: 13, marginTop: 4 }}>
-                                        <GroupIcon sx={{ fontSize: 16, verticalAlign: "middle", mr: "6px" }} />
-                                        {event.participants?.length ?? 0} joined
-                                    </div>
-                                </div>
-                            </Card>
-                        ))}
-                    </div>
-                    {upcomingEvents.length === 0 && (
-                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "60px 24px", gap: 12 }}>
-                            <EventBusyIcon sx={{ fontSize: 48, color: "#ccc" }} />
-                            <p style={{ color: "#999", fontSize: 15 }}>No upcoming events. Create the first one!</p>
-                        </div>
-                    )}
-                </div>
-            </div>
-
+            {activeTab === "upcoming" && renderEventGrid(upcomingEvents, "No upcoming events. Create the first one!")}
+            {activeTab === "running" && renderEventGrid(liveEvents, "No events are running right now.")}
 
             <Button
                 type="button"
@@ -171,7 +187,7 @@ const EventsPage: React.FC = () => {
                 }}>
                 Event
             </Button>
-        </div>
+        </PageLayout>
     );
 };
 

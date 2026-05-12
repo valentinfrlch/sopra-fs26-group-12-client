@@ -30,7 +30,7 @@ reason).
 
 ---
 
-## Contributions Week 1 - [Begin Date] to [End Date]
+## Contributions Week 1 - [25.03.26] to [29.03.26]
 
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
@@ -50,7 +50,7 @@ reason).
 |     | [29.03.2026] | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/5c13f0efe54840160ca47b7f207e3a4dbaa38fe4] | [Added a UserService test to verify that a completly new token is generated when a user logs in.] | [Important for system security so users get a fresh session token every time they log in.] |
 ---
 
-## Contributions Week 2 - [Begin Date] to [End Date]
+## Contributions Week 2 - [30.03.26] to [05.04.26]
 
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
@@ -67,7 +67,7 @@ reason).
 |                    | 05.04.2026 | https://github.com/valentinfrlch/sopra-fs26-group-12-server/pull/107/commits/21eb2ceaa51cba3f8d35cb5f1a030fd02685aea4 | Implements REST endpoints to create and delete an event | REST endpoints are needed to allow users to create and delete events (#71, #73, #74) |
 ---
 
-## Contributions Week 3 - [Begin Date] to [End Date]
+## Contributions Week 3 - [06.04.26] to [12.04.26]
 
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
@@ -103,7 +103,7 @@ reason).
 |                    | [19.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/bd55b24f85f33ef075a494ec45cd2fab25eacce9] | [Added tests for checkLastManStanding and determineWinner (#51, #52)] | [Tests verify the two winner conditions are correctly enforced at the event of an event] |
 ---
 
-## Contributions Week 5 - [Begin Date] to [End Date]
+## Contributions Week 5 - [20.04.26] to [24.04.26]
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
 | **@valentinfrlch** | 17.04.26   | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/0bf98034da6193d8fa59f025050d56d3949c27ea | Implement frontend to change username, name, and password | So the user can update their personal information #6, #7, #8 |
@@ -120,7 +120,7 @@ reason).
 |                    | [24.04.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/fcc8a4096626ad072cbc910a9cc9af98760e0227] | [Added badge UI on profile page, leaderboard page, and auto-refresh for events and leaderboard (#9, #11, #12)] | [Users see badges, the leaderboard and new events without reloading] |
 ---
 
-## Contributions Week 6 - [Begin Date] to [End Date]
+## Contributions Week 6 - [27.04.26] to [03.05.26]
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
 | @valentinfrlch | 30.04.2026   | https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/92f0d10c04d1caa3bbf864be4f35ba63332baeb5 | Implement label endpoints to create, update, and delete labels | Let the user create custom labels and use them to tag recipes (#155, #156, #183) |
@@ -134,4 +134,52 @@ reason).
 |                    | [03.05.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/ef0120825bfec7c28638cc5d249777b029f2a705] | [Adding a button to the random recipe suggestion such that a user can save the random recipe to its cookbook.] | [This is important, because the users want to save the recipe to cook later if it pleases them.] |
 | **[@BestAchilles]** | [03.05.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/660d383c76528da37a1e88773aea068aa1985916] | [Added a state variable and matchPaths mapping to track the most recent top-level page (#141)] | [This gives the necessary logic to remember the user's location when navigating to sub-pages] |
 |                    | [03.05.2026]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/660d383c76528da37a1e88773aea068aa1985916] | [Implemented logic to ensure exactly one sidebar page is highlighted as active at all times (#142)] | [Makes sure that there is consistent visual feedback and navigation clarity across the whole application] |
+---
+
+## Contributions Week 7 - [04.05.26] to [10.05.26]
+| **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
+| ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
+| **[@FinnPrivateGit]** | [08.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/718064eae3f91298bfad07fa494391524efbfa65] | [Implement a filter such that logged in users can select ingredients to filter their recipes.] | [This feature is useful, because users can find recipes much faster (especially if they have many).] |
+|                    | [08.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/c643ee6f65faae5b78ccbc3a1f110e6a9ce8f524] | [The ingredient filter should update the shown recipes in the cookbook according to the selected ingredients.] | [Without this small addition users could select ingredients, but it doesn't filter the recipes, so this is crucial for the user story.] |
+| **[@jp-schl]** | [10.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/ffd0ab285d94dc769caf5520c19ea70d3677018b] | [The necessary ingredients are shown in the cooking event interface] | [To have all necessary info in one page for the cooking event] |
+|                    | [10.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/5e80dd236d33541be57258531fcb918a0e299d44] | [the amount of players participating is shown in the cooking interface] | [To have all necessary info in one page for the cooking event] |
+| **@valentinfrlch** | 11.05.26   | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/12d2bc8950c1bcd4a59921508a4da8fbb4683969 | Update the recipe detail page. | Now its more user-friendly and the recipe information is displayed better. (#144, #145, #147, #148)|
+|                    | 12.05.26   | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/96a158b27af0108539a4ea5a8f7758d2261d0dc5 | Add PageLayout wrapper that combines Header, Sidebar and other styling. | This makes the layout more consistent, especially since we also have a mobile layout, which previously needed some hacks on every page. |
+| **[@sushmstr]** | [01.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/187/commits/3cc641fefb44aee6ae51839f83e458c0d9702a28] | [Implement route protection for authenticated users] | [Ensured protection applies to all routes including direct URL access] |
+|                    | [01.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/187/commits/5037970725598ddefc429115201e8667bbd06636] | [Define and allow public routes (login & signup)] | [Prevented infinite redirect loops] |
+|                    | [01.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/187/commits/c7dcb5e00e4f4c57bf2d3d9aca0c4c738321cdc9] | [Improve authentication UX (redirect + messaging)] | [Prevented logged-in users from accessing login/signup pages] |
+|                    | [01.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/184/commits/a9881bd783f804012e7b9620f94609475e8c5473] | [Implemented upcoming events preview in the cookbook page in a horizontal layout] | [Improves user experience by providing quick access to upcoming events] |
+|                    | [01.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/184/commits/2812d6af72c1941ec44a97257aff182edcea53c1] | [Added placeholder when no upcoming events exist] | [Ensures clear feedback when no events are available] |
+| **[@BestAchilles]** | [07.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/4c0ff077a158e87b1cf8a9b3b212af60f5193f76] | [Backend validation that rejects events with invalid dates start in the past, end before start (#198)] | [Makes sure the server doesn't accept invalid event data] |
+|                    | [07.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/105b7bb9f3d6711107829c29a3cccba887e74593] | [Added PATCH endpoint and service method so event owners can update title, emojis, ingredients, start/end and prompt times (#197)] | [Lets the owner fix mistakes after creating an event instead of having recreate one] |
+|                    | [07.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/bc8fcda3f686f39c4478af8a69a7e104bd881053] | [Implemented the edit event page that is only reachable to the owner of an upcoming event (#197)] | [Gives owners a UI to actually edit their event] |
+|                    | [07.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/732c6c1ab3e7d73b6a7cc0a99b3514372410e647] | [Added an Edit-button on the detail page that is only visible to the owner of an upcoming event (#196)] | [Gives owners a way to reach edit page from the event itself] |
+|                    | [07.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/c4995dde037c8c46b90687cb5fcaa5530a557aa4] | [Improved the date/time picker (already filled with current time, minute selection, past time disabled) (#201)] | [Fixes the 5-minute steps such that creation events isn't that much of an hassle now] |
+|                    | [07.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/7aa8123a571ca91d78ab8ae570bfa4812b74bbdd] | [Added a "Running" tab to the event overview that shows currently ongoing events (#199)] | [Lets users see all events happening right now in one place (was suggested from Beta-Feedback)] |
+---
+
+## Contributions Week 8 - [11.05.26] to [17.05.26]
+| **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
+| ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
+| **[@FinnPrivateGit]** | [11.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/9580dd897e7e201dd39652ba6efcd434d5372349] | [Adding a button "export to shopping list" to the recipe detail view page] | [This button is used to put the ingredients of a recipe into the shopping list such that users can buy them later] |
+|                    | [11.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/9580dd897e7e201dd39652ba6efcd434d5372349] | [Connecting the "export to shopping list" button to the shopping list API] | [This is relevant, because else the button wouldn't do nothing and with the API linking, the ingredients get added to the shopping list] |
+| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+---
+
+## Contributions Week 9 - [18.05.26] to [24.05.26]
+| **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
+| ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
+| **[@FinnPrivateGit]** | [10.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/58c6621aebfe9086f9ad7725ad4e3967f1a81d32] | [Adding a heart button to the recipe card in the cookbook] | [This is needed to be able to favoritize recipes, such that users see their favoite recipes on top of their cookbook] |
+|                    | [10.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/e338e1e25f5ccd3015e126767489aea7d497b6f3] | [Adding all backend support such that recipes can be favoritized] | [Without the backend support, the heart button in the client would change nothing] |
+| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 ---

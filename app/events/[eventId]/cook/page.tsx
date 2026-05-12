@@ -41,6 +41,23 @@ type WinnerDTO = {
   voteCount: number;
 };
 
+type EventResponse = {
+  participantCount: number;
+  participants: Participant[];
+};
+
+type EventMetaResponse = {
+  ingredients: string[];
+  title: string;
+};
+
+type Participant = {
+  id: string;
+  username: string;
+};
+
+
+
 export default function CookPage() {
   const params = useParams();
   const router = useRouter();
@@ -68,10 +85,49 @@ export default function CookPage() {
 
   const prevUploadActive = useRef<boolean | null>(null);
 
+  const [participantCount, setParticipantCount] = useState<number | null>(null);
+
+  const [ingredients, setIngredients] = useState<string[]>([]);
+
+  const [participants, setParticipants] = useState<Participant[]>([]);
+
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
   }, []);
+
+  const fetchEventMeta = useCallback(async () => {
+  if (!eventId || !token) return;
+
+  const data = await api.get<EventMetaResponse>(
+    `/events/${eventId}`,
+    { Authorization: `Bearer ${token}` }
+  );
+
+  setIngredients(data.ingredients);
+}, [eventId, token, api]);
+
+useEffect(() => {
+  if (!permissionChecked) return;
+
+  fetchEventMeta();
+}, [fetchEventMeta, permissionChecked]);
+
+  const eventEndMs = useMemo(() => {
+  if (!schedule || schedule.prompts.length === 0) return null;
+
+  const last = schedule.prompts[schedule.prompts.length - 1];
+
+  return (
+    new Date(last.promptTime).getTime() +
+    schedule.uploadWindowMinutes * 60 * 1000 -300000
+  );
+}, [schedule]);
+
+const formatMinutes = (ms: number) => {
+  const minutes = Math.ceil(ms / 60000);
+  return `${minutes} min`;
+};
 
   const activePromptIndex = useMemo(() => {
     if (!schedule) return -1;
@@ -100,6 +156,11 @@ export default function CookPage() {
 
     return Date.now() > end;
   }, [schedule]);
+
+  const eventTimeLeftMs = useMemo(() => {
+  if (!eventEndMs) return null;
+  return Math.max(0, eventEndMs - now);
+}, [eventEndMs, now]);
 
   const timeLeftMs = useMemo(() => {
     if (!schedule || activePromptIndex === -1) return null;
@@ -156,6 +217,18 @@ export default function CookPage() {
     }
   }, [eventId, token, api, router]);
 
+    const fetchEvent = useCallback(async () => {
+  if (!eventId || !token) return;
+
+  const data = await api.get<EventResponse>(
+    `/events/${eventId}`,
+    { Authorization: `Bearer ${token}` }
+  );
+
+  setParticipantCount(data.participantCount);
+  setParticipants(data.participants ?? []);
+}, [eventId, token, api]);
+
   useEffect(() => {
     if (!eventId || !token) return;
     checkPermission();
@@ -198,6 +271,16 @@ export default function CookPage() {
     const interval = setInterval(fetchSchedule, 5000);
     return () => clearInterval(interval);
   }, [fetchSchedule, eventId, token, permissionChecked]);
+
+
+useEffect(() => {
+  if (!eventId || !token || !permissionChecked) return;
+
+  fetchEvent();
+  const interval = setInterval(fetchEvent, 5000);
+
+  return () => clearInterval(interval);
+}, [fetchEvent, eventId, token, permissionChecked]);
 
   const fetchSubmissions = useCallback(async () => {
     if (!schedule || !token) return;
@@ -339,6 +422,48 @@ export default function CookPage() {
             padding: 20,
             boxShadow: "0 1px 3px rgba(0,0,0,0.06)"
           }}>
+            <p style={{ fontSize: 14, color: "#666", marginBottom: 8 }}>
+              👥 {participantCount ?? "-"} Player(s)
+            </p>
+
+            {participants.length > 0 && (
+              <div style={{ marginBottom: 12 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>
+                  Participants
+                </h3>
+
+                <ul style={{ paddingLeft: 18, margin: 0 }}>
+                {participants.map((p) => (
+                  <li key={p.id} style={{ fontSize: 14, color: "#333" }}>
+                    {p.username}
+                  </li>
+                ))}
+                </ul>
+              </div>
+            )}
+
+            {eventTimeLeftMs !== null && !eventFinished && (
+              <p style={{ fontSize: 14, color: "#666", marginBottom: 8 }}>
+                ⏱️ {formatMinutes(eventTimeLeftMs)} remaining
+              </p>
+            )}
+
+            {ingredients.length > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>
+                  Ingredients
+                </h3>
+
+                <ul style={{ paddingLeft: 18, margin: 0 }}>
+                  {ingredients.map((ing) => (
+                  <li key={ing} style={{ fontSize: 14, color: "#333", marginBottom: 4 }}>
+                    {ing}
+                  </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {eventFinished && (
               <button
                 onClick={() => router.push("/cookbook")}

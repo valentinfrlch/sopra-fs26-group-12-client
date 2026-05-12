@@ -4,7 +4,17 @@ import React, { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Avatar as AntAvatar } from "antd";
 import { Drawer, Box, ListItemButton, ListItemIcon, BottomNavigation, BottomNavigationAction } from "@mui/material";
-import { RestaurantMenuRounded, HomeRounded, HomeOutlined, LibraryBooksRounded, LibraryBooksOutlined, EmojiEventsRounded, EmojiEventsOutlined, Key } from "@mui/icons-material";
+import {
+  RestaurantMenuRounded,
+  HomeRounded,
+  HomeOutlined,
+  LibraryBooksRounded,
+  LibraryBooksOutlined,
+  EmojiEventsRounded,
+  EmojiEventsOutlined,
+  ShoppingCartOutlined,
+  ShoppingCartRounded,
+} from "@mui/icons-material";
 import useWindowSize from "@/hooks/useWndowSize";
 
 
@@ -33,6 +43,14 @@ const Sidebar: React.FC = () => {
       inactiveIcon: <LibraryBooksOutlined style={{ fontSize: 22 }} />, 
       activeIcon: <LibraryBooksRounded style={{ fontSize: 22 }} />, 
       label: "Library" },
+    {
+      key: "shopping-list",
+      path: "/shopping-list",
+      matchPaths: ["/shopping-list"],
+      inactiveIcon: <ShoppingCartOutlined style={{ fontSize: 22 }} />,
+      activeIcon: <ShoppingCartRounded style={{ fontSize: 22 }} />,
+      label: "Shopping"
+    },
     { 
       key: "leaderboard", 
       path: "/leaderboard", 
@@ -110,7 +128,7 @@ const Sidebar: React.FC = () => {
   return (
     <Drawer
       variant="permanent"
-      PaperProps={{ sx: { width: 64, background: "#fff", borderRight: "1px solid #e8e8e8", boxSizing: "border-box" } }}
+      PaperProps={{ sx: { width: 64, background: "#F9FBFC", borderRight: "none", boxSizing: "border-box" } }}
       sx={{ width: 64, flexShrink: 0 }}
     >
       <Box
@@ -242,12 +260,11 @@ export const Header: React.FC<{ title: string; rightContent?: React.ReactNode }>
   return (
     <div
       style={{
-        background: "#fff",
+        background: "#F9FBFC",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
         padding: "16px 24px",
-        borderBottom: "1px solid #e8e8e8",
       }}
     >
       {/* Left */}

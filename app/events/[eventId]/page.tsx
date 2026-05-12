@@ -7,6 +7,7 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 import Sidebar, { UserAvatar, Header } from "@/components/appLayout";
 import { Spin } from "antd";
 import { Button, ButtonGroup, Avatar, AvatarGroup, Chip, Tooltip } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
 import EventIcon from "@mui/icons-material/Event";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -57,6 +58,7 @@ interface CookingEvent {
   startDatetime: string;
   endDatetime: string;
   participants: Participant[];
+  creator?: { id: string | number };
   state: "UPCOMING" | "ONGOING" | "FINISHED";
 }
 
@@ -355,6 +357,7 @@ const EventDetailPage: React.FC = () => {
   const isUpcoming = event.state === "UPCOMING";
   const isOngoing = event.state === "ONGOING";
   const isFinished = event.state === "FINISHED";
+  const isOwner = !!event.creator && String(event.creator.id) === userId;
   const durationMinutes = Math.round((new Date(event.endDatetime).getTime() - new Date(event.startDatetime).getTime()) / 60000);
   
   return (
@@ -370,9 +373,32 @@ const EventDetailPage: React.FC = () => {
           <UserAvatar size={40} />
         </div> */}
 
-        <Header 
-          title={event.title} 
-          rightContent={<UserAvatar size={40} />} 
+        <Header
+          title={event.title}
+          rightContent={
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              {isOwner && isUpcoming && (
+                <Button
+                  variant="outlined"
+                  startIcon={<EditIcon sx={{ fontSize: 18 }} />}
+                  onClick={() => router.push(`/events/${eventId}/edit`)}
+                  style={{
+                    color: "#4a7c59",
+                    borderColor: "#4a7c59",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    height: 36,
+                    borderRadius: 18,
+                    paddingLeft: 14,
+                    paddingRight: 14,
+                  }}
+                >
+                  Edit
+                </Button>
+              )}
+              <UserAvatar size={40} />
+            </div>
+          }
         />
 
         {/* BANNER */}

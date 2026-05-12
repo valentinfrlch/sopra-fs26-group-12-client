@@ -9,8 +9,7 @@ import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import EmojiPicker from 'emoji-picker-react';
 import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
-import Sidebar from "@/components/appLayout";
-import { MenuOutlined } from "@ant-design/icons";
+import { PageLayout } from "@/components/PageLayout";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 interface Ingredient {
@@ -56,6 +55,11 @@ const CreateEventPage: React.FC = () => {
     const router = useRouter();
     const apiService = useApi();
     const { message } = App.useApp();
+    const [initialDates] = useState(() => {
+        const start = new Date(Math.ceil(Date.now() / 60000) * 60000);
+        const end = new Date(start.getTime() + 60 * 60 * 1000);
+        return { start: start.toISOString(), end: end.toISOString() };
+    });
 
     /* Unused
     useEffect(() => {
@@ -107,6 +111,15 @@ const CreateEventPage: React.FC = () => {
     const watchedEmojis = Form.useWatch("emojis", form) || ["🥖", "🥑", "🌶️"];
     const watchedStart = Form.useWatch("startDatetime", form);
     const watchedEnd = Form.useWatch("endDatetime", form);
+    const watchedTitle = Form.useWatch("title", form);
+
+    const startDate = watchedStart ? new Date(watchedStart) : null;
+    const endDate = watchedEnd ? new Date(watchedEnd) : null;
+    const startInPast = startDate ? startDate.getTime() < Date.now() - 60_000 : false;
+    const endNotAfterStart = startDate && endDate ? endDate.getTime() <= startDate.getTime() : false;
+    const startError = startInPast ? "Start time cannot be in the past" : null;
+    const endError = endNotAfterStart ? "End time must be after start time" : null;
+    const isFormValid = !!watchedTitle && !!watchedStart && !!watchedEnd && !startError && !endError;
 
     const EmojiPickerButton: React.FC<{ index: number }> = ({ index }) => {
         const current = (watchedEmojis && watchedEmojis[index]) || "🥖";
@@ -135,42 +148,14 @@ const CreateEventPage: React.FC = () => {
     };
 
     return (
-        <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
-            <Sidebar />
-
-            <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                <div
-                    style={{
-                        background: "#fff",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        padding: "16px 24px",
-                        borderBottom: "1px solid #2a2d3a",
-                    }}
-                >
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <MenuOutlined style={{ fontSize: 18, color: "#aaa" }} />
-                        <span style={{ fontWeight: 600, fontSize: 16, color: "#1a1a1a" }}>Create Event</span>
-                    </div>
-
-                    <Avatar
-                        size={40}
-                        style={{ background: "#f0f0f0", color: "#1a1a1a", cursor: "pointer", fontWeight: 600 }}
-                        onClick={() => router.push(`/users/${userId}`)}
-                    >
-                        {/* simple placeholder for initials */}
-                        U
-                    </Avatar>
-                </div>
-
-                <div style={{ padding: "24px", flex: 1 }}>
+        <>
+            <PageLayout title="Create Event">
                     <Form
                         form={form}
                         layout="vertical"
                         size="large"
                         onFinish={handleCreateEvent}
-                        initialValues={{ title: "", ingredients: [{ name: "" }], eventPrompts: [null], emojis: ["🥖", "🥑", "🌶️"], startDatetime: null, endDatetime: null }}
+                        initialValues={{ title: "", ingredients: [{ name: "" }], eventPrompts: [null], emojis: ["🥖", "🥑", "🌶️"], startDatetime: initialDates.start, endDatetime: initialDates.end }}
                     >
                         {/* Register emojis field so Form tracks it and useWatch works */}
                         <Form.Item name="emojis" style={{ display: "none" }}>
@@ -253,8 +238,11 @@ const CreateEventPage: React.FC = () => {
                                                         <DateTimePicker
                                                             value={watchedStart ? new Date(watchedStart) : null}
                                                             label="Start"
+                                                            disablePast
+                                                            minutesStep={1}
+                                                            timeSteps={{ hours: 1, minutes: 1 }}
                                                             onChange={(newVal) => form.setFieldsValue({ startDatetime: newVal ? newVal.toISOString() : null })}
-                                                            slotProps={{ textField: { fullWidth: true } }}
+                                                            slotProps={{ textField: { fullWidth: true, error: !!startError, helperText: startError ?? undefined } }}
                                                         />
                                                     </div>
                                                 </Form.Item>
@@ -266,8 +254,12 @@ const CreateEventPage: React.FC = () => {
                                                         <DateTimePicker
                                                             value={watchedEnd ? new Date(watchedEnd) : null}
                                                             label="End"
+                                                            disablePast
+                                                            minutesStep={1}
+                                                            timeSteps={{ hours: 1, minutes: 1 }}
+                                                            minDateTime={startDate ?? undefined}
                                                             onChange={(newVal) => form.setFieldsValue({ endDatetime: newVal ? newVal.toISOString() : null })}
-                                                            slotProps={{ textField: { fullWidth: true } }}
+                                                            slotProps={{ textField: { fullWidth: true, error: !!endError, helperText: endError ?? undefined } }}
                                                         />
                                                     </div>
                                                 </Form.Item>
@@ -296,6 +288,11 @@ const CreateEventPage: React.FC = () => {
                                                                                 <DateTimePicker
                                                                                     label={`Photo Time ${name + 1}`}
                                                                                     value={currentValue ? new Date(currentValue) : null}
+                                                                                    disablePast
+                                                                                    minutesStep={1}
+                                                                                    timeSteps={{ hours: 1, minutes: 1 }}
+                                                                                    minDateTime={startDate ?? undefined}
+                                                                                    maxDateTime={endDate ?? undefined}
                                                                                     onChange={(newVal) => {
                                                                                         const arr = form.getFieldValue("eventPrompts") || [];
                                                                                         arr[name] = newVal ? newVal.toISOString() : null;
@@ -335,13 +332,13 @@ const CreateEventPage: React.FC = () => {
                         <div style={{ marginTop: 30, display: "flex", justifyContent: "flex-end", gap: 10 }}>
                             <Button style={{ color: "#4b6624" }} onClick={() => router.push("/events/overview")}>Cancel</Button>
 
-                            <Button type="submit" variant="contained" style={{ background: "#4b6624", borderColor: "#4b6624", color: "white" }}>
+                            <Button type="submit" variant="contained" disabled={!isFormValid} style={{ background: isFormValid ? "#4b6624" : "#a3a3a3", borderColor: "#4b6624", color: "white" }}>
                                 Create Event
                             </Button>
                         </div>
                     </Form>
-                </div>
-            </div>
+            </PageLayout>
+
             {/* Emoji picker modal */}
             {openPicker !== null && (
                 <div
@@ -361,7 +358,7 @@ const CreateEventPage: React.FC = () => {
                     </div>
                 </div>
             )}
-        </div>
+        </>
     );
 };
 
