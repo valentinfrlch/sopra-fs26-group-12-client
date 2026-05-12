@@ -144,8 +144,8 @@ reason).
 | **[@jp-schl]** | [10.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/ffd0ab285d94dc769caf5520c19ea70d3677018b] | [The necessary ingredients are shown in the cooking event interface] | [To have all necessary info in one page for the cooking event] |
 |                    | [10.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/5e80dd236d33541be57258531fcb918a0e299d44] | [the amount of players participating is shown in the cooking interface] | [To have all necessary info in one page for the cooking event] |
 
-| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **@valentinfrlch** | 11.05.26   | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/12d2bc8950c1bcd4a59921508a4da8fbb4683969 | Update the recipe detail page. | Now its more user-friendly and the recipe information is displayed better. (#144, #145, #147, #148)|
+|                    | 12.05.26   | https://github.com/valentinfrlch/sopra-fs26-group-12-client/commit/96a158b27af0108539a4ea5a8f7758d2261d0dc5 | Add PageLayout wrapper that combines Header, Sidebar and other styling. | This makes the layout more consistent, especially since we also have a mobile layout, which previously needed some hacks on every page. |
 
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
