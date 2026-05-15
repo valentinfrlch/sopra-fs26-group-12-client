@@ -54,7 +54,9 @@ type WinnerDTO = {
 
 type EventResponse = {
   participantCount: number;
+  activeCount: number;
   participants: Participant[];
+  kickedUserIds: number[];
 };
 
 type EventMetaResponse = {
@@ -62,6 +64,7 @@ type EventMetaResponse = {
   title: string;
   emojis: string;
   participantCount: number;
+  activeCount: number;
 };
 
 type Participant = {
@@ -106,6 +109,9 @@ export default function CookPage() {
 
   const [participants, setParticipants] = useState<Participant[]>([]);
 
+  const [activeCount, setActiveCount] = useState<number | null>(null);
+  const [kickedUserIds, setKickedUserIds] = useState<number[]>([]);
+
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
@@ -122,6 +128,7 @@ export default function CookPage() {
   setIngredients(data.ingredients);
   setEventTitle(data.title ?? "");
   setEventEmojis(data.emojis ?? "");
+  setActiveCount(data.activeCount ?? null);
 }, [eventId, token, api]);
 
 useEffect(() => {
@@ -239,6 +246,8 @@ useEffect(() => {
 
   setParticipantCount(data.participantCount);
   setParticipants(data.participants ?? []);
+  setActiveCount(data.activeCount ?? null);
+  setKickedUserIds(data.kickedUserIds ?? []);
 }, [eventId, token, api]);
 
   useEffect(() => {
@@ -449,7 +458,7 @@ useEffect(() => {
           <Stack direction="row" alignItems="center" spacing={1.5}>
             <Chip
               icon={<PeopleAltOutlinedIcon sx={{ fontSize: 18, ml: "8px !important" }} />}
-              label={`${participants.length || participantCount || 0}/${participantCount ?? "-"} active`}
+              label={`${activeCount ?? participantCount ?? 0}/${participantCount ?? "-"} active`}
               sx={{
                 background: "#F3F4F6",
                 color: "#1A1A1A",
@@ -723,8 +732,7 @@ useEffect(() => {
               ) : (
                 participants.map((p) => {
                   const submission = submissionByUser.get(Number(p.id));
-                  const isCurrentUser = String(p.id) === (typeof window !== "undefined" ? localStorage.getItem("userId") : "");
-                  const isDisqualified = isCurrentUser && schedule.kicked;
+                  const isDisqualified = kickedUserIds.includes(Number(p.id));
                   const initial = (p.username || "?").charAt(0).toUpperCase();
 
                   return (
