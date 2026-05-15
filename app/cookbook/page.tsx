@@ -217,11 +217,22 @@ const CookbookPage: React.FC = () => {
   const [userId, setUserId] = useState<number | null>(null);
   const [searchAnchorEl, setSearchAnchorEl] = useState<HTMLElement | null>(null);
   const [searchInput, setSearchInput] = useState<string>("");
+  const [appliedSearch, setAppliedSearch] = useState<string>("");
   const searchOpen = Boolean(searchAnchorEl);
+
+  const handleSearchOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setSearchInput(appliedSearch);
+    setSearchAnchorEl(event.currentTarget);
+  };
 
   const handleSearchClose = () => {
     setSearchAnchorEl(null);
-    setSearchInput("");
+    setSearchInput(appliedSearch);
+  };
+
+  const handleSearchSubmit = () => {
+    setAppliedSearch(searchInput.trim());
+    setSearchAnchorEl(null);
   };
 
   useEffect(() => {
@@ -464,7 +475,11 @@ const CookbookPage: React.FC = () => {
         recipeIngredientNames.includes(ingredient)
       );
 
-    return matchesLabels && matchesIngredients;
+    const matchesSearch =
+      appliedSearch.length === 0 ||
+      recipe.title.toLowerCase().includes(appliedSearch.toLowerCase());
+
+    return matchesLabels && matchesIngredients && matchesSearch;
   });
 
   const handleLabelToggle = (label: string) => {
@@ -593,17 +608,19 @@ const CookbookPage: React.FC = () => {
               >
                 <IconButton
                   aria-label="Search recipes"
-                  onClick={(event) => setSearchAnchorEl(event.currentTarget)}
+                  onClick={handleSearchOpen}
                   sx={{
                     border: "1px solid rgba(0,0,0,0.23)",
                     borderRadius: "50%",
                     width: 40,
                     height: 40,
-                    color: "#4b6624",
-                    backgroundColor: "#fff",
+                    color: appliedSearch ? "#fff" : "#4b6624",
+                    backgroundColor: appliedSearch ? "#4b6624" : "#fff",
                     "&:hover": {
                       borderColor: "#4b6624",
-                      backgroundColor: "rgba(75,102,36,0.04)",
+                      backgroundColor: appliedSearch
+                        ? "#3f5936"
+                        : "rgba(75,102,36,0.04)"
                     },
                   }}
                 >
@@ -634,6 +651,12 @@ const CookbookPage: React.FC = () => {
                     placeholder="Search recipes by name"
                     value={searchInput}
                     onChange={(event) => setSearchInput(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        handleSearchSubmit();
+                      }
+                    }}
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         borderRadius: 4,
