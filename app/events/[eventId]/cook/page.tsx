@@ -23,6 +23,7 @@ import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
 import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
+import { dateCalendarClasses } from "@mui/x-date-pickers";
 
 type ScheduleResponse = {
   prompts: {
@@ -403,6 +404,11 @@ useEffect(() => {
     },
     [token, fetchSubmissions, fetchWinner, api]
   );
+
+const votingEndTime = useMemo(() => {
+  if (!eventEndMs) return null;
+  return eventEndMs + 10 * 60 * 1000;
+}, [eventEndMs]);
 
   /* ================= LOADING DESIGN ================= */
   if (!schedule || loading) {
@@ -841,7 +847,7 @@ useEffect(() => {
             </Box>
 
             {/* ====== POST-EVENT VOTING ====== */}
-            {eventFinished && submissions.length > 0 && (
+            {eventFinished && submissions.length > 0 && votingEndTime && Date.now() < votingEndTime && (
               <Box sx={{ mt: 5 }}>
                 <Typography sx={{ fontSize: 16, fontWeight: 700, color: "#1A1A1A", mb: 2 }}>
                   Vote for your favourite
