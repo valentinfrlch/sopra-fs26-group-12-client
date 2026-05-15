@@ -478,425 +478,448 @@ useEffect(() => {
         </Box>
 
         {/* Main content area */}
-        <Box sx={{ px: { xs: 2, md: 4 }, pb: { xs: 12, md: 4 }, flex: 1 }}>
-
-          {/* ====== HERO CARD ====== */}
-          {eventFinished ? (
-            // Event finished state
-            <Card
-              elevation={0}
-              sx={{
-                background: "#F0EEF6",
-                borderRadius: 4,
-                p: 4,
-                textAlign: "center",
-                mb: 4,
-                maxWidth: 640,
-                mx: "auto",
-              }}
-            >
-              <EmojiEventsOutlinedIcon sx={{ fontSize: 56, color: "#F97316", mb: 1 }} />
-              <Typography sx={{ fontSize: 22, fontWeight: 700, color: "#1A1A1A", mb: 1 }}>
-                Event finished
-              </Typography>
-              <Typography sx={{ fontSize: 14, color: "#6B7280", mb: 2 }}>
-                {winners.length > 0
-                  ? `Congrats to ${winners.map((w) => w.username).join(", ")}!`
-                  : "Time's up — check the results below."}
-              </Typography>
-              <Button
-                variant="contained"
-                onClick={() => router.push(`/events/${eventId}`)}
+        <Box
+          sx={{
+            px: { xs: 2, md: 4 },
+            pb: { xs: 12, md: 4 },
+            flex: 1,
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "1fr 260px" },
+            gap: { xs: 2, md: 4 },
+            alignItems: "start",
+          }}
+        >
+          {/* ===== LEFT: hero + gallery + voting ===== */}
+          <Box>
+            {/* ====== HERO CARD ====== */}
+            {eventFinished ? (
+              // Event finished state
+              <Card
+                elevation={0}
                 sx={{
-                  background: "#4a6741",
-                  textTransform: "none",
-                  fontWeight: 600,
-                  borderRadius: 22,
-                  px: 3,
-                  "&:hover": { background: "#3d5436" },
+                  background: "#F0EEF6",
+                  borderRadius: 4,
+                  p: 4,
+                  textAlign: "center",
+                  mb: 4,
+                  maxWidth: 640,
+                  mx: "auto",
                 }}
               >
-                Back to Event
-              </Button>
-            </Card>
-          ) : uploadActive ? (
-            // Active prompt: SHOW YOUR PROGRESS
-            <Card
-              elevation={0}
-              sx={{
-                background: "#FFE8D6",
-                border: "2px solid #F97316",
-                borderRadius: 4,
-                p: { xs: 3, md: 4 },
-                textAlign: "center",
-                mb: 4,
-                maxWidth: 640,
-                mx: "auto",
-              }}
-            >
-              <Typography
-                sx={{
-                  fontSize: { xs: 18, md: 22 },
-                  fontWeight: 800,
-                  color: "#EA580C",
-                  letterSpacing: 0.5,
-                  mb: 1,
-                }}
-              >
-                SHOW YOUR PROGRESS!
-              </Typography>
-              <Typography sx={{ fontSize: 14, color: "#6B7280", mb: 2 }}>
-                Take a photo of your current progress now.
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: { xs: 42, md: 56 },
-                  fontWeight: 800,
-                  color: "#EA580C",
-                  lineHeight: 1,
-                  mb: 2,
-                  fontVariantNumeric: "tabular-nums",
-                }}
-              >
-                {promptCountdown}
-              </Typography>
-
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-              />
-
-              {!selectedFile ? (
+                <EmojiEventsOutlinedIcon sx={{ fontSize: 56, color: "#F97316", mb: 1 }} />
+                <Typography sx={{ fontSize: 22, fontWeight: 700, color: "#1A1A1A", mb: 1 }}>
+                  Event finished
+                </Typography>
+                <Typography sx={{ fontSize: 14, color: "#6B7280", mb: 2 }}>
+                  {winners.length > 0
+                    ? `Congrats to ${winners.map((w) => w.username).join(", ")}!`
+                    : "Time's up — check the results below."}
+                </Typography>
                 <Button
                   variant="contained"
-                  startIcon={<PhotoCameraOutlinedIcon />}
-                  onClick={() => fileRef.current?.click()}
+                  onClick={() => router.push(`/events/${eventId}`)}
                   sx={{
-                    background: "#F97316",
+                    background: "#4a6741",
                     textTransform: "none",
-                    fontWeight: 700,
+                    fontWeight: 600,
                     borderRadius: 22,
                     px: 3,
-                    py: 1,
-                    boxShadow: "none",
-                    "&:hover": { background: "#EA580C", boxShadow: "none" },
+                    "&:hover": { background: "#3d5436" },
                   }}
                 >
-                  Take photo
+                  Back to Event
                 </Button>
-              ) : (
-                <Stack spacing={1.5} alignItems="center">
-                  {previewUrl && (
-                    <Box
-                      component="img"
-                      src={previewUrl}
-                      alt="preview"
-                      sx={{
-                        maxWidth: 240,
-                        maxHeight: 180,
-                        borderRadius: 2,
-                        objectFit: "cover",
-                      }}
-                    />
-                  )}
-                  <Stack direction="row" spacing={1}>
-                    <Button
-                      variant="outlined"
-                      onClick={() => setSelectedFile(null)}
-                      disabled={uploading}
-                      sx={{
-                        textTransform: "none",
-                        borderColor: "#F97316",
-                        color: "#F97316",
-                        borderRadius: 22,
-                        px: 2,
-                      }}
-                    >
-                      Retake
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={handleUpload}
-                      disabled={uploading}
-                      sx={{
-                        background: "#F97316",
-                        textTransform: "none",
-                        fontWeight: 700,
-                        borderRadius: 22,
-                        px: 3,
-                        boxShadow: "none",
-                        "&:hover": { background: "#EA580C", boxShadow: "none" },
-                      }}
-                    >
-                      {uploading ? "Uploading..." : "Submit"}
-                    </Button>
-                  </Stack>
-                </Stack>
-              )}
-
-              {uploadSuccess && (
-                <Typography sx={{ mt: 2, color: "#16A34A", fontWeight: 600 }}>
-                  ✓ Upload successful
-                </Typography>
-              )}
-            </Card>
-          ) : (
-            // No active prompt: KEEP COOKING
-            <Card
-              elevation={0}
-              sx={{
-                background: "#F0EEF6",
-                borderRadius: 4,
-                p: { xs: 3, md: 4 },
-                textAlign: "center",
-                mb: 4,
-                maxWidth: 640,
-                mx: "auto",
-              }}
-            >
-              <Box
+              </Card>
+            ) : uploadActive ? (
+              // Active prompt: SHOW YOUR PROGRESS
+              <Card
+                elevation={0}
                 sx={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: "50%",
-                  background: "#fff",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  mb: 1.5,
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                  background: "#FFE8D6",
+                  border: "2px solid #F97316",
+                  borderRadius: 4,
+                  p: { xs: 3, md: 4 },
+                  textAlign: "center",
+                  mb: 4,
+                  maxWidth: 640,
+                  mx: "auto",
                 }}
               >
-                <HourglassEmptyIcon sx={{ fontSize: 28, color: "#6B7280" }} />
-              </Box>
-              <Stack direction="row" justifyContent="center" alignItems="center" spacing={1}>
-                <Typography sx={{ fontSize: { xs: 18, md: 22 }, fontWeight: 700, color: "#1A1A1A" }}>
-                  Keep cooking!
+                <Typography
+                  sx={{
+                    fontSize: { xs: 18, md: 22 },
+                    fontWeight: 800,
+                    color: "#EA580C",
+                    letterSpacing: 0.5,
+                    mb: 1,
+                  }}
+                >
+                  SHOW YOUR PROGRESS!
                 </Typography>
-                <EmojiEventsOutlinedIcon sx={{ fontSize: 24, color: "#F59E0B" }} />
-              </Stack>
-              <Typography sx={{ fontSize: 14, color: "#6B7280", mt: 1 }}>
-                Wait for the next photo prompt. Focus fully on your dish.
-              </Typography>
-            </Card>
-          )}
+                <Typography sx={{ fontSize: 14, color: "#6B7280", mb: 2 }}>
+                  Take a photo of your current progress now.
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: { xs: 42, md: 56 },
+                    fontWeight: 800,
+                    color: "#EA580C",
+                    lineHeight: 1,
+                    mb: 2,
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {promptCountdown}
+                </Typography>
 
-          {/* ====== LIVE GALLERY ====== */}
-          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-            <Typography sx={{ fontSize: 16, fontWeight: 700, color: "#1A1A1A" }}>
-              Live gallery of players
-            </Typography>
-            <Button
-              size="small"
-              sx={{ textTransform: "none", color: "#6B7280", fontWeight: 500 }}
-              onClick={() => {/* TODO: gallery expansion */}}
-            >
-              Show all
-            </Button>
-          </Stack>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                />
 
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-              gap: 2,
-            }}
-          >
-            {participants.length === 0 ? (
-              <Typography sx={{ color: "#9CA3AF", fontSize: 14 }}>
-                No participants yet.
-              </Typography>
-            ) : (
-              participants.map((p) => {
-                const submission = submissionByUser.get(Number(p.id));
-                const isCurrentUser = String(p.id) === (typeof window !== "undefined" ? localStorage.getItem("userId") : "");
-                const isDisqualified = isCurrentUser && schedule.kicked;
-                const initial = (p.username || "?").charAt(0).toUpperCase();
-
-                return (
-                  <Box
-                    key={p.id}
+                {!selectedFile ? (
+                  <Button
+                    variant="contained"
+                    startIcon={<PhotoCameraOutlinedIcon />}
+                    onClick={() => fileRef.current?.click()}
                     sx={{
-                      position: "relative",
-                      borderRadius: 3,
-                      overflow: "hidden",
-                      background: "#F3F4F6",
-                      opacity: isDisqualified ? 0.55 : 1,
+                      background: "#F97316",
+                      textTransform: "none",
+                      fontWeight: 700,
+                      borderRadius: 22,
+                      px: 3,
+                      py: 1,
+                      boxShadow: "none",
+                      "&:hover": { background: "#EA580C", boxShadow: "none" },
                     }}
                   >
-                    <Box
-                      sx={{
-                        aspectRatio: "1 / 1",
-                        background: "#E5E7EB",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {submission ? (
-                        <Box
-                          component="img"
-                          src={`${getApiDomain()}/events/submissions/${submission.submissionId}/image`}
-                          alt={p.username}
-                          sx={{ width: "100%", height: "100%", objectFit: "cover" }}
-                        />
-                      ) : (
-                        <ImageOutlinedIcon sx={{ fontSize: 36, color: "#9CA3AF" }} />
-                      )}
-                    </Box>
+                    Take photo
+                  </Button>
+                ) : (
+                  <Stack spacing={1.5} alignItems="center">
+                    {previewUrl && (
+                      <Box
+                        component="img"
+                        src={previewUrl}
+                        alt="preview"
+                        sx={{
+                          maxWidth: 240,
+                          maxHeight: 180,
+                          borderRadius: 2,
+                          objectFit: "cover",
+                        }}
+                      />
+                    )}
+                    <Stack direction="row" spacing={1}>
+                      <Button
+                        variant="outlined"
+                        onClick={() => setSelectedFile(null)}
+                        disabled={uploading}
+                        sx={{
+                          textTransform: "none",
+                          borderColor: "#F97316",
+                          color: "#F97316",
+                          borderRadius: 22,
+                          px: 2,
+                        }}
+                      >
+                        Retake
+                      </Button>
+                      <Button
+                        variant="contained"
+                        onClick={handleUpload}
+                        disabled={uploading}
+                        sx={{
+                          background: "#F97316",
+                          textTransform: "none",
+                          fontWeight: 700,
+                          borderRadius: 22,
+                          px: 3,
+                          boxShadow: "none",
+                          "&:hover": { background: "#EA580C", boxShadow: "none" },
+                        }}
+                      >
+                        {uploading ? "Uploading..." : "Submit"}
+                      </Button>
+                    </Stack>
+                  </Stack>
+                )}
 
-                    {/* Username pill at bottom */}
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      spacing={0.5}
+                {uploadSuccess && (
+                  <Typography sx={{ mt: 2, color: "#16A34A", fontWeight: 600 }}>
+                    ✓ Upload successful
+                  </Typography>
+                )}
+              </Card>
+            ) : (
+              // No active prompt: KEEP COOKING
+              <Card
+                elevation={0}
+                sx={{
+                  background: "#F0EEF6",
+                  borderRadius: 4,
+                  p: { xs: 3, md: 4 },
+                  textAlign: "center",
+                  mb: 4,
+                  maxWidth: 640,
+                  mx: "auto",
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: "50%",
+                    background: "#fff",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    mb: 1.5,
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                  }}
+                >
+                  <HourglassEmptyIcon sx={{ fontSize: 28, color: "#6B7280" }} />
+                </Box>
+                <Stack direction="row" justifyContent="center" alignItems="center" spacing={1}>
+                  <Typography sx={{ fontSize: { xs: 18, md: 22 }, fontWeight: 700, color: "#1A1A1A" }}>
+                    Keep cooking!
+                  </Typography>
+                  <EmojiEventsOutlinedIcon sx={{ fontSize: 24, color: "#F59E0B" }} />
+                </Stack>
+                <Typography sx={{ fontSize: 14, color: "#6B7280", mt: 1 }}>
+                  Wait for the next photo prompt. Focus fully on your dish.
+                </Typography>
+              </Card>
+            )}
+
+            {/* ====== LIVE GALLERY ====== */}
+            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+              <Typography sx={{ fontSize: 16, fontWeight: 700, color: "#1A1A1A" }}>
+                Live gallery of players
+              </Typography>
+              <Button
+                size="small"
+                sx={{ textTransform: "none", color: "#6B7280", fontWeight: 500 }}
+                onClick={() => {/* TODO: gallery expansion */}}
+              >
+                Show all
+              </Button>
+            </Stack>
+
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+                gap: 2,
+              }}
+            >
+              {participants.length === 0 ? (
+                <Typography sx={{ color: "#9CA3AF", fontSize: 14 }}>
+                  No participants yet.
+                </Typography>
+              ) : (
+                participants.map((p) => {
+                  const submission = submissionByUser.get(Number(p.id));
+                  const isCurrentUser = String(p.id) === (typeof window !== "undefined" ? localStorage.getItem("userId") : "");
+                  const isDisqualified = isCurrentUser && schedule.kicked;
+                  const initial = (p.username || "?").charAt(0).toUpperCase();
+
+                  return (
+                    <Box
+                      key={p.id}
                       sx={{
-                        position: "absolute",
-                        bottom: 8,
-                        left: 8,
-                        background: "#fff",
-                        borderRadius: 999,
-                        px: 0.75,
-                        py: 0.25,
-                        boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
+                        position: "relative",
+                        borderRadius: 3,
+                        overflow: "hidden",
+                        background: "#F3F4F6",
+                        opacity: isDisqualified ? 0.55 : 1,
                       }}
                     >
                       <Box
                         sx={{
-                          width: 18,
-                          height: 18,
-                          borderRadius: "50%",
-                          background: "#DCEFD5",
-                          color: "#485F23",
-                          fontSize: 10,
-                          fontWeight: 700,
+                          aspectRatio: "1 / 1",
+                          background: "#E5E7EB",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
                         }}
                       >
-                        {initial}
+                        {submission ? (
+                          <Box
+                            component="img"
+                            src={`${getApiDomain()}/events/submissions/${submission.submissionId}/image`}
+                            alt={p.username}
+                            sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          />
+                        ) : (
+                          <ImageOutlinedIcon sx={{ fontSize: 36, color: "#9CA3AF" }} />
+                        )}
                       </Box>
-                      <Typography sx={{ fontSize: 12, fontWeight: 600, color: "#1A1A1A" }}>
-                        {p.username}
-                      </Typography>
-                    </Stack>
 
-                    {isDisqualified && (
-                      <Box
+                      {/* Username pill at bottom */}
+                      <Stack
+                        direction="row"
+                        alignItems="center"
+                        spacing={0.5}
                         sx={{
                           position: "absolute",
-                          top: "50%",
-                          left: "50%",
-                          transform: "translate(-50%, -50%)",
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
-                          gap: 0.5,
+                          bottom: 8,
+                          left: 8,
+                          background: "#fff",
+                          borderRadius: 999,
+                          px: 0.75,
+                          py: 0.25,
+                          boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
                         }}
                       >
-                        <CancelOutlinedIcon sx={{ fontSize: 32, color: "#EF4444" }} />
                         <Box
                           sx={{
-                            background: "#EF4444",
-                            color: "#fff",
+                            width: 18,
+                            height: 18,
+                            borderRadius: "50%",
+                            background: "#DCEFD5",
+                            color: "#485F23",
                             fontSize: 10,
                             fontWeight: 700,
-                            px: 1,
-                            py: 0.25,
-                            borderRadius: 999,
-                            letterSpacing: 0.5,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                           }}
                         >
-                          DISQUALIFIED
+                          {initial}
                         </Box>
+                        <Typography sx={{ fontSize: 12, fontWeight: 600, color: "#1A1A1A" }}>
+                          {p.username}
+                        </Typography>
+                      </Stack>
+
+                      {isDisqualified && (
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: 0.5,
+                          }}
+                        >
+                          <CancelOutlinedIcon sx={{ fontSize: 32, color: "#EF4444" }} />
+                          <Box
+                            sx={{
+                              background: "#EF4444",
+                              color: "#fff",
+                              fontSize: 10,
+                              fontWeight: 700,
+                              px: 1,
+                              py: 0.25,
+                              borderRadius: 999,
+                              letterSpacing: 0.5,
+                            }}
+                          >
+                            DISQUALIFIED
+                          </Box>
+                        </Box>
+                      )}
+                    </Box>
+                  );
+                })
+              )}
+            </Box>
+
+            {/* ====== POST-EVENT VOTING ====== */}
+            {eventFinished && submissions.length > 0 && (
+              <Box sx={{ mt: 5 }}>
+                <Typography sx={{ fontSize: 16, fontWeight: 700, color: "#1A1A1A", mb: 2 }}>
+                  Vote for your favourite
+                </Typography>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+                    gap: 2,
+                  }}
+                >
+                  {submissions.map((s) => (
+                    <Card
+                      key={s.submissionId}
+                      elevation={0}
+                      sx={{ borderRadius: 3, overflow: "hidden", background: "#fff" }}
+                    >
+                      <Box
+                        component="img"
+                        src={`${getApiDomain()}/events/submissions/${s.submissionId}/image`}
+                        alt={s.username}
+                        sx={{ width: "100%", height: 160, objectFit: "cover", display: "block" }}
+                      />
+                      <Box sx={{ p: 1.5 }}>
+                        <Typography sx={{ fontSize: 13, fontWeight: 600, color: "#1A1A1A" }}>
+                          {s.username}
+                        </Typography>
+                        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 1 }}>
+                          <Typography sx={{ fontSize: 12, color: "#6B7280" }}>
+                            ⭐ {s.voteCount ?? 0}
+                          </Typography>
+                          <IconButton
+                            size="small"
+                            onClick={() => voteSubmission(s.submissionId)}
+                            sx={{ color: "#F97316" }}
+                          >
+                            <EmojiEventsOutlinedIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                        </Stack>
                       </Box>
-                    )}
-                  </Box>
-                );
-              })
+                    </Card>
+                  ))}
+                </Box>
+              </Box>
             )}
           </Box>
 
-          {/* ====== POST-EVENT VOTING ====== */}
-          {eventFinished && submissions.length > 0 && (
-            <Box sx={{ mt: 5 }}>
-              <Typography sx={{ fontSize: 16, fontWeight: 700, color: "#1A1A1A", mb: 2 }}>
-                Vote for your favourite
-              </Typography>
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-                  gap: 2,
-                }}
-              >
-                {submissions.map((s) => (
-                  <Card
-                    key={s.submissionId}
-                    elevation={0}
-                    sx={{ borderRadius: 3, overflow: "hidden", background: "#fff" }}
-                  >
-                    <Box
-                      component="img"
-                      src={`${getApiDomain()}/events/submissions/${s.submissionId}/image`}
-                      alt={s.username}
-                      sx={{ width: "100%", height: 160, objectFit: "cover", display: "block" }}
-                    />
-                    <Box sx={{ p: 1.5 }}>
-                      <Typography sx={{ fontSize: 13, fontWeight: 600, color: "#1A1A1A" }}>
-                        {s.username}
-                      </Typography>
-                      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 1 }}>
-                        <Typography sx={{ fontSize: 12, color: "#6B7280" }}>
-                          ⭐ {s.voteCount ?? 0}
-                        </Typography>
-                        <IconButton
-                          size="small"
-                          onClick={() => voteSubmission(s.submissionId)}
-                          sx={{ color: "#F97316" }}
-                        >
-                          <EmojiEventsOutlinedIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
-                      </Stack>
-                    </Box>
-                  </Card>
-                ))}
-              </Box>
-            </Box>
-          )}
-
-          {/* Ingredients hint at the bottom (always visible during event) */}
-          {!eventFinished && ingredients.length > 0 && (
-            <Box sx={{ mt: 5 }}>
-              <Typography sx={{ fontSize: 14, fontWeight: 700, color: "#1A1A1A", mb: 1 }}>
+          {/* ===== Ingredients sidebar ===== */}
+          {ingredients.length > 0 && (
+            <Card
+              elevation={0}
+              sx={{
+                background: "#fff",
+                border: "1px solid #E5E7EB",
+                borderRadius: 3,
+                p: 2.5,
+                position: { md: "sticky" },
+                top: { md: 24 },
+              }}
+            >
+              <Typography sx={{ fontSize: 14, fontWeight: 700, color: "#1A1A1A", mb: 1.5 }}>
                 Ingredients
               </Typography>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 1,
-                }}
-              >
+              <Stack spacing={1}>
                 {ingredients.map((ing) => (
-                  <Chip
+                  <Box
                     key={ing}
-                    label={ing}
                     sx={{
-                      background: "#F3F4F6",
-                      color: "#1A1A1A",
-                      fontSize: 12,
-                      height: 28,
-                      borderRadius: 14,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      fontSize: 13,
+                      color: "#374151",
                     }}
-                  />
+                  >
+                    <Box
+                      sx={{
+                        width: 6, height: 6, borderRadius: "50%",
+                        background: "#4a6741", flexShrink: 0,
+                      }}
+                    />
+                    {ing}
+                  </Box>
                 ))}
-              </Box>
-            </Box>
+              </Stack>
+            </Card>
           )}
         </Box>
       </Box>
