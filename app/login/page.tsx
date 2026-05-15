@@ -3,14 +3,16 @@
 import { useRouter } from "next/navigation"; // use NextJS router for navigation
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
+import AuthForm from "@/components/auth/AuthForm";
 // import { User } from "@/types/user";
 import { Form } from "antd";
-import { Button, TextField } from "@mui/material";
+// import { Button, TextField } from "@mui/material";
 import React, { useState } from "react";
 import { UserGetDTO } from "@/types/api";
 import { storeUserSession } from "@/utils/auth";
 import { useSearchParams } from "next/navigation";
-import CircularProgress from "@mui/material/CircularProgress";
+// import CircularProgress from "@mui/material/CircularProgress";
+import { parseAuthError } from "@/utils/parseAuthError";
 // Optionally, you can import a CSS module or file for additional styling:
 // import styles from "@/styles/page.module.css";
 
@@ -49,75 +51,34 @@ const Login: React.FC = () => {
     } catch (error) {
 
       setIsSubmitting(false);
-
-      if (error instanceof Error) {
-        // try to parse the string as json
-        const jsonStart = error.message.indexOf("{");
-        const jsonEnd = error.message.lastIndexOf("}") + 1;
-        const parsed = JSON.parse(error.message.slice(jsonStart, jsonEnd));
-
-        console.log(parsed.detail); // Log the entire error for debugging
-        // Update currentError
-        if (parsed.detail === "The username and the name provided are not unique. Therefore, the user could not be created!") {
-          setCurrentError("Username is already taken. Please choose a different one.");
-        } else {
-          setCurrentError(parsed.detail);
-        }
-      } else {
-        console.error("An unknown error occurred during login.");
-      }
+      setCurrentError(parseAuthError(error));
+      
     }
   };
 
-  return (
+return (
     <div className="login-container">
-      <Form
-        form={form}
-        name="login"
-        size="large"
-        variant="outlined"
+      <AuthForm
+        title="Login"
+        buttonText="Login"
+        isSubmitting={isSubmitting}
+        currentError={currentError}
         onFinish={handleLogin}
-        layout="vertical"
-      >
-        <Form.Item>
-          <h1 style={{ color: "black", textAlign: "center", marginBottom: "20px" }}>Login</h1>
-        </Form.Item>
-        <Form.Item
-          name="username"
-          rules={[{ required: true, message: "Please input your username!" }]}
-        >
-          <TextField label="Username" fullWidth />
-        </Form.Item>
-        <Form.Item
-          name="password"
-          rules={[{ required: true, message: "Please input your password!" }]}
-        >
-          <TextField label="Password" type="password" fullWidth />
-        </Form.Item>
-        <Form.Item>
-          <Button
-            variant="contained"
-            className="login-button"
-            disableElevation
-            sx={{ boxShadow: "none" }}
-            type="submit"
-            disabled={isSubmitting}
+        footerText={
+          <div
+            className="signup-link"
+            style={{ color: "black" }}
           >
-            {isSubmitting ? (
-              <CircularProgress size={24} sx={{ color: "white" }} />
-            ) : (
-              "Login"
-            )}
-          </Button>
-          <Form.Item >
-            <p className="error-message">{currentError}</p>
-          </Form.Item>
-        </Form.Item>
-        <div className="signup-link" style={{ color: "black" }}>
-          Don&apos;t have an account? <a style={{ color: "#485F23" }}  href="/signup">Sign up</a>
-        </div>
-      </Form>
-
+            Don&apos;t have an account?{" "}
+            <a
+              style={{ color: "#485F23" }}
+              href="/signup"
+            >
+              Sign up
+            </a>
+          </div>
+        }
+      />
     </div>
   );
 };

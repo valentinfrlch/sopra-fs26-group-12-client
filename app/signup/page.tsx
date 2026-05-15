@@ -5,10 +5,12 @@ import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { User } from "@/types/user";
 import { Form } from "antd";
-import { Button, TextField } from "@mui/material";
+import { TextField } from "@mui/material";
 import React, { useState } from "react";
 import { storeUserSession } from "@/utils/auth";
-import CircularProgress from "@mui/material/CircularProgress";
+// import CircularProgress from "@mui/material/CircularProgress";
+import { parseAuthError } from "@/utils/parseAuthError";
+import AuthForm from "@/components/auth/AuthForm";
 // Optionally, you can import a CSS module or file for additional styling:
 // import styles from "@/styles/page.module.css";
 
@@ -48,81 +50,48 @@ const Signup: React.FC = () => {
       router.push("/cookbook");
     } catch (error) {
       setIsSubmitting(false);
-
-      if (error instanceof Error) {
-        // try to parse the string as json
-        const jsonStart = error.message.indexOf("{");
-        const jsonEnd = error.message.lastIndexOf("}") + 1;
-        const parsed = JSON.parse(error.message.slice(jsonStart, jsonEnd));
-
-        console.log(parsed.detail); // Log error for debugging
-        // Update currentError
-        if (parsed.detail === "The username and the name provided are not unique. Therefore, the user could not be created!") {
-          setCurrentError("Username is already taken. Please choose a different one.");
-        } else {
-          setCurrentError(parsed.detail);
-        }
-      } else {
-        setCurrentError("An unknown error occurred during signup.");
-      }
+      setCurrentError(parseAuthError(error));
+      
     }
   };
 
   return (
     <div className="signup-container">
-      <Form
-        form={form}
-        name="signup"
-        size="large"
-        variant="outlined"
+      <AuthForm
+        title="Create an Account"
+        buttonText="Create Account"
+        isSubmitting={isSubmitting}
+        currentError={currentError}
         onFinish={handleSignup}
-        layout="vertical"
-      >
-        <Form.Item>
-          <h1 style={{ color: "black", textAlign: "center", marginBottom: "20px" }}>Create an Account</h1>
-        </Form.Item>
-        <Form.Item
-          name="name"
-          rules={[{ required: true, message: "Please input your name!" }]}
-        >
-          <TextField label="Name" fullWidth />
-        </Form.Item>
-        <Form.Item
-          name="username"
-          rules={[{ required: true, message: "Please input your username!" }]}
-        >
-          <TextField label="Username" fullWidth />
-        </Form.Item>
-        <Form.Item
-          name="password"
-          rules={[{ required: true, message: "Please input your password!" }]}
-        >
-          <TextField label="Password" type="password" fullWidth />
-        </Form.Item>
-        <Form.Item>
-          <Button
-            variant="contained"
-            className="login-button"
-            disableElevation
-            sx={{ boxShadow: "none" }}
-            type="submit"
-            disabled={isSubmitting}
+        extraFields={
+          <Form.Item
+            name="name"
+            rules={[
+              {
+                required: true,
+                message: "Please input your name!",
+              },
+            ]}
           >
-            {isSubmitting ? (
-              <CircularProgress size={24} sx={{ color: "white" }} />
-            ) : (
-              "Create Account"
-            )}
-          </Button>
-        </Form.Item>
-        <Form.Item >
-          <p className="error-message">{currentError}</p>
-        </Form.Item>
-        <div className="login-link" style={{ color: "black" }}>
-          Already have an account? <a style={{ color: "#485F23" }} href="/login">Sign in</a>
-        </div>
-      </Form>
-    </div >
+            <TextField label="Name" fullWidth />
+          </Form.Item>
+        }
+        footerText={
+          <div
+            className="login-link"
+            style={{ color: "black" }}
+          >
+            Already have an account?{" "}
+            <a
+              style={{ color: "#485F23" }}
+              href="/login"
+            >
+              Sign in
+            </a>
+          </div>
+        }
+      />
+    </div>
   );
 };
 export default Signup;
