@@ -474,7 +474,7 @@ const CookbookPage: React.FC = () => {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 32 }}>
           {/* Registered Event Card */}
           <EventPreviewCard
-            title="Registered Events"
+            title="Upcoming Registered Events"
             events={nextEvents}
             emptyMessage="No upcoming events yet"
             onHeaderClick={() => router.push("/events/registered")}
