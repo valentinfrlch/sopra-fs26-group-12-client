@@ -219,6 +219,11 @@ const CookbookPage: React.FC = () => {
   const [searchInput, setSearchInput] = useState<string>("");
   const searchOpen = Boolean(searchAnchorEl);
 
+  const handleSearchClose = () => {
+    setSearchAnchorEl(null);
+    setSearchInput("");
+  };
+
   useEffect(() => {
     const id = localStorage.getItem("userId");
     if (id) setUserId(Number(id));
@@ -608,7 +613,7 @@ const CookbookPage: React.FC = () => {
                 <Popover
                   open={searchOpen}
                   anchorEl={searchAnchorEl}
-                  onClose={() => setSearchAnchorEl(null)}
+                  onClose={handleSearchClose}
                   anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
                   transformOrigin={{ vertical: "top", horizontal: "left" }}
                   slotProps={{
