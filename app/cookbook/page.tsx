@@ -236,6 +236,14 @@ const CookbookPage: React.FC = () => {
   };
 
   useEffect(() => {
+    if (!searchOpen) return;
+
+    const onScroll = () => handleSearchClose();
+    window.addEventListener("scroll", onScroll, true);
+    return () => window.removeEventListener("scroll", onScroll, true);
+  }, [searchOpen, appliedSearch]);
+
+  useEffect(() => {
     const id = localStorage.getItem("userId");
     if (id) setUserId(Number(id));
   }, []);
