@@ -8,10 +8,21 @@ import React, {
   useRef,
 } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Sidebar, { Header } from "@/components/appLayout";
+import Sidebar, { UserAvatar } from "@/components/appLayout";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
+import { getApiDomain } from "@/utils/domain";
 import { Spin } from "antd";
+import {
+  Box, Button, Card, Chip, IconButton, Stack, Typography,
+} from "@mui/material";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
+import PhotoCameraOutlinedIcon from "@mui/icons-material/PhotoCameraOutlined";
+import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
+import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 
 type ScheduleResponse = {
   prompts: {
@@ -49,6 +60,8 @@ type EventResponse = {
 type EventMetaResponse = {
   ingredients: string[];
   title: string;
+  emojis: string;
+  participantCount: number;
 };
 
 type Participant = {
@@ -88,6 +101,8 @@ export default function CookPage() {
   const [participantCount, setParticipantCount] = useState<number | null>(null);
 
   const [ingredients, setIngredients] = useState<string[]>([]);
+  const [eventTitle, setEventTitle] = useState<string>("");
+  const [eventEmojis, setEventEmojis] = useState<string>("");
 
   const [participants, setParticipants] = useState<Participant[]>([]);
 
@@ -105,6 +120,8 @@ export default function CookPage() {
   );
 
   setIngredients(data.ingredients);
+  setEventTitle(data.title ?? "");
+  setEventEmojis(data.emojis ?? "");
 }, [eventId, token, api]);
 
 useEffect(() => {
@@ -123,11 +140,6 @@ useEffect(() => {
     schedule.uploadWindowMinutes * 60 * 1000 -300000
   );
 }, [schedule]);
-
-const formatMinutes = (ms: number) => {
-  const minutes = Math.ceil(ms / 60000);
-  return `${minutes} min`;
-};
 
   const activePromptIndex = useMemo(() => {
     if (!schedule) return -1;
@@ -345,297 +357,549 @@ useEffect(() => {
     try {
       const formData = new FormData();
       formData.append("file", selectedFile);
-      formData.append(
-        "promptId",
-        String(schedule.prompts[activePromptIndex].id)
-      );
+      formData.append("promptId", String(schedule.prompts[activePromptIndex].id));
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/events/${eventId}/submissions`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-        }
+      await api.post(
+        `/events/${eventId}/submissions?promptId=${schedule.prompts[activePromptIndex].id}`,
+        formData,
+        { Authorization: `Bearer ${token}` }
       );
-
-      if (!res.ok) throw new Error(await res.text());
 
       setSelectedFile(null);
       setUploadSuccess(true);
       setTimeout(() => setUploadSuccess(false), 3000);
+    } catch (err) {
+      console.error("Upload failed:", err);
     } finally {
       setUploading(false);
     }
-  }, [selectedFile, schedule, token, activePromptIndex, eventId]);
+  }, [selectedFile, schedule, token, activePromptIndex, eventId, api]);
 
   const voteSubmission = useCallback(
     async (submissionId: number) => {
       if (!token) return;
 
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/events/submissions/${submissionId}/vote`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      try {
+        await api.post(
+          `/events/submissions/${submissionId}/vote`,
+          {},
+          { Authorization: `Bearer ${token}` }
+        );
+      } catch (err) {
+        console.error("Vote failed:", err);
+      }
 
       await fetchSubmissions();
       await fetchWinner();
     },
-    [token, fetchSubmissions, fetchWinner]
+    [token, fetchSubmissions, fetchWinner, api]
   );
 
   /* ================= LOADING DESIGN ================= */
   if (!schedule || loading) {
     return (
-      <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
+      <Box sx={{ display: "flex", minHeight: "100vh", background: "#F9FBFC" }}>
         <Sidebar />
-        <div style={{
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center"
-        }}>
+        <Box sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <Spin />
-        </div>
-      </div>
+        </Box>
+      </Box>
     );
   }
 
+  // Map: userId -> submission (for current/last prompt) so we can show photos in the gallery
+  const submissionByUser = new Map<number, SubmissionDTO>();
+  submissions.forEach((s) => submissionByUser.set(s.userId, s));
+
+  const promptCountdown = timeLeftMs !== null ? formatTime(timeLeftMs) : "--:--";
+  const eventCountdown = eventTimeLeftMs !== null ? formatTime(eventTimeLeftMs) : "--:--";
+
   /* ================= MAIN DESIGN ================= */
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh", background: "#F9FBFC" }}>
       <Sidebar />
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        
-        <Header title="Cook Event" rightContent={null} />
+      <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
 
-        <div style={{ padding: 24, flex: 1 }}>
-          <div style={{
-            maxWidth: 480,
-            margin: "0 auto",
-            background: "#fff",
-            borderRadius: 16,
-            padding: 20,
-            boxShadow: "0 1px 3px rgba(0,0,0,0.06)"
-          }}>
-            <p style={{ fontSize: 14, color: "#666", marginBottom: 8 }}>
-              👥 {participantCount ?? "-"} Player(s)
-            </p>
+        {/* Top bar: title + emojis on the left, pills + avatar on the right */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            px: { xs: 2, md: 4 },
+            py: 2.5,
+            background: "#F9FBFC",
+          }}
+        >
+          <Box>
+            <Stack direction="row" alignItems="center" spacing={1.5}>
+              <Typography sx={{ fontSize: 22, fontWeight: 700, color: "#1A1A1A" }}>
+                {eventTitle || "Cook Event"}
+              </Typography>
+              {eventEmojis && (
+                <Typography sx={{ fontSize: 22, lineHeight: 1 }}>{eventEmojis}</Typography>
+              )}
+            </Stack>
+            <Typography sx={{ fontSize: 13, color: "#6B7280", mt: 0.25 }}>
+              Current Challenge
+            </Typography>
+          </Box>
 
-            {participants.length > 0 && (
-              <div style={{ marginBottom: 12 }}>
-                <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>
-                  Participants
-                </h3>
-
-                <ul style={{ paddingLeft: 18, margin: 0 }}>
-                {participants.map((p) => (
-                  <li key={p.id} style={{ fontSize: 14, color: "#333" }}>
-                    {p.username}
-                  </li>
-                ))}
-                </ul>
-              </div>
-            )}
-
-            {eventTimeLeftMs !== null && !eventFinished && (
-              <p style={{ fontSize: 14, color: "#666", marginBottom: 8 }}>
-                ⏱️ {formatMinutes(eventTimeLeftMs)} remaining
-              </p>
-            )}
-
-            {ingredients.length > 0 && (
-              <div style={{ marginBottom: 16 }}>
-                <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>
-                  Ingredients
-                </h3>
-
-                <ul style={{ paddingLeft: 18, margin: 0 }}>
-                  {ingredients.map((ing) => (
-                  <li key={ing} style={{ fontSize: 14, color: "#333", marginBottom: 4 }}>
-                    {ing}
-                  </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {eventFinished && (
-              <button
-                onClick={() => router.push("/cookbook")}
-                style={{
-                position: "fixed",
-                bottom: 20,
-                right: 20,
-                padding: "10px 16px",
-                borderRadius: 12,
-                border: "none",
-                background: "#4a6741",
-                color: "#fff",
+          <Stack direction="row" alignItems="center" spacing={1.5}>
+            <Chip
+              icon={<PeopleAltOutlinedIcon sx={{ fontSize: 18, ml: "8px !important" }} />}
+              label={`${participants.length || participantCount || 0}/${participantCount ?? "-"} active`}
+              sx={{
+                background: "#F3F4F6",
+                color: "#1A1A1A",
                 fontWeight: 600,
-                cursor: "pointer",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.15)"
-                }}>
-                Return to Home
-                </button>
-            )}
+                fontSize: 13,
+                height: 34,
+                borderRadius: 17,
+                "& .MuiChip-icon": { color: "#6B7280" },
+              }}
+            />
+            <Chip
+              icon={<AccessTimeIcon sx={{ fontSize: 18, ml: "8px !important" }} />}
+              label={eventCountdown}
+              sx={{
+                background: "#F3F4F6",
+                color: "#1A1A1A",
+                fontWeight: 600,
+                fontSize: 13,
+                height: 34,
+                borderRadius: 17,
+                "& .MuiChip-icon": { color: "#6B7280" },
+              }}
+            />
+            <UserAvatar size={36} />
+          </Stack>
+        </Box>
 
-            {uploadSuccess && (
-              <p style={{ color: "#4a6741", fontWeight: 500 }}>
-                Upload successful
-              </p>
-            )}
+        {/* Main content area */}
+        <Box sx={{ px: { xs: 2, md: 4 }, pb: { xs: 12, md: 4 }, flex: 1 }}>
 
-            {uploadActive && !eventFinished && (
-              <>
-                <p style={{ color: "#4a6741", fontWeight: 600 }}>
-                  🟢 Upload open: submit your photo and continue cooking!
-                </p>
+          {/* ====== HERO CARD ====== */}
+          {eventFinished ? (
+            // Event finished state
+            <Card
+              elevation={0}
+              sx={{
+                background: "#F0EEF6",
+                borderRadius: 4,
+                p: 4,
+                textAlign: "center",
+                mb: 4,
+                maxWidth: 640,
+                mx: "auto",
+              }}
+            >
+              <EmojiEventsOutlinedIcon sx={{ fontSize: 56, color: "#F97316", mb: 1 }} />
+              <Typography sx={{ fontSize: 22, fontWeight: 700, color: "#1A1A1A", mb: 1 }}>
+                Event finished
+              </Typography>
+              <Typography sx={{ fontSize: 14, color: "#6B7280", mb: 2 }}>
+                {winners.length > 0
+                  ? `Congrats to ${winners.map((w) => w.username).join(", ")}!`
+                  : "Time's up — check the results below."}
+              </Typography>
+              <Button
+                variant="contained"
+                onClick={() => router.push(`/events/${eventId}`)}
+                sx={{
+                  background: "#4a6741",
+                  textTransform: "none",
+                  fontWeight: 600,
+                  borderRadius: 22,
+                  px: 3,
+                  "&:hover": { background: "#3d5436" },
+                }}
+              >
+                Back to Event
+              </Button>
+            </Card>
+          ) : uploadActive ? (
+            // Active prompt: SHOW YOUR PROGRESS
+            <Card
+              elevation={0}
+              sx={{
+                background: "#FFE8D6",
+                border: "2px solid #F97316",
+                borderRadius: 4,
+                p: { xs: 3, md: 4 },
+                textAlign: "center",
+                mb: 4,
+                maxWidth: 640,
+                mx: "auto",
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: { xs: 18, md: 22 },
+                  fontWeight: 800,
+                  color: "#EA580C",
+                  letterSpacing: 0.5,
+                  mb: 1,
+                }}
+              >
+                SHOW YOUR PROGRESS!
+              </Typography>
+              <Typography sx={{ fontSize: 14, color: "#6B7280", mb: 2 }}>
+                Take a photo of your current progress now.
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: { xs: 42, md: 56 },
+                  fontWeight: 800,
+                  color: "#EA580C",
+                  lineHeight: 1,
+                  mb: 2,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {promptCountdown}
+              </Typography>
 
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                />
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+              />
 
-                <button
+              {!selectedFile ? (
+                <Button
+                  variant="contained"
+                  startIcon={<PhotoCameraOutlinedIcon />}
                   onClick={() => fileRef.current?.click()}
-                  style={{
-                    marginTop: 12,
-                    padding: "10px 16px",
-                    borderRadius: 12,
-                    border: "1px solid #4a6741",
-                    background: "transparent",
-                    color: "#4a6741",
-                    fontWeight: 500,
-                    cursor: "pointer"
-                    }}>
-                  Select Image
-                  </button>
-
-                {previewUrl && (
-                  <img
-                    src={previewUrl}
-                    style={{
-                      width: "100%",
-                      borderRadius: 12,
-                      marginTop: 12
-                    }}
-                  />
-                )}
-
-                <button
-                  disabled={!selectedFile || uploading}
-                  onClick={handleUpload}
-                  style={{
-                    marginTop: 12,
-                    padding: "10px 16px",
-                    borderRadius: 12,
-                    border: "none",
-                    background: !selectedFile || uploading ? "#c7d1c3" : "#4a6741",
-                    color: "#fff",
-                    fontWeight: 600,
-                    cursor: !selectedFile || uploading ? "not-allowed" : "pointer"
-                    }}>
-                  {uploading ? "Uploading..." : "Upload"}
-                </button>
-
-                {timeLeftMs !== null && (
-                  <p style={{ color: "#666", marginTop: 8 }}>
-                    {formatTime(timeLeftMs)}
-                  </p>
-                )}
-              </>
-            )}
-
-            {!uploadActive && (
-              <>
-                <p style={{ color: "#666" }}>
-                  ⚫ Upload closed
-                </p>
-
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 16, marginTop: 12 }}>
-                  {submissions.map((s) => (
-                    <div
-                      key={s.submissionId}
-                      style={{
-                        borderRadius: 12,
-                        overflow: "hidden",
-                        background: "#fafafa"
+                  sx={{
+                    background: "#F97316",
+                    textTransform: "none",
+                    fontWeight: 700,
+                    borderRadius: 22,
+                    px: 3,
+                    py: 1,
+                    boxShadow: "none",
+                    "&:hover": { background: "#EA580C", boxShadow: "none" },
+                  }}
+                >
+                  Take photo
+                </Button>
+              ) : (
+                <Stack spacing={1.5} alignItems="center">
+                  {previewUrl && (
+                    <Box
+                      component="img"
+                      src={previewUrl}
+                      alt="preview"
+                      sx={{
+                        maxWidth: 240,
+                        maxHeight: 180,
+                        borderRadius: 2,
+                        objectFit: "cover",
+                      }}
+                    />
+                  )}
+                  <Stack direction="row" spacing={1}>
+                    <Button
+                      variant="outlined"
+                      onClick={() => setSelectedFile(null)}
+                      disabled={uploading}
+                      sx={{
+                        textTransform: "none",
+                        borderColor: "#F97316",
+                        color: "#F97316",
+                        borderRadius: 22,
+                        px: 2,
                       }}
                     >
-                      <div
-                        style={{
-                        width: "100%",
-                        height: 140,
-                        overflow: "hidden",
-                        background: "#f0eef6"
-                        }}>
-                        <img
-                          src={`${process.env.NEXT_PUBLIC_API_URL}/events/submissions/${s.submissionId}/image`}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                            display: "block"
-                          }}/>
-                      </div>
+                      Retake
+                    </Button>
+                    <Button
+                      variant="contained"
+                      onClick={handleUpload}
+                      disabled={uploading}
+                      sx={{
+                        background: "#F97316",
+                        textTransform: "none",
+                        fontWeight: 700,
+                        borderRadius: 22,
+                        px: 3,
+                        boxShadow: "none",
+                        "&:hover": { background: "#EA580C", boxShadow: "none" },
+                      }}
+                    >
+                      {uploading ? "Uploading..." : "Submit"}
+                    </Button>
+                  </Stack>
+                </Stack>
+              )}
 
-                      <div style={{ padding: 12 }}>
-                        <div style={{ fontSize: 14, color: "#1a1a1a" }}>
-                          👤 {s.username}
-                        </div>
+              {uploadSuccess && (
+                <Typography sx={{ mt: 2, color: "#16A34A", fontWeight: 600 }}>
+                  ✓ Upload successful
+                </Typography>
+              )}
+            </Card>
+          ) : (
+            // No active prompt: KEEP COOKING
+            <Card
+              elevation={0}
+              sx={{
+                background: "#F0EEF6",
+                borderRadius: 4,
+                p: { xs: 3, md: 4 },
+                textAlign: "center",
+                mb: 4,
+                maxWidth: 640,
+                mx: "auto",
+              }}
+            >
+              <Box
+                sx={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: "50%",
+                  background: "#fff",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  mb: 1.5,
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                }}
+              >
+                <HourglassEmptyIcon sx={{ fontSize: 28, color: "#6B7280" }} />
+              </Box>
+              <Stack direction="row" justifyContent="center" alignItems="center" spacing={1}>
+                <Typography sx={{ fontSize: { xs: 18, md: 22 }, fontWeight: 700, color: "#1A1A1A" }}>
+                  Keep cooking!
+                </Typography>
+                <EmojiEventsOutlinedIcon sx={{ fontSize: 24, color: "#F59E0B" }} />
+              </Stack>
+              <Typography sx={{ fontSize: 14, color: "#6B7280", mt: 1 }}>
+                Wait for the next photo prompt. Focus fully on your dish.
+              </Typography>
+            </Card>
+          )}
 
-                        {eventFinished && (
-                          <>
-                            <div style={{ fontSize: 13, color: "#666" }}>
-                              ⭐ {s.voteCount ?? 0}
-                            </div>
+          {/* ====== LIVE GALLERY ====== */}
+          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+            <Typography sx={{ fontSize: 16, fontWeight: 700, color: "#1A1A1A" }}>
+              Live gallery of players
+            </Typography>
+            <Button
+              size="small"
+              sx={{ textTransform: "none", color: "#6B7280", fontWeight: 500 }}
+              onClick={() => {/* TODO: gallery expansion */}}
+            >
+              Show all
+            </Button>
+          </Stack>
 
-                            <button onClick={() => voteSubmission(s.submissionId)}>
-                              Vote
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+              gap: 2,
+            }}
+          >
+            {participants.length === 0 ? (
+              <Typography sx={{ color: "#9CA3AF", fontSize: 14 }}>
+                No participants yet.
+              </Typography>
+            ) : (
+              participants.map((p) => {
+                const submission = submissionByUser.get(Number(p.id));
+                const isCurrentUser = String(p.id) === (typeof window !== "undefined" ? localStorage.getItem("userId") : "");
+                const isDisqualified = isCurrentUser && schedule.kicked;
+                const initial = (p.username || "?").charAt(0).toUpperCase();
 
-            {eventFinished && winners.length > 0 && (
-              <div style={{ marginTop: 24, color: "#9e8600" }}>
-                <h3 style={{ marginBottom: 12 }}>🏆 Winners</h3>
-
-                {winners.map((w) => (
-                  <div
-                    key={w.submissionId}
-                    style={{
-                      padding: 12,
-                      borderRadius: 12,
-                      background: "#f0eef6",
-                      marginBottom: 8
+                return (
+                  <Box
+                    key={p.id}
+                    sx={{
+                      position: "relative",
+                      borderRadius: 3,
+                      overflow: "hidden",
+                      background: "#F3F4F6",
+                      opacity: isDisqualified ? 0.55 : 1,
                     }}
                   >
-                    {w.username} — ⭐ {w.voteCount}
-                  </div>
-                ))}
-              </div>
+                    <Box
+                      sx={{
+                        aspectRatio: "1 / 1",
+                        background: "#E5E7EB",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {submission ? (
+                        <Box
+                          component="img"
+                          src={`${getApiDomain()}/events/submissions/${submission.submissionId}/image`}
+                          alt={p.username}
+                          sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        />
+                      ) : (
+                        <ImageOutlinedIcon sx={{ fontSize: 36, color: "#9CA3AF" }} />
+                      )}
+                    </Box>
 
-              
+                    {/* Username pill at bottom */}
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      spacing={0.5}
+                      sx={{
+                        position: "absolute",
+                        bottom: 8,
+                        left: 8,
+                        background: "#fff",
+                        borderRadius: 999,
+                        px: 0.75,
+                        py: 0.25,
+                        boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: 18,
+                          height: 18,
+                          borderRadius: "50%",
+                          background: "#DCEFD5",
+                          color: "#485F23",
+                          fontSize: 10,
+                          fontWeight: 700,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        {initial}
+                      </Box>
+                      <Typography sx={{ fontSize: 12, fontWeight: 600, color: "#1A1A1A" }}>
+                        {p.username}
+                      </Typography>
+                    </Stack>
+
+                    {isDisqualified && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: "50%",
+                          left: "50%",
+                          transform: "translate(-50%, -50%)",
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          gap: 0.5,
+                        }}
+                      >
+                        <CancelOutlinedIcon sx={{ fontSize: 32, color: "#EF4444" }} />
+                        <Box
+                          sx={{
+                            background: "#EF4444",
+                            color: "#fff",
+                            fontSize: 10,
+                            fontWeight: 700,
+                            px: 1,
+                            py: 0.25,
+                            borderRadius: 999,
+                            letterSpacing: 0.5,
+                          }}
+                        >
+                          DISQUALIFIED
+                        </Box>
+                      </Box>
+                    )}
+                  </Box>
+                );
+              })
             )}
-            
+          </Box>
 
-          </div>
-        </div>
-      </div>
-    </div>
+          {/* ====== POST-EVENT VOTING ====== */}
+          {eventFinished && submissions.length > 0 && (
+            <Box sx={{ mt: 5 }}>
+              <Typography sx={{ fontSize: 16, fontWeight: 700, color: "#1A1A1A", mb: 2 }}>
+                Vote for your favourite
+              </Typography>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+                  gap: 2,
+                }}
+              >
+                {submissions.map((s) => (
+                  <Card
+                    key={s.submissionId}
+                    elevation={0}
+                    sx={{ borderRadius: 3, overflow: "hidden", background: "#fff" }}
+                  >
+                    <Box
+                      component="img"
+                      src={`${getApiDomain()}/events/submissions/${s.submissionId}/image`}
+                      alt={s.username}
+                      sx={{ width: "100%", height: 160, objectFit: "cover", display: "block" }}
+                    />
+                    <Box sx={{ p: 1.5 }}>
+                      <Typography sx={{ fontSize: 13, fontWeight: 600, color: "#1A1A1A" }}>
+                        {s.username}
+                      </Typography>
+                      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 1 }}>
+                        <Typography sx={{ fontSize: 12, color: "#6B7280" }}>
+                          ⭐ {s.voteCount ?? 0}
+                        </Typography>
+                        <IconButton
+                          size="small"
+                          onClick={() => voteSubmission(s.submissionId)}
+                          sx={{ color: "#F97316" }}
+                        >
+                          <EmojiEventsOutlinedIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </Stack>
+                    </Box>
+                  </Card>
+                ))}
+              </Box>
+            </Box>
+          )}
+
+          {/* Ingredients hint at the bottom (always visible during event) */}
+          {!eventFinished && ingredients.length > 0 && (
+            <Box sx={{ mt: 5 }}>
+              <Typography sx={{ fontSize: 14, fontWeight: 700, color: "#1A1A1A", mb: 1 }}>
+                Ingredients
+              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 1,
+                }}
+              >
+                {ingredients.map((ing) => (
+                  <Chip
+                    key={ing}
+                    label={ing}
+                    sx={{
+                      background: "#F3F4F6",
+                      color: "#1A1A1A",
+                      fontSize: 12,
+                      height: 28,
+                      borderRadius: 14,
+                    }}
+                  />
+                ))}
+              </Box>
+            </Box>
+          )}
+        </Box>
+      </Box>
+    </Box>
   );
 }
