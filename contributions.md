@@ -167,11 +167,12 @@ reason).
 |                    | [8.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/pull/205/commits/23d39bc6f866fe883a452712767b711bf9d7ca5a] | [Implement shopping list REST endpoints] | [enable communication between frontend and backend for shopping list functionality.] |
 |                     | [8.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/pull/205/commits/80a0913601fce7fde9709bc40a34611014f709c5] | [Added Unit and REST tests for shopping lists] | [Improved backend reliability and maintainability of shopping list business logic and REST API behavior.] |
 |                    | [8.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/217/commits/8e9e852dd39482ff9472489bbdd5a9c9cacc9742] | [Create Shopping list page and sidebar navigation] | [Allow users to easily access and interact with shopping list features ] |
-                     | [8.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/217/commits/bf4a40c4644026e1131d539f8d134d8ec6e58c62] | [Implement shopping list item functionalities] | [Core shopping list interactions such as adding, editing, removing, and managing shopping list items to make it usable] |
+|                     | [8.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/217/commits/bf4a40c4644026e1131d539f8d134d8ec6e58c62] | [Implement shopping list item functionalities] | [Core shopping list interactions such as adding, editing, removing, and managing shopping list items to make it usable] |
 |                    | [11.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-client/pull/230/commits/2e8d0bb0f90c41e083d0d85f97616aeda08f69f8] | [Disabling signup & login buttons after first click & display loading animation] | [Prevent duplicate form submissions & accidental repeated requests and give visual feedback during authentication requests making application responsive] |
 
 | **[@jp-schl]** | [16.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/7056396ffe30c521af4f110eab7219dd6e3e5c7c] | [Photo uploading restrictions] | [in the backend, the restrictions should be set, to avoid unexpected behaviour] |
 |                    | [16.05.26]   | [https://github.com/valentinfrlch/sopra-fs26-group-12-server/commit/e2d3879101ed4d6bf78b4e61319b7576413b53c5] | [Added tests for shoppinglistservice] | [Adding tests is relevant to see if it works as expected] |
+
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 ---
