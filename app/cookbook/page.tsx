@@ -6,12 +6,13 @@ import { useRouter } from "next/navigation";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close"
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import SearchIcon from "@mui/icons-material/Search";
 import { PageLayout } from "@/components/PageLayout";
 import EventPreviewCard from "@/components/EventPreviewCard";
 import { useApi } from "@/hooks/useApi";
 import { getApiDomain } from "@/utils/domain";
 import useWindowSize from "@/hooks/useWndowSize";
-import { Chip, Card, CardMedia, IconButton, Menu, MenuItem, SpeedDial, SpeedDialAction, SpeedDialIcon, TextField, Box } from "@mui/material";
+import { Chip, Card, CardMedia, IconButton, Menu, MenuItem, Popover, SpeedDial, SpeedDialAction, SpeedDialIcon, TextField, Box } from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 import FavoriteIcon from "@mui/icons-material/Favorite";
@@ -214,6 +215,33 @@ const CookbookPage: React.FC = () => {
   const [isFetchingRandomRecipe, setIsFetchingRandomRecipe] = useState(false);
   const [events, setEvents] = useState<Event[]>([]);
   const [userId, setUserId] = useState<number | null>(null);
+  const [searchAnchorEl, setSearchAnchorEl] = useState<HTMLElement | null>(null);
+  const [searchInput, setSearchInput] = useState<string>("");
+  const [appliedSearch, setAppliedSearch] = useState<string>("");
+  const searchOpen = Boolean(searchAnchorEl);
+
+  const handleSearchOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setSearchInput(appliedSearch);
+    setSearchAnchorEl(event.currentTarget);
+  };
+
+  const handleSearchClose = () => {
+    setSearchAnchorEl(null);
+    setSearchInput(appliedSearch);
+  };
+
+  const handleSearchSubmit = () => {
+    setAppliedSearch(searchInput.trim());
+    setSearchAnchorEl(null);
+  };
+
+  useEffect(() => {
+    if (!searchOpen) return;
+
+    const onScroll = () => handleSearchClose();
+    window.addEventListener("scroll", onScroll, true);
+    return () => window.removeEventListener("scroll", onScroll, true);
+  }, [searchOpen, appliedSearch]);
 
   useEffect(() => {
     const id = localStorage.getItem("userId");
@@ -455,7 +483,11 @@ const CookbookPage: React.FC = () => {
         recipeIngredientNames.includes(ingredient)
       );
 
-    return matchesLabels && matchesIngredients;
+    const matchesSearch =
+      appliedSearch.length === 0 ||
+      recipe.title.toLowerCase().includes(appliedSearch.toLowerCase());
+
+    return matchesLabels && matchesIngredients && matchesSearch;
   });
 
   const handleLabelToggle = (label: string) => {
@@ -474,7 +506,7 @@ const CookbookPage: React.FC = () => {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 32 }}>
           {/* Registered Event Card */}
           <EventPreviewCard
-            title="Registered Events"
+            title="Upcoming Registered Events"
             events={nextEvents}
             emptyMessage="No upcoming events yet"
             onHeaderClick={() => router.push("/events/registered")}
@@ -574,13 +606,82 @@ const CookbookPage: React.FC = () => {
 
               <Box
                 sx={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 1,
+                  width: isMobile ? "100%" : "auto",
+                  flexShrink: 0,
+                  mt: isMobile ? 1 : 0,
+                }}
+              >
+                <IconButton
+                  aria-label="Search recipes"
+                  onClick={handleSearchOpen}
+                  sx={{
+                    border: "1px solid rgba(0,0,0,0.23)",
+                    borderRadius: "50%",
+                    width: 40,
+                    height: 40,
+                    color: appliedSearch ? "#fff" : "#4b6624",
+                    backgroundColor: appliedSearch ? "#4b6624" : "#fff",
+                    "&:hover": {
+                      borderColor: "#4b6624",
+                      backgroundColor: appliedSearch
+                        ? "#3f5936"
+                        : "rgba(75,102,36,0.04)"
+                    },
+                  }}
+                >
+                  <SearchIcon />
+                </IconButton>
+
+                <Popover
+                  open={searchOpen}
+                  anchorEl={searchAnchorEl}
+                  onClose={handleSearchClose}
+                  anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                  transformOrigin={{ vertical: "top", horizontal: "left" }}
+                  slotProps={{
+                    paper: {
+                      sx: {
+                        mt: 1,
+                        p: 1.5,
+                        borderRadius: 5,
+                        width: 300,
+                      },
+                    },
+                  }}
+                >
+                  <TextField
+                    autoFocus
+                    fullWidth
+                    size="small"
+                    placeholder="Search recipes by name"
+                    value={searchInput}
+                    onChange={(event) => setSearchInput(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        handleSearchSubmit();
+                      }
+                    }}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 4,
+                        "&.Mui-focused fieldset": { borderColor: "#4b6624" },
+                      },
+                    }}
+                  />
+                </Popover>
+
+              <Box
+                sx={{
                   width: isMobile ? "100%" : 360,
                   flexShrink: 0,
                   border: "1px solid rgba(0,0,0,0.23)",
                   borderRadius: 20,
                   backgroundColor: "#fff",
                   position: "relative",
-                  mt: isMobile ? 1 : 0,
                   "&:hover": { borderColor: "#4b6624" },
                   "&:focus-within": { borderColor: "#4b6624", borderWidth: 2 },
                 }}
@@ -671,6 +772,7 @@ const CookbookPage: React.FC = () => {
                   )}
                 />
               </Box>
+            </Box>
 
             </div>
 

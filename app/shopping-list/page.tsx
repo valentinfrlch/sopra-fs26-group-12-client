@@ -1,20 +1,17 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageLayout } from "@/components/PageLayout";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { Checkbox, Button } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import useWindowSize from "@/hooks/useWndowSize";
 
 import IconButton from "@mui/material/IconButton";
 import { useApi } from "@/hooks/useApi";
 
-import {
-  Button,
-  Card,
-  TextField,
-} from "@mui/material";
+import { TextField } from "@mui/material";
 
 interface ShoppingListItem {
   id: string;
@@ -27,6 +24,7 @@ const ShoppingListPage: React.FC = () => {
   const api = useApi();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
+  const { isMobile } = useWindowSize();
 
   const [ingredientName, setIngredientName] =
     useState("");
@@ -37,6 +35,14 @@ const ShoppingListPage: React.FC = () => {
   const [items, setItems] = useState<
     ShoppingListItem[]
   >([]);
+  const [ingredientBlurred, setIngredientBlurred] =
+    useState(false);
+  const [showNewItem, setShowNewItem] =
+    useState(false);
+  const isAddingRef = useRef(false);
+  const quantityInputRef = useRef<HTMLInputElement | null>(
+    null
+  );
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -75,7 +81,15 @@ const ShoppingListPage: React.FC = () => {
   };
 
   const handleAddItem = async () => {
-    if (!ingredientName.trim() || !token) return;
+    if (
+      !ingredientName.trim() ||
+      !quantity.trim() ||
+      !token ||
+      isAddingRef.current
+    )
+      return;
+
+    isAddingRef.current = true;
 
     try {
       await api.post(
@@ -91,6 +105,8 @@ const ShoppingListPage: React.FC = () => {
 
       setIngredientName("");
       setQuantity("");
+      setIngredientBlurred(false);
+      setShowNewItem(false);
 
       fetchShoppingList(token);
     } catch (error) {
@@ -98,8 +114,35 @@ const ShoppingListPage: React.FC = () => {
         "Failed to create shopping list item:",
         error
       );
+    } finally {
+      isAddingRef.current = false;
     }
   };
+
+  useEffect(() => {
+    if (
+      showNewItem &&
+      ingredientBlurred &&
+      ingredientName.trim() &&
+      quantity.trim() &&
+      token &&
+      !isAddingRef.current
+    ) {
+      handleAddItem();
+    }
+  }, [
+    showNewItem,
+    ingredientBlurred,
+    ingredientName,
+    quantity,
+    token,
+  ]);
+
+  useEffect(() => {
+    if (showNewItem) {
+      quantityInputRef.current?.focus();
+    }
+  }, [showNewItem]);
 
   const handleToggleCompleted = async (
     item: ShoppingListItem
@@ -158,21 +201,14 @@ const ShoppingListPage: React.FC = () => {
         }}
       >
         {items.map((item) => (
-          <Card
-            key={item.id}
-            sx={{
-              padding: 2,
-              borderRadius: 4,
-              boxShadow: "none",
-              opacity: item.completed ? 0.7 : 1,
-            }}
+          <div
           >
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                gap: 12,
+                gap: 4,
               }}
             >
               <div
@@ -183,24 +219,37 @@ const ShoppingListPage: React.FC = () => {
                   flex: 1,
                 }}
               >
-                <IconButton
-                  onClick={() =>
+                <Checkbox
+                  checked={item.completed}
+                  onChange={() =>
                     handleToggleCompleted(item)
                   }
-                >
-                  {item.completed ? (
-                    <CheckCircleIcon
-                      sx={{
-                        color:
-                          "rgba(75, 102, 36, 1)",
-                      }}
-                    />
-                  ) : (
-                    <CheckCircleOutlineIcon />
-                  )}
-                </IconButton>
+                  sx={{
+                    color: "rgba(75, 102, 36, 1)",
+                    "&.Mui-checked": {
+                      color: "rgba(75, 102, 36, 1)",
+                    },
+                  }}
+                />
 
-                <div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: 4,
+                  }}
+                >
+                  <div
+                    style={{
+                      color: "#666",
+                      textDecoration:
+                        item.completed
+                          ? "line-through"
+                          : "none",
+                    }}
+                  >
+                    {item.quantity}
+                  </div>
                   <div
                     style={{
                       fontWeight: 600,
@@ -216,19 +265,6 @@ const ShoppingListPage: React.FC = () => {
                   >
                     {item.ingredientName}
                   </div>
-
-                  <div
-                    style={{
-                      color: "#666",
-                      marginTop: 4,
-                      textDecoration:
-                        item.completed
-                          ? "line-through"
-                          : "none",
-                    }}
-                  >
-                    {item.quantity}
-                  </div>
                 </div>
               </div>
 
@@ -240,58 +276,115 @@ const ShoppingListPage: React.FC = () => {
                 <DeleteOutlineIcon />
               </IconButton>
             </div>
-          </Card>
+          </div>
         ))}
+        {showNewItem && (
+          <div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 4,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  flex: 1,
+                }}
+              >
+                <div style={{ width: 40 }} />
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: 8,
+                    flex: 1,
+                  }}
+                >
+                  <TextField
+                    label="Quantity"
+                    value={quantity}
+                    onChange={(e) =>
+                      setQuantity(e.target.value)
+                    }
+                    inputRef={quantityInputRef}
+                    size="small"
+                    sx={{
+                      "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "transparent",
+                      },
+                      "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "transparent",
+                      },
+                      "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "transparent",
+                      },
+                      "& .MuiInputLabel-root": { color: "#757" },
+                      "& .MuiInputLabel-root.Mui-focused": { color: "#757" },
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Ingredient"
+                    value={ingredientName}
+                    onChange={(e) =>
+                      setIngredientName(e.target.value)
+                    }
+                    onBlur={() =>
+                      setIngredientBlurred(true)
+                    }
+                    onFocus={() =>
+                      setIngredientBlurred(false)
+                    }
+                    size="small"
+                    sx={{
+                      "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "transparent",
+                      },
+                      "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "transparent",
+                      },
+                      "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "transparent",
+                      },
+                      "& .MuiInputLabel-root": { color: "#757" },
+                      "& .MuiInputLabel-root.Mui-focused": { color: "#757" },
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-
-      <Card
-        sx={{
-          padding: 3,
-          paddingBottom: 1,
-          borderRadius: 4,
-          marginTop: "auto",
-          marginBottom: 0,
-          boxShadow: "none",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            gap: 16,
-            marginBottom: 16,
-          }}
-        >
-          <TextField
-            fullWidth
-            label="Ingredient"
-            value={ingredientName}
-            onChange={(e) =>
-              setIngredientName(e.target.value)
-            }
-          />
-
-          <TextField
-            fullWidth
-            label="Quantity"
-            value={quantity}
-            onChange={(e) =>
-              setQuantity(e.target.value)
-            }
-          />
-
-          <Button
-            variant="contained"
-            onClick={handleAddItem}
-            sx={{
-              backgroundColor:
-                "rgba(75, 102, 36, 1)",
-              minWidth: 140,
-            }}
-          >
-            Add
-          </Button>
-        </div>
-      </Card>
+      <Button
+        type="button"
+        variant="contained"
+        startIcon={<AddIcon sx={{ fontSize: 20 }} />}
+        onClick={() => setShowNewItem(true)}
+        style={{
+          position: "fixed",
+          bottom: isMobile ? 80 : 32,
+          right: isMobile ? 16 : 32,
+          borderRadius: 24,
+          height: 44,
+          paddingLeft: 20,
+          paddingRight: 20,
+          fontWeight: 600,
+          background: "#4a6741",
+          border: "none",
+          textTransform: "none",
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          zIndex: 1400,
+        }}>
+        Ingredient
+      </Button>
     </PageLayout>
   );
 };

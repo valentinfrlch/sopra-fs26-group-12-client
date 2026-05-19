@@ -12,7 +12,6 @@ body {
 body {
   color: var(--foreground);
   min-height: 100vh;
-  background: linear-gradient(290deg, #EBEDF6 0%, #FCF8F6 100%);
   font-family: 'Roboto', Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

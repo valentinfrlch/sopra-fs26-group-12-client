@@ -9,6 +9,9 @@ import { Button, TextField } from "@mui/material";
 import React, { useState } from "react";
 import { storeUserSession } from "@/utils/auth";
 import CircularProgress from "@mui/material/CircularProgress";
+import useWindowSize from "@/hooks/useWndowSize";
+import { parseAuthError } from "@/utils/parseAuthError";
+import AuthForm from "@/components/auth/AuthForm";
 // Optionally, you can import a CSS module or file for additional styling:
 // import styles from "@/styles/page.module.css";
 
@@ -23,6 +26,7 @@ const Signup: React.FC = () => {
   const [form] = Form.useForm();
   const [currentError, setCurrentError] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isMobile } = useWindowSize();
   // useLocalStorage hook example use
   // The hook returns an object with the value and two functions
   // Simply choose what you need from the hook:
@@ -48,81 +52,162 @@ const Signup: React.FC = () => {
       router.push("/cookbook");
     } catch (error) {
       setIsSubmitting(false);
-
-      if (error instanceof Error) {
-        // try to parse the string as json
-        const jsonStart = error.message.indexOf("{");
-        const jsonEnd = error.message.lastIndexOf("}") + 1;
-        const parsed = JSON.parse(error.message.slice(jsonStart, jsonEnd));
-
-        console.log(parsed.detail); // Log error for debugging
-        // Update currentError
-        if (parsed.detail === "The username and the name provided are not unique. Therefore, the user could not be created!") {
-          setCurrentError("Username is already taken. Please choose a different one.");
-        } else {
-          setCurrentError(parsed.detail);
-        }
-      } else {
-        setCurrentError("An unknown error occurred during signup.");
-      }
+      setCurrentError(parseAuthError(error));
+      
     }
   };
 
   return (
-    <div className="signup-container">
-      <Form
-        form={form}
-        name="signup"
-        size="large"
-        variant="outlined"
-        onFinish={handleSignup}
-        layout="vertical"
-      >
-        <Form.Item>
-          <h1 style={{ color: "black", textAlign: "center", marginBottom: "20px" }}>Create an Account</h1>
-        </Form.Item>
-        <Form.Item
-          name="name"
-          rules={[{ required: true, message: "Please input your name!" }]}
+    <div
+      style={{
+        color: "#ededed",
+        minHeight: "100vh",
+        position: "relative",
+        background: "#F6FAF5",
+        overflow: "hidden",
+        fontFamily: "Roboto, Arial, Helvetica, sans-serif",
+        WebkitFontSmoothing: "antialiased",
+        MozOsxFontSmoothing: "grayscale",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          inset: "-10%",
+          background:
+            "radial-gradient(circle at center, #43921F 10%, rgba(67, 146, 31, 0.35) 25%, transparent 70%)",
+          filter: "blur(50px)",
+          zIndex: 0,
+          pointerEvents: "none",
+        }}
+      />
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "50vh",
+        minWidth: "40vw",
+        backgroundColor: "#F5F5F5",
+        // card style
+        padding: "40px",
+        width: "400px",
+        // center the card
+        margin: "0 auto",
+        // center the card vertically
+        marginTop: "20vh",
+        borderRadius: "14px",
+        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+        // if mobile, don't use card, just white background and no shadow
+        ...(isMobile && {
+          width: "100%",
+          minWidth: "100%",
+          boxShadow: "none",
+          borderRadius: "0",
+          marginTop: "0",
+          minHeight: "100vh",
+        }),
+        position: "relative",
+        zIndex: 1,
+      }}>
+        <Form
+          form={form}
+          name="signup"
+          size="large"
+          variant="outlined"
+          onFinish={handleSignup}
+          layout="vertical"
         >
-          <TextField label="Name" fullWidth />
-        </Form.Item>
-        <Form.Item
-          name="username"
-          rules={[{ required: true, message: "Please input your username!" }]}
-        >
-          <TextField label="Username" fullWidth />
-        </Form.Item>
-        <Form.Item
-          name="password"
-          rules={[{ required: true, message: "Please input your password!" }]}
-        >
-          <TextField label="Password" type="password" fullWidth />
-        </Form.Item>
-        <Form.Item>
-          <Button
-            variant="contained"
-            className="login-button"
-            disableElevation
-            sx={{ boxShadow: "none" }}
-            type="submit"
-            disabled={isSubmitting}
+          <Form.Item>
+            <h1 style={{ color: "black", textAlign: "center", marginBottom: "20px" }}>Create an Account</h1>
+          </Form.Item>
+          <Form.Item
+            name="name"
+            rules={[{ required: true, message: "Please input your name!" }]}
           >
-            {isSubmitting ? (
-              <CircularProgress size={24} sx={{ color: "white" }} />
-            ) : (
-              "Create Account"
-            )}
-          </Button>
-        </Form.Item>
-        <Form.Item >
-          <p className="error-message">{currentError}</p>
-        </Form.Item>
-        <div className="login-link" style={{ color: "black" }}>
-          Already have an account? <a style={{ color: "#485F23" }} href="/login">Sign in</a>
-        </div>
-      </Form>
-    </div >
+            <TextField label="Name" fullWidth sx={{
+              "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#485F23",
+              },
+              "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#485F23",
+              },
+              "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#485F23",
+              },
+              "& .MuiInputLabel-root": { color: "#485F23" },
+              "& .MuiInputLabel-root.Mui-focused": { color: "#485F23" },
+            }} />
+          </Form.Item>
+          <Form.Item
+            name="username"
+            rules={[{ required: true, message: "Please input your username!" }]}
+          >
+            <TextField label="Username" fullWidth sx={{
+              "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#485F23",
+              },
+              "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#485F23",
+              },
+              "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#485F23",
+              },
+              "& .MuiInputLabel-root": { color: "#485F23" },
+              "& .MuiInputLabel-root.Mui-focused": { color: "#485F23" },
+            }} />
+          </Form.Item>
+          <Form.Item
+            name="password"
+            rules={[{ required: true, message: "Please input your password!" }]}
+          >
+            <TextField label="Password" type="password" fullWidth sx={{
+              "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#485F23",
+              },
+              "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#485F23",
+              },
+              "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#485F23",
+              },
+              "& .MuiInputLabel-root": { color: "#485F23" },
+              "& .MuiInputLabel-root.Mui-focused": { color: "#485F23" },
+            }} />
+          </Form.Item>
+          <Form.Item>
+            <Button
+              variant="contained"
+              className="login-button"
+              disableElevation
+              sx={{
+                boxShadow: "none",
+                backgroundColor: "#485F23",
+                borderRadius: "99px",
+                color: "white",
+                width: "100%",
+                height: "50px",
+                "&:hover": { backgroundColor: "#485F23" },
+              }}
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <CircularProgress size={24} sx={{ color: "white" }} />
+              ) : (
+                "Create Account"
+              )}
+            </Button>
+          </Form.Item>
+          <Form.Item >
+            <p className="error-message">{currentError}</p>
+          </Form.Item>
+          <div className="login-link" style={{ color: "black" }}>
+            Already have an account? <a style={{ color: "#485F23" }} href="/login">Sign in</a>
+          </div>
+        </Form>
+      </div >
+    </div>
   );
 };
 export default Signup;
