@@ -376,7 +376,7 @@ const RecipeDetailPage: React.FC = () => {
 
           <div style={{ padding: "8px 24px 24px", minHeight: "100%" }}>
             <div>
-              <h1 style={{ color: "rgba(75, 102, 36, 1)", marginBottom: 8 }}>{recipe.title}</h1>
+              <h1 style={{ color: "black", marginBottom: 8 }}>{recipe.title}</h1>
               <div>
                 {displayLabels.length > 0 && (
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
@@ -399,7 +399,7 @@ const RecipeDetailPage: React.FC = () => {
 
             <div style={{ display: "flex", gap: 10, flexDirection: isMobile ? "column" : "row" }}>
               <div style={{ flex: 1, width: isMobile ? "100%" : undefined }}>
-                <h2 style={{ color: "rgba(75, 102, 36, 1)", marginBottom: 8 }}>Ingredients</h2>
+                <h2 style={{ color: "black", marginBottom: 8 }}>Ingredients</h2>
                 {ingredientPairs.length > 0 ? (
                   <List dense>
                     {ingredientPairs.map((ingredient, index) => (
@@ -413,10 +413,10 @@ const RecipeDetailPage: React.FC = () => {
                             alignItems: "baseline",
                           }}
                         >
-                          <Typography variant="body1" color="rgba(75, 102, 36, 1)" sx={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+                          <Typography variant="body1" color="black" sx={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
                             {ingredient.amount}
                           </Typography>
-                          <Typography variant="body1" color="rgba(75, 102, 36, 1)">
+                          <Typography variant="body1" color="black">
                             <strong>{ingredient.name}</strong>
                           </Typography>
                         </Box>
@@ -432,8 +432,8 @@ const RecipeDetailPage: React.FC = () => {
               </div>
 
               <div style={{ flex: 2, width: isMobile ? "100%" : undefined, marginTop: isMobile ? 12 : 0 }}>
-                <h2 style={{ color: "rgba(75, 102, 36, 1)", marginBottom: 8 }}>Preparation</h2>
-                <p style={{ whiteSpace: "pre-line", color: "rgba(75, 102, 36, 1)", marginBottom: isMobile ? "100px" : 0 }}>{recipe.preparation}</p>
+                <h2 style={{ color: "black", marginBottom: 8 }}>Preparation</h2>
+                <p style={{ whiteSpace: "pre-line", color: "black", marginBottom: isMobile ? "100px" : 0 }}>{recipe.preparation}</p>
               </div>
             </div>
           </div>
