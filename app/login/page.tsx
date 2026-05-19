@@ -3,9 +3,10 @@
 import { useRouter } from "next/navigation"; // use NextJS router for navigation
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
+import AuthForm from "@/components/auth/AuthForm";
 // import { User } from "@/types/user";
 import { Form } from "antd";
-import { Button, TextField } from "@mui/material";
+// import { Button, TextField } from "@mui/material";
 import React, { useState } from "react";
 import { UserGetDTO } from "@/types/api";
 import { storeUserSession } from "@/utils/auth";
@@ -13,6 +14,8 @@ import { useSearchParams } from "next/navigation";
 import CircularProgress from "@mui/material/CircularProgress";
 import useWindowSize from "@/hooks/useWndowSize";
 
+// import CircularProgress from "@mui/material/CircularProgress";
+import { parseAuthError } from "@/utils/parseAuthError";
 // Optionally, you can import a CSS module or file for additional styling:
 // import styles from "@/styles/page.module.css";
 
@@ -52,23 +55,8 @@ const Login: React.FC = () => {
     } catch (error) {
 
       setIsSubmitting(false);
-
-      if (error instanceof Error) {
-        // try to parse the string as json
-        const jsonStart = error.message.indexOf("{");
-        const jsonEnd = error.message.lastIndexOf("}") + 1;
-        const parsed = JSON.parse(error.message.slice(jsonStart, jsonEnd));
-
-        console.log(parsed.detail); // Log the entire error for debugging
-        // Update currentError
-        if (parsed.detail === "The username and the name provided are not unique. Therefore, the user could not be created!") {
-          setCurrentError("Username is already taken. Please choose a different one.");
-        } else {
-          setCurrentError(parsed.detail);
-        }
-      } else {
-        console.error("An unknown error occurred during login.");
-      }
+      setCurrentError(parseAuthError(error));
+      
     }
   };
 

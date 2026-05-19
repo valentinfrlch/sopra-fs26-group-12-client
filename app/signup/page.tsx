@@ -5,11 +5,14 @@ import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { User } from "@/types/user";
 import { Form } from "antd";
-import { Button, TextField } from "@mui/material";
+import { TextField } from "@mui/material";
 import React, { useState } from "react";
 import { storeUserSession } from "@/utils/auth";
 import CircularProgress from "@mui/material/CircularProgress";
 import useWindowSize from "@/hooks/useWndowSize";
+// import CircularProgress from "@mui/material/CircularProgress";
+import { parseAuthError } from "@/utils/parseAuthError";
+import AuthForm from "@/components/auth/AuthForm";
 // Optionally, you can import a CSS module or file for additional styling:
 // import styles from "@/styles/page.module.css";
 
@@ -50,23 +53,8 @@ const Signup: React.FC = () => {
       router.push("/cookbook");
     } catch (error) {
       setIsSubmitting(false);
-
-      if (error instanceof Error) {
-        // try to parse the string as json
-        const jsonStart = error.message.indexOf("{");
-        const jsonEnd = error.message.lastIndexOf("}") + 1;
-        const parsed = JSON.parse(error.message.slice(jsonStart, jsonEnd));
-
-        console.log(parsed.detail); // Log error for debugging
-        // Update currentError
-        if (parsed.detail === "The username and the name provided are not unique. Therefore, the user could not be created!") {
-          setCurrentError("Username is already taken. Please choose a different one.");
-        } else {
-          setCurrentError(parsed.detail);
-        }
-      } else {
-        setCurrentError("An unknown error occurred during signup.");
-      }
+      setCurrentError(parseAuthError(error));
+      
     }
   };
 
